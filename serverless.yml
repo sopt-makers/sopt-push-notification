@@ -1,4 +1,4 @@
-service: sopt-push
+service: sopt-push-notification
 
 frameworkVersion: "3"
 
