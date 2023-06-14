@@ -24,8 +24,8 @@ provider:
           Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
 
 functions:
-  lambda:
-    handler: src/lambda.lambda
+  service:
+    handler: src/lambda.service
     events:
       - http:
           path: ""

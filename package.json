@@ -7,8 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "tsc -w",
     "lint": "tslint '*.ts'",
-    "start:dev": "NODE_ENV=dev sls invoke local --function lambda --path lib/data.json --stage dev",
-    "start:prod": "NODE_ENV=prod sls invoke local --function lambda --path lib/data.json --stage prod",
+    "start:dev": "NODE_ENV=dev sls invoke local --function service --path lib/data.json --stage dev",
+    "start:prod": "NODE_ENV=prod sls invoke local --function service --path lib/data.json --stage prod",
     "deploy:dev": "NODE_ENV=dev sls deploy --stage dev",
     "deploy:prod": "NODE_ENV=prod sls deploy --stage prod"
   },
