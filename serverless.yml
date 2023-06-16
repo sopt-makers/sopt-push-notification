@@ -1,6 +1,6 @@
 service: sopt-push-notification
 
-frameworkVersion: "3"
+frameworkVersion: '3'
 
 plugins:
   - serverless-offline
@@ -24,13 +24,13 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
-          Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+          Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}'
 
 functions:
   service:
     handler: src/lambda.service
     events:
       - http:
-          path: ""
+          path: ''
           method: post
           cors: true
