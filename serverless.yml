@@ -4,6 +4,9 @@ frameworkVersion: '3'
 
 useDotenv: true
 
+plugins:
+  - serverless-offline
+
 provider:
   name: aws
   runtime: nodejs18.x
@@ -22,6 +25,10 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}'
+
+custom:
+  serverless-offline:
+    httpPort: 4000
 
 functions:
   service:
