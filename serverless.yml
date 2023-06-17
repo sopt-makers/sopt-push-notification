@@ -2,9 +2,6 @@ service: sopt-push-notification
 
 frameworkVersion: '3'
 
-plugins:
-  - serverless-offline
-
 useDotenv: true
 
 provider:
