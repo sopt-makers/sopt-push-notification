@@ -8,8 +8,7 @@
     "watch": "tsc -w",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "start:dev": "NODE_ENV=dev sls invoke local --function service --path lib/data.json --stage dev",
-    "start:prod": "NODE_ENV=prod sls invoke local --function service --path lib/data.json --stage prod",
+    "start": "serverless offline start",
     "deploy:dev": "NODE_ENV=dev sls deploy --stage dev",
     "deploy:prod": "NODE_ENV=prod sls deploy --stage prod"
   },
@@ -26,6 +25,7 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.8.8",
+    "serverless-offline": "^12.0.4",
     "tslint": "^5.5.0",
     "tslint-config-standard": "^6.0.1",
     "typescript": "^5.1.0"
