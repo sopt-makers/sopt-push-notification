@@ -47,6 +47,7 @@ const deleteToken = (fcmToken: string, userId: string) => {
       userId: { S: userId },
       fcmToken: { S: fcmToken },
     },
+    ReturnValues: 'ALL_OLD',
   });
 
   return command;
