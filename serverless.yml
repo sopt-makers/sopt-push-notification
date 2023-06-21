@@ -13,6 +13,10 @@ provider:
   region: ap-northeast-2
   environment:
     DYNAMODB_TABLE: ${env:DYNAMODB_TABLE}
+    APN_TYPE: ${env:APN_TYPE}
+    APN_NAME: ${env:APN_NAME}
+    FCM_TYPE: ${env:FCM_TYPE}
+    FCM_NAME: ${env:FCM_NAME}
   iam:
     role:
       statements:
@@ -25,6 +29,14 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}'
+        - Effect: Allow
+          Action:
+            - sns:Subscribe
+            - sns:Unsubscribe
+            - sns:Publish
+          Resource:
+            - 'arn:aws:sns:${opt:region, self:provider.region}:*:app/${self:provider.environment.APN_TYPE}/${self:provider.environment.APN_NAME}'
+            - 'arn:aws:sns:${opt:region, self:provider.region}:*:app/${self:provider.environment.FCM_TYPE}/${self:provider.environment.FCM_NAME}'
 
 custom:
   serverless-offline:
