@@ -55,7 +55,7 @@ export const service = async (event: any): Promise<any> => {
 
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_CANCEL_SUCCESS));
       default:
-        throw new Error(`Unsupported action: "${event.headers.action}"`);
+        return response(400, status.success(statusCode.OK, responseMessage.INVALID_REQUEST));
     }
   } catch (e) {
     console.error(e);

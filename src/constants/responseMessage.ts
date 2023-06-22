@@ -1,5 +1,6 @@
 export default {
   // common
+  INVALID_REQUEST: '잘못된 요청입니다',
   INTERNAL_SERVER_ERROR: '서버 내부 오류',
   NULL_VALUE: '필요한 값이 없습니다',
 
