@@ -6,4 +6,3 @@ const response = (statusCode: number, data: any) => {
 };
 
 export default response;
-export { response };

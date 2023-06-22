@@ -31,5 +31,4 @@ interface RequestDTO {
   userId: string;
 }
 
-export { Services, Actions, NotificationType, NotificationStatus, UserStatus };
-export { RequestDTO };
+export { Services, Actions, NotificationType, NotificationStatus, UserStatus, RequestDTO };
