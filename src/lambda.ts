@@ -36,11 +36,7 @@ export const service = async (event: any): Promise<any> => {
             }
           }
 
-          await snsClient.send(subscribeCommand);
-
-          await client.send(createCommand);
-        } else {
-          return response(400, status.fail(statusCode.BAD_REQUEST, responseMessage.DUPLICATED_TOKEN));
+          await Promise.all([snsClient.send(subscribeCommand), client.send(createCommand)]);
         }
 
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_REGISTER_SUCCESS));
