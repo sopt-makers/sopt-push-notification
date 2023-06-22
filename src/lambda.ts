@@ -1,63 +1,47 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { SNSClient } from '@aws-sdk/client-sns';
-import tokenCommands from './modules/tokenCommands';
-import snsCommands from './modules/snsCommands';
+import tokenFactory from './modules/tokenFactory';
+import snsFactory from './modules/snsFactory';
 import response from './constants/response';
 import status from './constants/status';
 import statusCode from './constants/statusCode';
-import { Actions, RequestDTO } from './types';
+import { Actions, RequestDTO, Platform } from './types';
 import responseMessage from './constants/responseMessage';
-
-const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
-const snsClient = new SNSClient({ region: process.env.AWS_REGION });
 
 export const service = async (event: any): Promise<any> => {
   const eventBody: RequestDTO = JSON.parse(event.body);
 
-  const { platform, action } = event.headers;
+  const platform: Platform = event.headers.platform;
+  const action: Actions = event.headers.action;
 
   const { fcmToken, userId } = eventBody;
 
   try {
     switch (action) {
       case Actions.REGISTER:
-        const getTokenCommand = tokenCommands.getToken(fcmToken);
-        const updateUserIdCommand = tokenCommands.updateUserId(fcmToken, userId);
-        const registerEndPointCommand = snsCommands.registerEndPoint(fcmToken, platform);
-
-        const tokenData = await ddbClient.send(getTokenCommand);
+        const tokenData = await tokenFactory.getToken(fcmToken);
 
         if (!tokenData.Item) {
-          const endPointData = await snsClient.send(registerEndPointCommand);
+          const endPointData = await snsFactory.registerEndPoint(fcmToken, platform);
 
           const arn = endPointData.EndpointArn;
 
-          const subscribeCommand = snsCommands.subscribe(arn!);
+          const topicData = await snsFactory.subscribe(arn!);
 
-          const topicSubscribeData = await snsClient.send(subscribeCommand);
+          const topicArn = topicData.SubscriptionArn;
 
-          const topicArn = topicSubscribeData.SubscriptionArn;
-
-          const createTokenCommand = tokenCommands.createToken(fcmToken, userId, arn!, topicArn);
-
-          await ddbClient.send(createTokenCommand);
+          await tokenFactory.createToken(fcmToken, userId, arn!, topicArn!);
         } else if (tokenData.Item.userId.S === '') {
-          ddbClient.send(updateUserIdCommand);
+          tokenFactory.updateUserId(fcmToken, userId);
         }
 
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_REGISTER_SUCCESS));
 
       case Actions.CANCEL:
-        const deleteCommand = tokenCommands.deleteToken(fcmToken);
-        const deletedData = await ddbClient.send(deleteCommand);
+        const deletedData = await tokenFactory.deleteToken(fcmToken);
 
         const arn = deletedData.Attributes!.arn.S;
         const topicArn = deletedData.Attributes!.topicArn.S;
 
-        const cancelEndPointCommand = snsCommands.cancelEndPoint(arn!);
-        const unSubscribeCommand = snsCommands.unSubscribe(topicArn!);
-
-        await Promise.all([snsClient.send(cancelEndPointCommand), snsClient.send(unSubscribeCommand)]);
+        await Promise.all([snsFactory.cancelEndPoint(arn!), snsFactory.unSubscribe(topicArn!)]);
 
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_CANCEL_SUCCESS));
       default:

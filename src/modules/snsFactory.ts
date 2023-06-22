@@ -1,18 +1,23 @@
 import {
+  SNSClient,
   SubscribeCommand,
   CreatePlatformEndpointCommand,
   UnsubscribeCommand,
   DeleteEndpointCommand,
 } from '@aws-sdk/client-sns';
 
-const subscribe = (arn: string) => {
+const snsClient = new SNSClient({ region: process.env.AWS_REGION });
+
+const subscribe = async (arn: string) => {
   const command = new SubscribeCommand({
     TopicArn: process.env.ALL_TOPIC_ARN,
     Protocol: 'application',
     Endpoint: arn,
   });
 
-  return command;
+  const topicSubscribeData = await snsClient.send(command);
+
+  return topicSubscribeData;
 };
 
 const unSubscribe = (arn: string) => {
@@ -20,10 +25,10 @@ const unSubscribe = (arn: string) => {
     SubscriptionArn: arn,
   });
 
-  return command;
+  snsClient.send(command);
 };
 
-const registerEndPoint = (fcmToken: string, platform: string) => {
+const registerEndPoint = async (fcmToken: string, platform: string) => {
   const platformApplicationArn =
     platform == 'iOS' ? process.env.PLATFORM_APPLICATION_iOS : process.env.PLATFORM_APPLICATION_ANDROID;
 
@@ -32,7 +37,9 @@ const registerEndPoint = (fcmToken: string, platform: string) => {
     Token: fcmToken,
   });
 
-  return command;
+  const endPointData = await snsClient.send(command);
+
+  return endPointData;
 };
 
 const cancelEndPoint = (arn: string) => {
@@ -40,14 +47,14 @@ const cancelEndPoint = (arn: string) => {
     EndpointArn: arn,
   });
 
-  return command;
+  snsClient.send(command);
 };
 
-const snsCommands = {
+const snsFactory = {
   subscribe,
   unSubscribe,
   registerEndPoint,
   cancelEndPoint,
 };
 
-export default snsCommands;
+export default snsFactory;

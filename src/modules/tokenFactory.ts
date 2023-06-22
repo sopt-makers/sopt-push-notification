@@ -1,6 +1,14 @@
-import { PutItemCommand, GetItemCommand, UpdateItemCommand, DeleteItemCommand } from '@aws-sdk/client-dynamodb';
+import {
+  DynamoDBClient,
+  PutItemCommand,
+  GetItemCommand,
+  UpdateItemCommand,
+  DeleteItemCommand,
+} from '@aws-sdk/client-dynamodb';
 
-const createToken = (fcmToken: string, userId: string, arn: string, topicArn: string) => {
+const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
+
+const createToken = async (fcmToken: string, userId: string, arn: string, topicArn: string) => {
   const command = new PutItemCommand({
     TableName: process.env.DYNAMODB_TABLE,
     Item: {
@@ -11,10 +19,10 @@ const createToken = (fcmToken: string, userId: string, arn: string, topicArn: st
     },
   });
 
-  return command;
+  await ddbClient.send(command);
 };
 
-const getToken = (fcmToken: string) => {
+const getToken = async (fcmToken: string) => {
   const command = new GetItemCommand({
     TableName: process.env.DYNAMODB_TABLE,
     Key: {
@@ -22,7 +30,9 @@ const getToken = (fcmToken: string) => {
     },
   });
 
-  return command;
+  const tokenData = await ddbClient.send(command);
+
+  return tokenData;
 };
 
 const updateToken = (fcmToken: string) => {
@@ -52,10 +62,10 @@ const updateUserId = (fcmToken: string, userId: string) => {
     },
   });
 
-  return command;
+  ddbClient.send(command);
 };
 
-const deleteToken = (fcmToken: string) => {
+const deleteToken = async (fcmToken: string) => {
   const command = new DeleteItemCommand({
     TableName: process.env.DYNAMODB_TABLE,
     Key: {
@@ -64,10 +74,12 @@ const deleteToken = (fcmToken: string) => {
     ReturnValues: 'ALL_OLD',
   });
 
-  return command;
+  const deletedData = await ddbClient.send(command);
+
+  return deletedData;
 };
 
-const tokenCommands = {
+const tokenFactory = {
   createToken,
   getToken,
   updateToken,
@@ -75,4 +87,4 @@ const tokenCommands = {
   deleteToken,
 };
 
-export default tokenCommands;
+export default tokenFactory;

@@ -27,4 +27,6 @@ interface RequestDTO {
   userId: string;
 }
 
-export { Services, Actions, NotificationType, NotificationStatus, RequestDTO };
+type Platform = 'iOS' | 'Android';
+
+export { Services, Actions, NotificationType, NotificationStatus, RequestDTO, Platform };
