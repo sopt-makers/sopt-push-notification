@@ -13,10 +13,9 @@ provider:
   region: ap-northeast-2
   environment:
     DYNAMODB_TABLE: ${env:DYNAMODB_TABLE}
-    APN_TYPE: ${env:APN_TYPE}
-    APN_NAME: ${env:APN_NAME}
-    FCM_TYPE: ${env:FCM_TYPE}
-    FCM_NAME: ${env:FCM_NAME}
+    PLATFORM_APPLICATION_iOS: ${env:PLATFORM_APPLICATION_iOS}
+    PLATFORM_APPLICATION_ANDROID: ${env:PLATFORM_APPLICATION_ANDROID}
+    ALL_TOPIC_ARN: ${env:ALL_TOPIC_ARN}
   iam:
     role:
       statements:
@@ -35,12 +34,13 @@ provider:
             - sns:Unsubscribe
             - sns:Publish
           Resource:
-            - 'arn:aws:sns:${opt:region, self:provider.region}:*:app/${self:provider.environment.APN_TYPE}/${self:provider.environment.APN_NAME}'
-            - 'arn:aws:sns:${opt:region, self:provider.region}:*:app/${self:provider.environment.FCM_TYPE}/${self:provider.environment.FCM_NAME}'
+            - '${self:provider.environment.PLATFORM_APPLICATION_iOS}'
+            - '${self:provider.environment.PLATFORM_APPLICATION_ANDROID}'
 
 custom:
   serverless-offline:
     httpPort: 4000
+    printOutput: true
 
 functions:
   service:
