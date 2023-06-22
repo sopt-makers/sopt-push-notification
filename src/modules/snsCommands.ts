@@ -1,10 +1,10 @@
 import { SubscribeCommand } from '@aws-sdk/client-sns';
 
-const subscribe = (fcmToken: string) => {
+const subscribe = (arn: string) => {
   const command = new SubscribeCommand({
     TopicArn: process.env.ALL_TOPIC_ARN,
     Protocol: 'application',
-    Endpoint: fcmToken,
+    Endpoint: arn,
   });
 
   return command;
