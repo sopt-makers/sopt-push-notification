@@ -22,13 +22,9 @@ enum NotificationStatus {
   SUCCESS = 'success',
 }
 
-enum UserStatus {
-  UNREGISTERED = '0',
-}
-
 interface RequestDTO {
   fcmToken: string;
   userId: string;
 }
 
-export { Services, Actions, NotificationType, NotificationStatus, UserStatus, RequestDTO };
+export { Services, Actions, NotificationType, NotificationStatus, RequestDTO };
