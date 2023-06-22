@@ -12,9 +12,9 @@ const client = new DynamoDBClient({ region: process.env.AWS_REGION });
 const snsClient = new SNSClient({ region: process.env.AWS_REGION });
 
 export const service = async (event: any): Promise<any> => {
-  const data: RequestDTO = JSON.parse(event.body);
+  const eventBody: RequestDTO = JSON.parse(event.body);
 
-  const { fcmToken, userId } = data;
+  const { fcmToken, userId } = eventBody;
 
   try {
     switch (event.headers.action) {
