@@ -33,6 +33,10 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.350.0",
     "@aws-sdk/client-lambda": "^3.350.0",
-    "@aws-sdk/client-sns": "^3.350.0"
+    "@aws-sdk/client-sns": "^3.350.0",
+    "@types/aws-lambda": "^8.10.119",
+    "aws-lambda": "^1.0.7",
+    "dayjs": "^1.11.8",
+    "serverless": "^3.32.2"
   }
 }

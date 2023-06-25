@@ -4,25 +4,40 @@ import {
   GetItemCommand,
   UpdateItemCommand,
   DeleteItemCommand,
+  GetItemCommandOutput,
+  UpdateItemCommandOutput,
+  DeleteItemCommandOutput,
 } from '@aws-sdk/client-dynamodb';
+import { Entity, Platform } from '../types';
+import dayjs from 'dayjs';
 
 const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 
-const createToken = async (fcmToken: string, userId: string, arn: string, topicArn: string) => {
+const createToken = async (
+  fcmToken: string,
+  userId = 'unknown',
+  platform: Platform,
+  endpointArn: string,
+  subscriptionArn: string,
+): Promise<void> => {
   const command = new PutItemCommand({
     TableName: process.env.DYNAMODB_TABLE,
     Item: {
+      pk: { S: `u#${userId}` },
+      sk: { S: `d#${fcmToken}` },
+      entity: { S: Entity.DEVICE_TOKEN },
+      platform: { S: platform },
       fcmToken: { S: fcmToken },
-      userId: { S: userId },
-      arn: { S: arn },
-      topicArn: { S: topicArn },
+      endpointArn: { S: endpointArn },
+      subscriptionArn: { S: subscriptionArn },
+      createdAt: { S: dayjs().toISOString() },
     },
   });
 
   await ddbClient.send(command);
 };
 
-const getToken = async (fcmToken: string) => {
+const getToken = async (fcmToken: string): Promise<GetItemCommandOutput> => {
   const command = new GetItemCommand({
     TableName: process.env.DYNAMODB_TABLE,
     Key: {
@@ -35,7 +50,7 @@ const getToken = async (fcmToken: string) => {
   return tokenData;
 };
 
-const updateToken = (fcmToken: string) => {
+const updateToken = async (fcmToken: string): Promise<UpdateItemCommandOutput> => {
   const command = new UpdateItemCommand({
     TableName: process.env.DYNAMODB_TABLE,
     Key: {
@@ -47,25 +62,12 @@ const updateToken = (fcmToken: string) => {
     },
   });
 
-  return command;
+  const tokenData = await ddbClient.send(command);
+
+  return tokenData;
 };
 
-const updateUserId = (fcmToken: string, userId: string) => {
-  const command = new UpdateItemCommand({
-    TableName: process.env.DYNAMODB_TABLE,
-    Key: {
-      fcmToken: { S: fcmToken },
-    },
-    UpdateExpression: 'SET userId = :uidValue',
-    ExpressionAttributeValues: {
-      ':uidValue': { S: userId },
-    },
-  });
-
-  ddbClient.send(command);
-};
-
-const deleteToken = async (fcmToken: string) => {
+const deleteToken = async (fcmToken: string): Promise<DeleteItemCommandOutput> => {
   const command = new DeleteItemCommand({
     TableName: process.env.DYNAMODB_TABLE,
     Key: {
@@ -77,6 +79,21 @@ const deleteToken = async (fcmToken: string) => {
   const deletedData = await ddbClient.send(command);
 
   return deletedData;
+};
+
+const updateUserId = async (fcmToken: string, userId: string): Promise<void> => {
+  const command = new UpdateItemCommand({
+    TableName: process.env.DYNAMODB_TABLE,
+    Key: {
+      fcmToken: { S: fcmToken },
+    },
+    UpdateExpression: 'SET userId = :uidValue',
+    ExpressionAttributeValues: {
+      ':uidValue': { S: userId },
+    },
+  });
+
+  await ddbClient.send(command);
 };
 
 const tokenFactory = {

@@ -8,6 +8,12 @@ enum Services {
 enum Actions {
   REGISTER = 'register',
   CANCEL = 'cancel',
+  SEND = 'send',
+}
+
+enum Entity {
+  HISTORY = 'history',
+  DEVICE_TOKEN = 'deviceToken',
 }
 
 enum NotificationType {
@@ -22,11 +28,21 @@ enum NotificationStatus {
   SUCCESS = 'success',
 }
 
-interface RequestDTO {
-  fcmToken: string;
-  userId: string;
+enum Platform {
+  iOS = 'iOS',
+  Android = 'Android',
 }
 
-type Platform = 'iOS' | 'Android';
+interface RequestHeaderDTO {
+  transactionId: string;
+  service: Services;
+  platform: Platform;
+  action: Actions;
+}
 
-export { Services, Actions, NotificationType, NotificationStatus, RequestDTO, Platform };
+interface RequestBodyDTO {
+  fcmToken: string;
+  userIds: string[];
+}
+
+export { Services, Actions, NotificationType, NotificationStatus, RequestBodyDTO, RequestHeaderDTO, Platform, Entity };
