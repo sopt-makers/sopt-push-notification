@@ -6,20 +6,20 @@ const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 
 const createLog = async ({
   transactionId,
-  title = '',
-  content = '',
+  title = 'NULL',
+  content = 'NULL',
   fcmToken,
-  webLink = '',
-  applink = '',
+  webLink = 'NULL',
+  applink = 'NULL',
   notificationType,
   orderServiceName,
   status,
   action,
   platform,
-  errorCode = '',
-  errorMessage = '',
-  userIds = [],
-  messageIds = [],
+  errorCode = 'NULL',
+  errorMessage = 'NULL',
+  userIds = ['NULL'],
+  messageIds = ['NULL'],
 }: {
   transactionId: string;
   title?: string;
@@ -34,7 +34,7 @@ const createLog = async ({
   platform: Platform;
   errorCode?: string;
   errorMessage?: string;
-  userIds: string[];
+  userIds?: string[];
   messageIds?: string[];
 }): Promise<void> => {
   const now = dayjs();

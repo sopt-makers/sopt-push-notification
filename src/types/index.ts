@@ -14,6 +14,7 @@ enum Actions {
 enum Entity {
   HISTORY = 'history',
   DEVICE_TOKEN = 'deviceToken',
+  USER = 'user',
 }
 
 enum NotificationType {
@@ -42,7 +43,7 @@ interface RequestHeaderDTO {
 
 interface RequestBodyDTO {
   fcmToken: string;
-  userIds: string[];
+  userIds?: string[];
 }
 
 export { Services, Actions, NotificationType, NotificationStatus, RequestBodyDTO, RequestHeaderDTO, Platform, Entity };

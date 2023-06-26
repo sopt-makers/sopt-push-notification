@@ -12,9 +12,22 @@ const registerUser = async (
   transactionId: string,
   fcmToken: string,
   platform: Platform,
-  userId?: string,
+  service: Services,
+  userIds?: string[],
 ): Promise<void> => {
   try {
+    await logFactory.createLog({
+      transactionId,
+      userIds,
+      fcmToken,
+      platform: platform as Platform,
+      action: Actions.REGISTER,
+      notificationType: NotificationType.PUSH,
+      orderServiceName: service as Services,
+      status: NotificationStatus.START,
+    });
+
+    const userId = userIds?.[0];
     const tokenData = await tokenFactory.getToken(fcmToken);
 
     if (!tokenData.Item) {
@@ -32,8 +45,8 @@ const registerUser = async (
         throw new Error('topicArn is undefined');
       }
 
-      await tokenFactory.createToken(fcmToken, userId, platform, arn, topicArn);
-    } else if (tokenData.Item.pk.S === `u#unknown`) {
+      await tokenFactory.createToken(fcmToken, platform, arn, topicArn, userId);
+    } else if (tokenData.Item.sk.S === `u#unknown`) {
       if (tokenData.Item.endpointArn.S === undefined || tokenData.Item.subscriptionArn.S === undefined) {
         throw new Error('endpointArn or topicArn is undefined');
       }
@@ -41,29 +54,92 @@ const registerUser = async (
       await tokenFactory.deleteToken(fcmToken);
       await tokenFactory.createToken(
         fcmToken,
-        userId,
         platform,
         tokenData.Item.endpointArn.S,
         tokenData.Item.subscriptionArn.S,
+        userId,
       );
     }
+
+    await logFactory.createLog({
+      transactionId,
+      userIds,
+      fcmToken,
+      platform: platform as Platform,
+      action: Actions.REGISTER,
+      notificationType: NotificationType.PUSH,
+      orderServiceName: service as Services,
+      status: NotificationStatus.SUCCESS,
+    });
   } catch (e) {
-    console.error(e);
+    await logFactory.createLog({
+      transactionId,
+      userIds,
+      fcmToken,
+      platform: platform as Platform,
+      action: Actions.REGISTER,
+      notificationType: NotificationType.PUSH,
+      orderServiceName: service as Services,
+      status: NotificationStatus.FAIL,
+    });
+
     throw new Error(`registerUser error: ${e}`);
   }
 };
 
-const deleteToken = async (fcmToken: string): Promise<void> => {
-  const deletedData = await tokenFactory.deleteToken(fcmToken);
+const deleteToken = async (
+  fcmToken: string,
+  service: Services,
+  platform: Platform,
+  transactionId: string,
+): Promise<void> => {
+  const logUserIds = ['NULL'];
+  await logFactory.createLog({
+    transactionId,
+    userIds: logUserIds,
+    fcmToken,
+    platform: platform as Platform,
+    action: Actions.CANCEL,
+    notificationType: NotificationType.PUSH,
+    orderServiceName: service as Services,
+    status: NotificationStatus.START,
+  });
 
-  const arn = deletedData.Attributes?.arn.S;
-  const topicArn = deletedData.Attributes?.topicArn.S;
+  try {
+    const deletedData = await tokenFactory.deleteToken(fcmToken);
 
-  if (arn === undefined || topicArn === undefined) {
-    throw new Error('arn or topicArn is undefined');
+    const arn = deletedData.Attributes?.endpointArn.S;
+    const topicArn = deletedData.Attributes?.subscriptionArn.S;
+
+    if (arn === undefined || topicArn === undefined) {
+      throw new Error('arn or topicArn is undefined');
+    }
+
+    await Promise.all([snsFactory.cancelEndPoint(arn), snsFactory.unSubscribe(topicArn)]);
+    await logFactory.createLog({
+      transactionId,
+      userIds: logUserIds,
+      fcmToken,
+      platform: platform as Platform,
+      action: Actions.CANCEL,
+      notificationType: NotificationType.PUSH,
+      orderServiceName: service as Services,
+      status: NotificationStatus.SUCCESS,
+    });
+  } catch (e) {
+    await logFactory.createLog({
+      transactionId,
+      userIds: logUserIds,
+      fcmToken,
+      platform: platform as Platform,
+      action: Actions.CANCEL,
+      notificationType: NotificationType.PUSH,
+      orderServiceName: service as Services,
+      status: NotificationStatus.FAIL,
+    });
+
+    throw new Error(`deleteToken error: ${e}`);
   }
-
-  await Promise.all([snsFactory.cancelEndPoint(arn), snsFactory.unSubscribe(topicArn)]);
 };
 
 const isEnum = <T extends Record<string, any>>(value: any, enumType: T): value is T => {
@@ -90,50 +166,11 @@ export const service = async (event: APIGatewayProxyEvent): Promise<any> => {
   try {
     switch (action) {
       case Actions.REGISTER:
-        await logFactory.createLog({
-          transactionId,
-          userIds: userIds,
-          fcmToken,
-          platform: platform as Platform,
-          action,
-          notificationType: NotificationType.PUSH,
-          orderServiceName: service as Services,
-          status: NotificationStatus.START,
-        });
-        await registerUser(transactionId, fcmToken, platform as Platform, userIds[0]);
-        await logFactory.createLog({
-          transactionId,
-          userIds: userIds,
-          fcmToken,
-          platform: platform as Platform,
-          action,
-          notificationType: NotificationType.PUSH,
-          orderServiceName: service as Services,
-          status: NotificationStatus.SUCCESS,
-        });
+        await registerUser(transactionId, fcmToken, platform as Platform, service as Services, userIds);
+
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_REGISTER_SUCCESS));
       case Actions.CANCEL:
-        await logFactory.createLog({
-          transactionId,
-          userIds: userIds,
-          fcmToken,
-          platform: platform as Platform,
-          action,
-          notificationType: NotificationType.PUSH,
-          orderServiceName: service as Services,
-          status: NotificationStatus.START,
-        });
-        await deleteToken(fcmToken);
-        await logFactory.createLog({
-          transactionId,
-          userIds: userIds,
-          fcmToken,
-          platform: platform as Platform,
-          action,
-          notificationType: NotificationType.PUSH,
-          orderServiceName: service as Services,
-          status: NotificationStatus.SUCCESS,
-        });
+        await deleteToken(fcmToken, service as Services, platform as Platform, transactionId);
 
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_CANCEL_SUCCESS));
       case Actions.SEND:
@@ -143,6 +180,7 @@ export const service = async (event: APIGatewayProxyEvent): Promise<any> => {
     }
   } catch (e) {
     console.error(e);
+
     return response(500, status.success(statusCode.INTERNAL_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
   }
 };
