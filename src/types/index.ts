@@ -3,6 +3,7 @@ enum Services {
   OFFICIAL = 'official',
   OPERATION = 'operation',
   PLAYGROUND = 'playground',
+  APP = 'app',
 }
 
 enum Actions {
@@ -45,4 +46,22 @@ interface RequestBodyDTO {
   userIds: string[];
 }
 
-export { Services, Actions, NotificationType, NotificationStatus, RequestBodyDTO, RequestHeaderDTO, Platform, Entity };
+interface RequestSendPushMessageDTO {
+  userIds: string[];
+  title: string;
+  content: string;
+  deepLink?: string;
+  webLink?: string;
+}
+
+export {
+  Services,
+  Actions,
+  NotificationType,
+  NotificationStatus,
+  RequestBodyDTO,
+  RequestHeaderDTO,
+  Platform,
+  Entity,
+  RequestSendPushMessageDTO,
+};
