@@ -6,7 +6,7 @@ interface UserTokenEntity {
   entity: 'user';
   platform: Platform;
   endpointArn: string;
-  createdAt: string;
+  createdAt: string; // toISOString
   subscriptionArn: string;
 }
 
@@ -16,6 +16,8 @@ interface DeviceTokenEntity {
   entity: 'deviceToken';
   platform: Platform;
   endpointArn: string;
-  createdAt: string;
+  createdAt: string; // toISOString
   subscriptionArn: string;
 }
+
+export { DeviceTokenEntity, UserTokenEntity };

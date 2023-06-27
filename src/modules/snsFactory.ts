@@ -4,6 +4,8 @@ import {
   CreatePlatformEndpointCommand,
   UnsubscribeCommand,
   DeleteEndpointCommand,
+  PublishCommand,
+  PublishCommandOutput,
 } from '@aws-sdk/client-sns';
 
 const snsClient = new SNSClient({ region: process.env.AWS_REGION });
@@ -50,11 +52,26 @@ const cancelEndPoint = (arn: string) => {
   snsClient.send(command);
 };
 
+const publish = async (arn: string, message: string): Promise<PublishCommandOutput | null> => {
+  const command = new PublishCommand({
+    TopicArn: arn,
+    Message: message,
+    MessageStructure: 'json',
+  });
+  const result = await snsClient.send(command);
+  if (result.$metadata.httpStatusCode !== 200) {
+    console.error('SNS publish error', result.$metadata);
+    return null;
+  }
+  return result;
+};
+
 const snsFactory = {
   subscribe,
   unSubscribe,
   registerEndPoint,
   cancelEndPoint,
+  publish,
 };
 
 export default snsFactory;

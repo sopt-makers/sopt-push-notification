@@ -3,10 +3,23 @@ import snsFactory from './modules/snsFactory';
 import response from './constants/response';
 import status from './constants/status';
 import statusCode from './constants/statusCode';
-import { Actions, RequestBodyDTO, Platform, NotificationType, Services, NotificationStatus } from './types';
+import {
+  Actions,
+  NotificationStatus,
+  NotificationType,
+  Platform,
+  RequestBodyDTO,
+  RequestSendPushMessageDTO,
+  Services,
+} from './types';
 import responseMessage from './constants/responseMessage';
+import * as userService from './services/userService';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import logFactory from './modules/logFactory';
+import notificationService from './services/notificationService';
+import { UserTokenEntity } from './types/tokens';
+import { isNull } from 'lodash';
+import { ResponsePushNotification } from './types/notifications';
 
 const registerUser = async (
   transactionId: string,
@@ -64,6 +77,51 @@ const deleteToken = async (fcmToken: string): Promise<void> => {
   }
 
   await Promise.all([snsFactory.cancelEndPoint(arn), snsFactory.unSubscribe(topicArn)]);
+};
+
+const sendPush = async (dto: RequestSendPushMessageDTO) => {
+  try {
+    const { transactionId, title, content, webLink, deepLink, userIds, service } = dto;
+    const users = await userService.findTokenByUserIds(userIds);
+    if (users.length === 0) {
+      return;
+    }
+    const executors = users.map(
+      async (user: UserTokenEntity) =>
+        await notificationService.platformPush({
+          messagePayload: {
+            title,
+            content,
+            webLink,
+            deepLink,
+          },
+          endpointPayload: { endpointArn: user.endpointArn, platform: user.platform },
+        }),
+    );
+    const messageIds = await Promise.all(executors).then((results: (ResponsePushNotification | null)[]) =>
+      results
+        .filter((result: ResponsePushNotification | null): result is ResponsePushNotification => !isNull(result))
+        .map((result: ResponsePushNotification) => result.messageId),
+    );
+    await logFactory.createLog({
+      transactionId,
+      title: title,
+      content: content,
+      webLink: webLink,
+      applink: deepLink,
+      notificationType: NotificationType.PUSH,
+      orderServiceName: service as Services,
+      status: NotificationStatus.SUCCESS,
+      action: Actions.SEND,
+      messageIds: messageIds,
+      platform: Platform.None,
+      fcmToken: '',
+      userIds: userIds.map((userId) => `u#${userId}`),
+    });
+    //todo send webHooks
+  } catch (e) {
+    throw new Error(`send Push error: ${e}`);
+  }
 };
 
 const isEnum = <T extends Record<string, any>>(value: any, enumType: T): value is T => {
@@ -137,6 +195,11 @@ export const service = async (event: APIGatewayProxyEvent): Promise<any> => {
 
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_CANCEL_SUCCESS));
       case Actions.SEND:
+        await sendPush({
+          ...JSON.parse(event.body),
+          transactionId,
+          service,
+        } as RequestSendPushMessageDTO);
         return response(200, status.success(statusCode.OK, responseMessage.SEND_SUCCESS));
       default:
         return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));

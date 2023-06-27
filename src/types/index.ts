@@ -32,6 +32,13 @@ enum NotificationStatus {
 enum Platform {
   iOS = 'iOS',
   Android = 'Android',
+  None = '',
+}
+
+enum PushTopic {
+  Apns = 'apns',
+  Fcm = 'fcm',
+  all = 'all',
 }
 
 interface RequestHeaderDTO {
@@ -46,8 +53,16 @@ interface RequestBodyDTO {
   userIds: string[];
 }
 
-interface RequestSendPushMessageDTO {
+interface RequestSendPushMessageDTO extends Omit<RequestHeaderDTO, 'platform' | 'action'> {
   userIds: string[];
+  title: string;
+  content: string;
+  deepLink?: string;
+  webLink?: string;
+}
+
+interface MessageFactoryDTO {
+  topic: PushTopic;
   title: string;
   content: string;
   deepLink?: string;
@@ -64,4 +79,6 @@ export {
   Platform,
   Entity,
   RequestSendPushMessageDTO,
+  PushTopic,
+  MessageFactoryDTO,
 };

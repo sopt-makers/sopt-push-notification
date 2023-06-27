@@ -7,6 +7,8 @@ import {
   GetItemCommandOutput,
   UpdateItemCommandOutput,
   DeleteItemCommandOutput,
+  QueryCommand,
+  QueryCommandOutput,
 } from '@aws-sdk/client-dynamodb';
 import { Entity, Platform } from '../types';
 import dayjs from 'dayjs';
@@ -96,12 +98,31 @@ const updateUserId = async (fcmToken: string, userId: string): Promise<void> => 
   await ddbClient.send(command);
 };
 
+const queryTokenByUserId = async (userId: string): Promise<QueryCommandOutput> => {
+  const command = new QueryCommand({
+    TableName: process.env.DYNAMODB_TABLE,
+    KeyConditionExpression: `PK = :u#${userId} AND begins_with(sk, :d#)`,
+    Limit: 1,
+  });
+  return await ddbClient.send(command);
+};
+
+const queryTokenByDeviceToken = async (deviceToken: string): Promise<QueryCommandOutput> => {
+  const command = new QueryCommand({
+    TableName: process.env.DYNAMODB_TABLE,
+    KeyConditionExpression: `PK = :d#${deviceToken} AND begins_with(sk, :u#)`,
+    Limit: 1,
+  });
+  return await ddbClient.send(command);
+};
+
 const tokenFactory = {
   createToken,
   getToken,
   updateToken,
   updateUserId,
   deleteToken,
+  queryTokenByUserId,
 };
 
 export default tokenFactory;
