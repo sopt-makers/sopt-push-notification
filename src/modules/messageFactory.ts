@@ -60,14 +60,11 @@ const fcmMessage = (dto: MessageFactoryDTO): string => {
   };
 
   if (!isNil(deepLink)) {
-    message.data = {};
-    message.data.deepLink = deepLink;
+    message.data = { deepLink };
   }
+
   if (!isNil(webLink)) {
-    if (isNil(message.data)) {
-      message.data = {};
-    }
-    message.data.webLink = webLink;
+    message.data = { ...(message.data || {}), webLink };
   }
   return JSON.stringify(message);
 };
