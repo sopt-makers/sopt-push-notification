@@ -3,6 +3,7 @@ export default {
   INVALID_REQUEST: '잘못된 요청입니다',
   INTERNAL_SERVER_ERROR: '서버 내부 오류',
   NULL_VALUE: '필요한 값이 없습니다',
+  NO_CONTENT: '성공적으로 처리되었습니다',
 
   // Token
   TOKEN_REGISTER_SUCCESS: '토큰 등록 성공',

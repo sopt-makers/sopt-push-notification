@@ -14,7 +14,7 @@ import {
 } from './types';
 import responseMessage from './constants/responseMessage';
 import * as userService from './services/userService';
-import { APIGatewayProxyEvent } from 'aws-lambda';
+import { APIGatewayProxyEvent, SNSEvent } from 'aws-lambda';
 import logFactory from './modules/logFactory';
 import notificationService from './services/notificationService';
 import { UserTokenEntity } from './types/tokens';
@@ -166,7 +166,7 @@ const isEnum = <T extends Record<string, any>>(value: any, enumType: T): value i
   return Object.values(enumType).includes(value);
 };
 
-export const service = async (event: APIGatewayProxyEvent): Promise<any> => {
+const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
   if (event.body === null || event.headers.platform === undefined || event.headers.action === undefined) {
     return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
   }
@@ -252,5 +252,19 @@ export const service = async (event: APIGatewayProxyEvent): Promise<any> => {
   } catch (e) {
     console.error(e);
     return response(500, status.success(statusCode.INTERNAL_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
+  }
+};
+
+const snsHandler = async (event: SNSEvent) => {
+  const { Records } = event;
+  console.log(JSON.stringify(Records));
+  return response(204, status.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT));
+};
+
+export const service = async (event: APIGatewayProxyEvent | SNSEvent): Promise<any> => {
+  if ('Records' in event) {
+    return await snsHandler(event);
+  } else {
+    return await apiGateWayHandler(event);
   }
 };
