@@ -20,6 +20,7 @@ import notificationService from './services/notificationService';
 import { UserTokenEntity } from './types/tokens';
 import { isNull } from 'lodash';
 import { ResponsePushNotification } from './types/notifications';
+import User from './constants/user';
 
 const registerUser = async (
   transactionId: string,
@@ -123,6 +124,43 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
     throw new Error(`send Push error: ${e}`);
   }
 };
+const sendPushAll = async (dto: RequestSendPushMessageDTO) => {
+  try {
+    const { transactionId, title, content, webLink, deepLink, service } = dto;
+
+    const result = await notificationService.allTopicPush({
+      messagePayload: {
+        title,
+        content,
+        webLink,
+        deepLink,
+      },
+    });
+
+    if (result === null) {
+      throw new Error('sendPushAll error');
+    }
+
+    await logFactory.createLog({
+      transactionId,
+      title: title,
+      content: content,
+      webLink: webLink,
+      applink: deepLink,
+      notificationType: NotificationType.PUSH,
+      orderServiceName: service as Services,
+      status: NotificationStatus.SUCCESS,
+      action: Actions.SEND,
+      messageIds: [result.messageId],
+      platform: Platform.None,
+      fcmToken: '',
+      userIds: [User.ALL],
+    });
+    //todo send webHooks
+  } catch (e) {
+    throw new Error(`send Push error: ${e}`);
+  }
+};
 
 const isEnum = <T extends Record<string, any>>(value: any, enumType: T): value is T => {
   return Object.values(enumType).includes(value);
@@ -196,6 +234,13 @@ export const service = async (event: APIGatewayProxyEvent): Promise<any> => {
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_CANCEL_SUCCESS));
       case Actions.SEND:
         await sendPush({
+          ...JSON.parse(event.body),
+          transactionId,
+          service,
+        } as RequestSendPushMessageDTO);
+        return response(200, status.success(statusCode.OK, responseMessage.SEND_SUCCESS));
+      case Actions.SEND_ALL:
+        await sendPushAll({
           ...JSON.parse(event.body),
           transactionId,
           service,

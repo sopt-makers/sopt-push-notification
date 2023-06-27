@@ -10,6 +10,7 @@ enum Actions {
   REGISTER = 'register',
   CANCEL = 'cancel',
   SEND = 'send',
+  SEND_ALL = 'sendAll',
 }
 
 enum Entity {
@@ -38,7 +39,7 @@ enum Platform {
 enum PushTopic {
   Apns = 'apns',
   Fcm = 'fcm',
-  all = 'all',
+  All = 'all',
 }
 
 interface RequestHeaderDTO {

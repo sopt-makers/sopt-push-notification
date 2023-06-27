@@ -3,16 +3,19 @@ import messageFactory from '../modules/messageFactory';
 import snsFactory from '../modules/snsFactory';
 import { ResponsePushNotification } from '../types/notifications';
 
-type pushDTO = {
-  endpointArn: string;
+interface PushMessageDTO {
   title: string;
   content: string;
   deepLink?: string;
   webLink?: string;
-};
+}
 
-async function push(endpointArn: string, message: string): Promise<ResponsePushNotification | null> {
-  const result = await snsFactory.publish(endpointArn, message);
+interface PushDTO extends PushMessageDTO {
+  endpointArn: string;
+}
+
+async function push(topicArn: string, message: string): Promise<ResponsePushNotification | null> {
+  const result = await snsFactory.publish(topicArn, message);
 
   if (result === null) {
     return null;
@@ -26,7 +29,8 @@ async function push(endpointArn: string, message: string): Promise<ResponsePushN
     messageId: result.MessageId,
   };
 }
-const pushArn = async (dto: pushDTO) => {
+
+const pushArn = async (dto: PushDTO) => {
   const message = messageFactory.createNewMessage({
     topic: PushTopic.Apns,
     title: dto.title,
@@ -38,7 +42,7 @@ const pushArn = async (dto: pushDTO) => {
   return await push(endpointArn, message);
 };
 
-const pushFcm = async (dto: pushDTO): Promise<ResponsePushNotification | null> => {
+const pushFcm = async (dto: PushDTO): Promise<ResponsePushNotification | null> => {
   const message = messageFactory.createNewMessage({
     topic: PushTopic.Apns,
     title: dto.title,
@@ -51,7 +55,7 @@ const pushFcm = async (dto: pushDTO): Promise<ResponsePushNotification | null> =
 };
 
 const platformPush = async (dto: {
-  messagePayload: { title: string; content: string; deepLink?: string; webLink?: string };
+  messagePayload: PushMessageDTO;
   endpointPayload: { endpointArn: string; platform: Platform };
 }): Promise<ResponsePushNotification | null> => {
   if (dto.endpointPayload.platform === Platform.iOS) {
@@ -76,4 +80,23 @@ const platformPush = async (dto: {
   return null;
 };
 
-export default { platformPush };
+const pushAll = async (dto: PushMessageDTO): Promise<ResponsePushNotification | null> => {
+  const message = messageFactory.createNewMessage({
+    topic: PushTopic.All,
+    title: dto.title,
+    content: dto.content,
+    deepLink: dto.deepLink,
+    webLink: dto.webLink,
+  });
+  const topicArn = process.env.ALL_TOPIC_ARN;
+  if (topicArn === undefined) {
+    throw new Error('ALL_TOPIC_ARN is not defined');
+  }
+  return await push(topicArn, message);
+};
+
+const allTopicPush = async (dto: { messagePayload: PushMessageDTO }): Promise<ResponsePushNotification | null> => {
+  return await pushAll(dto.messagePayload);
+};
+
+export default { platformPush, allTopicPush };
