@@ -151,6 +151,7 @@ const queryTokenByUserId = async (userId: string): Promise<QueryCommandOutput> =
   return await ddbClient.send(command);
 };
 
+
 const queryTokenByDeviceToken = async (deviceToken: string): Promise<QueryCommandOutput> => {
   const command = new QueryCommand({
     TableName: process.env.DYNAMODB_TABLE,
@@ -167,6 +168,7 @@ const tokenFactory = {
   updateUserId,
   deleteToken,
   queryTokenByUserId,
+  queryTokenByDeviceToken
 };
 
 export default tokenFactory;

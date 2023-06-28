@@ -17,7 +17,7 @@ import * as userService from './services/userService';
 import { APIGatewayProxyEvent, SNSEvent } from 'aws-lambda';
 import logFactory from './modules/logFactory';
 import notificationService from './services/notificationService';
-import { UserTokenEntity } from './types/tokens';
+import { DeviceTokenEntity, UserTokenEntity } from './types/tokens';
 import { isNull } from 'lodash';
 import { ResponsePushNotification } from './types/notifications';
 import User from './constants/user';
@@ -295,6 +295,14 @@ const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
 
 const snsHandler = async (event: SNSEvent) => {
   const { Records } = event;
+  const messageIds = Records.map((record) => record.Sns.MessageId);
+  const deviceTokens = Records.map((record) => record.Sns.Token);
+  const deviceTokenEntities: DeviceTokenEntity[] = await userService.findUserByTokenIds(messageIds);
+
+  //createFailHistory
+  //allUnsubcribe
+  //deleteEndPoint
+  //deleteToken
   console.log(JSON.stringify(Records));
   return response(204, status.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT));
 };
