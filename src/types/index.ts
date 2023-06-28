@@ -3,12 +3,14 @@ enum Services {
   OFFICIAL = 'official',
   OPERATION = 'operation',
   PLAYGROUND = 'playground',
+  APP = 'app',
 }
 
 enum Actions {
   REGISTER = 'register',
   CANCEL = 'cancel',
   SEND = 'send',
+  SEND_ALL = 'sendAll',
 }
 
 enum Entity {
@@ -32,6 +34,13 @@ enum NotificationStatus {
 enum Platform {
   iOS = 'iOS',
   Android = 'Android',
+  None = '',
+}
+
+enum PushTopic {
+  Apns = 'apns',
+  Fcm = 'fcm',
+  All = 'all',
 }
 
 interface RequestHeaderDTO {
@@ -46,4 +55,32 @@ interface RequestBodyDTO {
   userIds?: string[];
 }
 
-export { Services, Actions, NotificationType, NotificationStatus, RequestBodyDTO, RequestHeaderDTO, Platform, Entity };
+interface RequestSendPushMessageDTO extends Omit<RequestHeaderDTO, 'platform' | 'action'> {
+  userIds: string[];
+  title: string;
+  content: string;
+  deepLink?: string;
+  webLink?: string;
+}
+
+interface MessageFactoryDTO {
+  topic: PushTopic;
+  title: string;
+  content: string;
+  deepLink?: string;
+  webLink?: string;
+}
+
+export {
+  Services,
+  Actions,
+  NotificationType,
+  NotificationStatus,
+  RequestBodyDTO,
+  RequestHeaderDTO,
+  Platform,
+  Entity,
+  RequestSendPushMessageDTO,
+  PushTopic,
+  MessageFactoryDTO,
+};

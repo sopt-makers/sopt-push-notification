@@ -3,4 +3,5 @@ export default {
   CREATED: 201,
   BAD_REQUEST: 400,
   INTERNAL_ERROR: 500,
+  NO_CONTENT: 204,
 };
