@@ -101,7 +101,7 @@ const updateUserId = async (fcmToken: string, userId: string): Promise<void> => 
 const queryTokenByUserId = async (userId: string): Promise<QueryCommandOutput> => {
   const command = new QueryCommand({
     TableName: process.env.DYNAMODB_TABLE,
-    KeyConditionExpression: `PK = :u#${userId} AND begins_with(sk, :d#)`,
+    KeyConditionExpression: `pk = :u#${userId} AND begins_with(sk, :d#)`,
     Limit: 1,
   });
   return await ddbClient.send(command);
@@ -110,7 +110,7 @@ const queryTokenByUserId = async (userId: string): Promise<QueryCommandOutput> =
 const queryTokenByDeviceToken = async (deviceToken: string): Promise<QueryCommandOutput> => {
   const command = new QueryCommand({
     TableName: process.env.DYNAMODB_TABLE,
-    KeyConditionExpression: `PK = :d#${deviceToken} AND begins_with(sk, :u#)`,
+    KeyConditionExpression: `pk = :d#${deviceToken} AND begins_with(sk, :u#)`,
     Limit: 1,
   });
   return await ddbClient.send(command);

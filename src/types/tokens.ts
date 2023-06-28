@@ -1,8 +1,8 @@
 import { Platform } from './index';
 
 interface UserTokenEntity {
-  PK: string;
-  SK: string;
+  pk: string;
+  sk: string;
   entity: 'user';
   platform: Platform;
   endpointArn: string;
@@ -11,8 +11,8 @@ interface UserTokenEntity {
 }
 
 interface DeviceTokenEntity {
-  PK: string;
-  SK: string;
+  pk: string;
+  sk: string;
   entity: 'deviceToken';
   platform: Platform;
   endpointArn: string;

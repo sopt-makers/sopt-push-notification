@@ -17,8 +17,8 @@ const getTokenByUserId = async (userId: string): Promise<UserTokenEntity | null>
   const queryCommandOutputItems: Record<string, AttributeValue> = queryCommandOutput.Items[0];
 
   if (
-    isNil(queryCommandOutputItems.PK.S) ||
-    isNil(queryCommandOutputItems.SK.S) ||
+    isNil(queryCommandOutputItems.pk.S) ||
+    isNil(queryCommandOutputItems.sk.S) ||
     isNil(queryCommandOutputItems.platform.S) ||
     isNil(queryCommandOutputItems.endpointArn.S) ||
     isNil(queryCommandOutputItems.createdAt.S) ||
@@ -28,8 +28,8 @@ const getTokenByUserId = async (userId: string): Promise<UserTokenEntity | null>
   }
 
   const tokenEntity: UserTokenEntity = {
-    PK: queryCommandOutput.Items[0].PK.S,
-    SK: queryCommandOutput.Items[0].SK.S,
+    pk: queryCommandOutput.Items[0].pk.S,
+    sk: queryCommandOutput.Items[0].sk.S,
     entity: 'user',
     platform: queryCommandOutput.Items[0].platform.S as Platform,
     endpointArn: queryCommandOutput.Items[0].endpointArn.S,
