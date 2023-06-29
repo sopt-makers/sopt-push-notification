@@ -45,7 +45,7 @@ const registerUser = async (
     const tokenData = await tokenFactory.getToken(fcmToken);
 
     if (!tokenData.Item) {
-      const endPointData = await snsFactory.registerEndPoint(fcmToken, platform);
+      const endPointData = await snsFactory.registerEndPoint(fcmToken, platform, userId);
       const arn = endPointData.EndpointArn;
 
       if (arn === undefined) {

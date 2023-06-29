@@ -6,6 +6,9 @@ import {
   DeleteEndpointCommand,
   PublishCommand,
   PublishCommandOutput,
+  CreatePlatformEndpointCommandOutput,
+  CreatePlatformApplicationCommandInput,
+  CreatePlatformEndpointInput,
 } from '@aws-sdk/client-sns';
 
 const snsClient = new SNSClient({ region: process.env.AWS_REGION });
@@ -27,17 +30,32 @@ const unSubscribe = async (arn: string): Promise<void> => {
     SubscriptionArn: arn,
   });
 
-  await snsClient.send(command);
+  const result = await snsClient.send(command);
+  if (result.$metadata.httpStatusCode !== 200) {
+    console.error('SNS unsubscribe error', result.$metadata);
+  }
 };
 
-const registerEndPoint = async (fcmToken: string, platform: string) => {
+const registerEndPoint = async (
+  fcmToken: string,
+  platform: string,
+  userId: string | undefined,
+): Promise<CreatePlatformEndpointCommandOutput> => {
   const platformApplicationArn =
-    platform == 'iOS' ? process.env.PLATFORM_APPLICATION_iOS : process.env.PLATFORM_APPLICATION_ANDROID;
+    platform == 'iOS'
+      ? (process.env.PLATFORM_APPLICATION_iOS as string)
+      : (process.env.PLATFORM_APPLICATION_ANDROID as string);
 
-  const command = new CreatePlatformEndpointCommand({
+  const input: CreatePlatformEndpointInput = {
     PlatformApplicationArn: platformApplicationArn,
     Token: fcmToken,
-  });
+  };
+
+  if (userId) {
+    input.CustomUserData = userId;
+  }
+
+  const command = new CreatePlatformEndpointCommand(input);
 
   const endPointData = await snsClient.send(command);
 
@@ -51,7 +69,7 @@ const cancelEndPoint = async (arn: string): Promise<void> => {
 
   const result = await snsClient.send(command);
   if (result.$metadata.httpStatusCode !== 200) {
-    throw new Error('cancelEndPoint error');
+    console.error('SNS delete endpoint error', result.$metadata);
   }
 };
 
