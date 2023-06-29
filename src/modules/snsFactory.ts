@@ -22,12 +22,12 @@ const subscribe = async (arn: string) => {
   return topicSubscribeData;
 };
 
-const unSubscribe = (arn: string) => {
+const unSubscribe = async (arn: string): Promise<void> => {
   const command = new UnsubscribeCommand({
     SubscriptionArn: arn,
   });
 
-  snsClient.send(command);
+  await snsClient.send(command);
 };
 
 const registerEndPoint = async (fcmToken: string, platform: string) => {
@@ -44,12 +44,15 @@ const registerEndPoint = async (fcmToken: string, platform: string) => {
   return endPointData;
 };
 
-const cancelEndPoint = (arn: string) => {
+const cancelEndPoint = async (arn: string): Promise<void> => {
   const command = new DeleteEndpointCommand({
     EndpointArn: arn,
   });
 
-  snsClient.send(command);
+  const result = await snsClient.send(command);
+  if (result.$metadata.httpStatusCode !== 200) {
+    throw new Error('cancelEndPoint error');
+  }
 };
 
 const publish = async (arn: string, message: string): Promise<PublishCommandOutput | null> => {

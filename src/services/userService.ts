@@ -85,4 +85,8 @@ const findUserByTokenIds = async (deviceTokens: string[]): Promise<DeviceTokenEn
   return result.filter((user: DeviceTokenEntity | null): user is DeviceTokenEntity => user !== null);
 };
 
-export { getTokenByUserId, findTokenByUserIds, findUserByTokenIds };
+const deleteUser = async (deviceToken: string, userId: string): Promise<void> => {
+  await tokenFactory.deleteToken(deviceToken, userId);
+};
+
+export { getTokenByUserId, findTokenByUserIds, findUserByTokenIds, deleteUser };

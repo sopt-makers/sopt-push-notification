@@ -18,7 +18,7 @@ import { APIGatewayProxyEvent, SNSEvent } from 'aws-lambda';
 import logFactory from './modules/logFactory';
 import notificationService from './services/notificationService';
 import { DeviceTokenEntity, UserTokenEntity } from './types/tokens';
-import { isNull } from 'lodash';
+import { isNull, isUndefined } from 'lodash';
 import { ResponsePushNotification } from './types/notifications';
 import User from './constants/user';
 
@@ -294,16 +294,27 @@ const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
 };
 
 const snsHandler = async (event: SNSEvent) => {
+  console.log('SNS event', JSON.stringify(event));
   const { Records } = event;
-  const messageIds = Records.map((record) => record.Sns.MessageId);
-  const deviceTokens = Records.map((record) => record.Sns.Token);
-  const deviceTokenEntities: DeviceTokenEntity[] = await userService.findUserByTokenIds(messageIds);
+  const deviceTokens = Records.map((record) => record.Sns.Token).filter((token): token is string => isUndefined(token));
+  const deviceTokenEntities: DeviceTokenEntity[] = await userService.findUserByTokenIds(deviceTokens);
 
-  //createFailHistory
-  //allUnsubcribe
-  //deleteEndPoint
-  //deleteToken
-  console.log(JSON.stringify(Records));
+  for (const record of Records) {
+    const deviceToken = deviceTokenEntities.find(
+      (deviceTokenEntity) => deviceTokenEntity.pk.split('#')[1] === record.Sns.Token,
+    );
+    if (isUndefined(deviceToken)) {
+      continue;
+    }
+    await logFactory.createFailLog({
+      messageIds: [record.Sns.MessageId],
+      userIds: [deviceToken.sk],
+    });
+
+    await snsFactory.unSubscribe(deviceToken.subscriptionArn);
+    await snsFactory.cancelEndPoint(deviceToken.endpointArn);
+    await userService.deleteUser(deviceToken.pk.split('#')[1], deviceToken.sk.split('#')[1]);
+  }
   return response(204, status.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT));
 };
 
