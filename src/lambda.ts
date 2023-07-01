@@ -9,6 +9,7 @@ import {
   NotificationType,
   Platform,
   RequestBodyDTO,
+  RequestSendAllPushMessageDTO,
   RequestSendPushMessageDTO,
   Services,
 } from './types';
@@ -21,6 +22,7 @@ import { DeviceTokenEntity, UserTokenEntity } from './types/tokens';
 import { isNull, isUndefined } from 'lodash';
 import { ResponsePushNotification } from './types/notifications';
 import User from './constants/user';
+import dtoValidator from './modules/dtoValidator';
 
 const registerUser = async (
   transactionId: string,
@@ -168,7 +170,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
     throw new Error(`send Push error: ${e}`);
   }
 };
-const sendPushAll = async (dto: RequestSendPushMessageDTO) => {
+const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
   try {
     const { transactionId, title, content, webLink, deepLink, service } = dto;
 
@@ -211,6 +213,7 @@ const isEnum = <T extends Record<string, any>>(value: any, enumType: T): value i
 };
 
 const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
+  console.log(event.headers);
   if (event.body === null || event.headers.platform === undefined || event.headers.action === undefined) {
     return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
   }
@@ -237,20 +240,32 @@ const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
         await deleteToken(fcmToken, service as Services, platform as Platform, transactionId);
 
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_CANCEL_SUCCESS));
-      case Actions.SEND:
-        await sendPush({
+      case Actions.SEND: {
+        const dto: RequestSendPushMessageDTO = {
           ...JSON.parse(event.body),
           transactionId,
           service,
-        } as RequestSendPushMessageDTO);
+        };
+        if (!dtoValidator.toRequestSendPushMessageDto(dto)) {
+          return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
+        }
+        await sendPush(dto);
         return response(200, status.success(statusCode.OK, responseMessage.SEND_SUCCESS));
-      case Actions.SEND_ALL:
-        await sendPushAll({
+      }
+      case Actions.SEND_ALL: {
+        const dto: RequestSendAllPushMessageDTO = {
           ...JSON.parse(event.body),
           transactionId,
           service,
-        } as RequestSendPushMessageDTO);
+        };
+
+        if (!dtoValidator.toRequestSendAllPushMessageDTO(dto)) {
+          return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
+        }
+
+        await sendPushAll(dto);
         return response(200, status.success(statusCode.OK, responseMessage.SEND_SUCCESS));
+      }
       default:
         return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
     }

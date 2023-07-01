@@ -63,6 +63,8 @@ interface RequestSendPushMessageDTO extends Omit<RequestHeaderDTO, 'platform' | 
   webLink?: string;
 }
 
+type RequestSendAllPushMessageDTO = Omit<RequestSendPushMessageDTO, 'userIds'>;
+
 interface MessageFactoryDTO {
   topic: PushTopic;
   title: string;
@@ -83,4 +85,5 @@ export {
   RequestSendPushMessageDTO,
   PushTopic,
   MessageFactoryDTO,
+  RequestSendAllPushMessageDTO,
 };
