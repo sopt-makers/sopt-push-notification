@@ -310,10 +310,7 @@ const snsHandler = async (event: SNSEvent) => {
       messageIds: [record.Sns.MessageId],
       userIds: [deviceToken.userId],
     });
-
-    await snsFactory.unSubscribe(deviceToken.subscriptionArn);
-    await snsFactory.cancelEndPoint(deviceToken.endpointArn);
-    await userService.deleteUser(deviceToken.deviceToken, deviceToken.userId);
+    await userService.unRegisterToken(deviceToken);
   }
   return response(204, status.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT));
 };

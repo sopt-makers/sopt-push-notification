@@ -3,6 +3,8 @@ import { isNil } from 'lodash';
 import { DeviceTokenEntity, UserTokenEntity } from '../types/tokens';
 import tokenFactory from '../modules/tokenFactory';
 import { Platform } from '../types';
+import user from '../constants/user';
+import snsFactory from '../modules/snsFactory';
 
 function isTokenUserEntity(queryCommandOutputItems: Record<string, AttributeValue>): queryCommandOutputItems is Record<
   string,
@@ -67,7 +69,7 @@ const getTokenByUserId = async (userId: string): Promise<UserTokenEntity | null>
 const getUserByTokenId = async (deviceToken: string): Promise<DeviceTokenEntity | null> => {
   const queryCommandOutput: QueryCommandOutput = await tokenFactory.queryTokenByDeviceToken(deviceToken);
   if (isNil(queryCommandOutput.Items)) {
-    throw new Error('queryCommandOutput.Items is undefined');
+    return null;
   }
 
   if (queryCommandOutput.Items.length === 0) {
@@ -102,8 +104,11 @@ const findUserByTokenIds = async (deviceTokens: string[]): Promise<DeviceTokenEn
   return result.filter((user: DeviceTokenEntity | null): user is DeviceTokenEntity => user !== null);
 };
 
-const deleteUser = async (deviceToken: string, userId: string): Promise<void> => {
+const unRegisterToken = async (deviceTokenEntity: DeviceTokenEntity): Promise<void> => {
+  const { deviceToken, userId, subscriptionArn, endpointArn } = deviceTokenEntity;
   await tokenFactory.deleteToken(deviceToken, userId);
+  await snsFactory.unSubscribe(subscriptionArn);
+  await snsFactory.cancelEndPoint(endpointArn);
 };
 
-export { getTokenByUserId, findTokenByUserIds, findUserByTokenIds, deleteUser };
+export { getTokenByUserId, findTokenByUserIds, findUserByTokenIds, unRegisterToken };
