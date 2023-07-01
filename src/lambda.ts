@@ -29,6 +29,7 @@ const registerUser = async (
   service: Services,
   userIds?: string[],
 ): Promise<void> => {
+  console.log(transactionId, fcmToken, platform, service, userIds?.[0]);
   try {
     await logFactory.createLog({
       transactionId,
@@ -41,39 +42,7 @@ const registerUser = async (
       status: NotificationStatus.START,
     });
 
-    const userId = userIds?.[0];
-    const tokenData = await tokenFactory.getToken(fcmToken);
-
-    if (!tokenData.Item) {
-      const endPointData = await snsFactory.registerEndPoint(fcmToken, platform, userId);
-      const arn = endPointData.EndpointArn;
-
-      if (arn === undefined) {
-        throw new Error('arn is undefined');
-      }
-
-      const topicData = await snsFactory.subscribe(arn);
-      const topicArn = topicData.SubscriptionArn;
-
-      if (topicArn === undefined) {
-        throw new Error('topicArn is undefined');
-      }
-
-      await tokenFactory.createToken(fcmToken, platform, arn, topicArn, userId);
-    } else if (tokenData.Item.sk.S === `u#unknown`) {
-      if (tokenData.Item.endpointArn.S === undefined || tokenData.Item.subscriptionArn.S === undefined) {
-        throw new Error('endpointArn or topicArn is undefined');
-      }
-
-      await tokenFactory.deleteToken(fcmToken);
-      await tokenFactory.createToken(
-        fcmToken,
-        platform,
-        tokenData.Item.endpointArn.S,
-        tokenData.Item.subscriptionArn.S,
-        userId,
-      );
-    }
+    await userService.registerToken(fcmToken, platform, userIds?.[0]);
 
     await logFactory.createLog({
       transactionId,

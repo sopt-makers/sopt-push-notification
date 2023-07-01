@@ -1,2 +1,3 @@
 const ALL = 'u#all';
-export default { ALL };
+const UNKNOWN = 'unknown';
+export default { ALL, UNKNOWN };

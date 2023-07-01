@@ -1,10 +1,11 @@
 import { AttributeValue, QueryCommandOutput } from '@aws-sdk/client-dynamodb';
-import { isNil } from 'lodash';
+import { isNil, isUndefined } from 'lodash';
 import { DeviceTokenEntity, UserTokenEntity } from '../types/tokens';
 import tokenFactory from '../modules/tokenFactory';
 import { Platform } from '../types';
 import user from '../constants/user';
 import snsFactory from '../modules/snsFactory';
+import { CreatePlatformEndpointCommandOutput } from '@aws-sdk/client-sns';
 
 function isTokenUserEntity(queryCommandOutputItems: Record<string, AttributeValue>): queryCommandOutputItems is Record<
   string,
@@ -104,6 +105,39 @@ const findUserByTokenIds = async (deviceTokens: string[]): Promise<DeviceTokenEn
   return result.filter((user: DeviceTokenEntity | null): user is DeviceTokenEntity => user !== null);
 };
 
+const registerToken = async (deviceToken: string, platform: Platform, userId?: string): Promise<void> => {
+  const result: DeviceTokenEntity | null = await getUserByTokenId(deviceToken);
+
+  if (result) {
+    if (isUndefined(userId) && result.userId === user.UNKNOWN) {
+      return;
+    }
+    if (result.userId === userId) {
+      return;
+    }
+    if (userId !== user.UNKNOWN) {
+      await unRegisterToken(result);
+    }
+  }
+
+  const endpoint: CreatePlatformEndpointCommandOutput = await snsFactory.registerEndPoint(
+    deviceToken,
+    platform,
+    userId,
+  );
+  if (endpoint.EndpointArn === undefined) {
+    console.error('endpointArn is undefined', endpoint.$metadata.httpStatusCode);
+    throw new Error('endpointArn is undefined');
+  }
+
+  const subscriptionArn = await snsFactory.subscribe(endpoint.EndpointArn);
+  if (subscriptionArn.SubscriptionArn === undefined) {
+    console.error('subscriptionArn is undefined', endpoint.$metadata.httpStatusCode);
+    throw new Error('subscriptionArn is undefined');
+  }
+  await tokenFactory.createToken(deviceToken, platform, endpoint.EndpointArn, subscriptionArn.SubscriptionArn, userId);
+};
+
 const unRegisterToken = async (deviceTokenEntity: DeviceTokenEntity): Promise<void> => {
   const { deviceToken, userId, subscriptionArn, endpointArn } = deviceTokenEntity;
   await tokenFactory.deleteToken(deviceToken, userId);
@@ -111,4 +145,4 @@ const unRegisterToken = async (deviceTokenEntity: DeviceTokenEntity): Promise<vo
   await snsFactory.cancelEndPoint(endpointArn);
 };
 
-export { getTokenByUserId, findTokenByUserIds, findUserByTokenIds, unRegisterToken };
+export { getTokenByUserId, findTokenByUserIds, findUserByTokenIds, unRegisterToken, registerToken };
