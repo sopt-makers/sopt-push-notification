@@ -105,19 +105,26 @@ const findUserByTokenIds = async (deviceTokens: string[]): Promise<DeviceTokenEn
   return result.filter((user: DeviceTokenEntity | null): user is DeviceTokenEntity => user !== null);
 };
 
+const changedUserPayload = (tokeUserId: string, inputUserId?: string): boolean => {
+  if (inputUserId === tokeUserId) {
+    return false;
+  }
+
+  if (inputUserId === undefined && tokeUserId === user.UNKNOWN) {
+    return false;
+  }
+
+  return true;
+};
+
 const registerToken = async (deviceToken: string, platform: Platform, userId?: string): Promise<void> => {
   const result: DeviceTokenEntity | null = await getUserByTokenId(deviceToken);
 
   if (result) {
-    if (isUndefined(userId) && result.userId === user.UNKNOWN) {
+    if (!changedUserPayload(result.userId, userId)) {
       return;
     }
-    if (result.userId === userId) {
-      return;
-    }
-    if (userId !== user.UNKNOWN) {
-      await unRegisterToken(result);
-    }
+    await unRegisterToken(result);
   }
 
   const endpoint: CreatePlatformEndpointCommandOutput = await snsFactory.registerEndPoint(

@@ -29,7 +29,6 @@ const registerUser = async (
   service: Services,
   userIds?: string[],
 ): Promise<void> => {
-  console.log(transactionId, fcmToken, platform, service, userIds?.[0]);
   try {
     await logFactory.createLog({
       transactionId,

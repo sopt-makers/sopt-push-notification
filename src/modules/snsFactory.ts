@@ -94,7 +94,6 @@ const publishToEndpoint = async (arn: string, message: string): Promise<PublishC
     MessageStructure: 'json',
   });
   const result = await snsClient.send(command);
-  console.log('result', result);
   if (result.$metadata.httpStatusCode !== 200) {
     console.error('SNS publish error', result.$metadata);
     return null;
