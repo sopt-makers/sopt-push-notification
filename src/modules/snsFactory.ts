@@ -73,7 +73,7 @@ const cancelEndPoint = async (arn: string): Promise<void> => {
   }
 };
 
-const publish = async (arn: string, message: string): Promise<PublishCommandOutput | null> => {
+const publishToTopicArn = async (arn: string, message: string): Promise<PublishCommandOutput | null> => {
   const command = new PublishCommand({
     TopicArn: arn,
     Message: message,
@@ -87,12 +87,28 @@ const publish = async (arn: string, message: string): Promise<PublishCommandOutp
   return result;
 };
 
+const publishToEndpoint = async (arn: string, message: string): Promise<PublishCommandOutput | null> => {
+  const command = new PublishCommand({
+    TargetArn: arn,
+    Message: message,
+    MessageStructure: 'json',
+  });
+  const result = await snsClient.send(command);
+  console.log('result', result);
+  if (result.$metadata.httpStatusCode !== 200) {
+    console.error('SNS publish error', result.$metadata);
+    return null;
+  }
+  return result;
+};
+
 const snsFactory = {
   subscribe,
   unSubscribe,
   registerEndPoint,
   cancelEndPoint,
-  publish,
+  publishToTopicArn,
+  publishToEndpoint,
 };
 
 export default snsFactory;

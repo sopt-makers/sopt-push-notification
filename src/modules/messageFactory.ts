@@ -29,6 +29,8 @@ type AllTopicMessage = {
   APNS_SANDBOX: string;
   GCM: string;
 };
+const DEFAULT =
+  'This is the default message which must be present when publishing a message to a topic. The default message will only be used if a message is not present for one of the notification platforms.';
 
 const apnsMessage = (dto: MessageFactoryDTO): string => {
   const { title, content, webLink, deepLink } = dto;
@@ -47,7 +49,10 @@ const apnsMessage = (dto: MessageFactoryDTO): string => {
   if (!isNil(webLink)) {
     message.webLink = webLink;
   }
-  return JSON.stringify(message);
+  if (process.env.STAGE === 'dev') {
+    return JSON.stringify({ default: DEFAULT, APNS_SANDBOX: JSON.stringify(message) });
+  }
+  return JSON.stringify({ default: DEFAULT, APNS: JSON.stringify(message) });
 };
 
 const fcmMessage = (dto: MessageFactoryDTO): string => {
@@ -66,13 +71,13 @@ const fcmMessage = (dto: MessageFactoryDTO): string => {
   if (!isNil(webLink)) {
     message.data = { ...(message.data || {}), webLink };
   }
-  return JSON.stringify(message);
+  return JSON.stringify({ default: DEFAULT, GCM: JSON.stringify(message) });
 };
 
 //todo dev prod 나눠서 보내기
 const allMessage = (dto: MessageFactoryDTO): string => {
   const message: AllTopicMessage = {
-    default: 'hello',
+    default: DEFAULT,
     APNS: JSON.stringify(apnsMessage(dto)),
     APNS_SANDBOX: JSON.stringify(apnsMessage(dto)),
     GCM: JSON.stringify(fcmMessage(dto)),

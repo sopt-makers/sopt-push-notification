@@ -2,6 +2,7 @@ import { Platform, PushTopic } from '../types';
 import messageFactory from '../modules/messageFactory';
 import snsFactory from '../modules/snsFactory';
 import { ResponsePushNotification } from '../types/notifications';
+import { PublishCommandOutput } from '@aws-sdk/client-sns';
 
 interface PushMessageDTO {
   title: string;
@@ -14,9 +15,13 @@ interface PushDTO extends PushMessageDTO {
   endpointArn: string;
 }
 
-async function push(topicArn: string, message: string): Promise<ResponsePushNotification | null> {
-  const result = await snsFactory.publish(topicArn, message);
-
+async function push(topicArn: string, message: string, sendAll = false): Promise<ResponsePushNotification | null> {
+  let result: PublishCommandOutput | null;
+  if (sendAll) {
+    result = await snsFactory.publishToTopicArn(topicArn, message);
+  } else {
+    result = await snsFactory.publishToEndpoint(topicArn, message);
+  }
   if (result === null) {
     return null;
   }
@@ -92,7 +97,7 @@ const pushAll = async (dto: PushMessageDTO): Promise<ResponsePushNotification | 
   if (topicArn === undefined) {
     throw new Error('ALL_TOPIC_ARN is not defined');
   }
-  return await push(topicArn, message);
+  return await push(topicArn, message, true);
 };
 
 const allTopicPush = async (dto: { messagePayload: PushMessageDTO }): Promise<ResponsePushNotification | null> => {
