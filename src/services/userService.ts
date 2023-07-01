@@ -4,6 +4,37 @@ import { DeviceTokenEntity, UserTokenEntity } from '../types/tokens';
 import tokenFactory from '../modules/tokenFactory';
 import { Platform } from '../types';
 
+function isTokenUserEntity(queryCommandOutputItems: Record<string, AttributeValue>): queryCommandOutputItems is Record<
+  string,
+  AttributeValue
+> & {
+  pk: AttributeValue.SMember;
+  sk: AttributeValue.SMember;
+  platform: AttributeValue.SMember;
+  endpointArn: AttributeValue.SMember;
+  createdAt: AttributeValue.SMember;
+  subscriptionArn: AttributeValue.SMember;
+} {
+  if (
+    isNil(queryCommandOutputItems.pk.S) ||
+    isNil(queryCommandOutputItems.sk.S) ||
+    isNil(queryCommandOutputItems.platform.S) ||
+    isNil(queryCommandOutputItems.endpointArn.S) ||
+    isNil(queryCommandOutputItems.createdAt.S) ||
+    isNil(queryCommandOutputItems.subscriptionArn.S)
+  ) {
+    return false;
+  }
+
+  if (queryCommandOutputItems.pk.S.split('#').length !== 2) {
+    return false;
+  }
+  if (queryCommandOutputItems.sk.S.split('#').length !== 2) {
+    return false;
+  }
+  return true;
+}
+
 const getTokenByUserId = async (userId: string): Promise<UserTokenEntity | null> => {
   const queryCommandOutput = await tokenFactory.queryTokenByUserId(userId);
 
@@ -16,25 +47,18 @@ const getTokenByUserId = async (userId: string): Promise<UserTokenEntity | null>
   }
   const queryCommandOutputItems: Record<string, AttributeValue> = queryCommandOutput.Items[0];
 
-  if (
-    isNil(queryCommandOutputItems.pk.S) ||
-    isNil(queryCommandOutputItems.sk.S) ||
-    isNil(queryCommandOutputItems.platform.S) ||
-    isNil(queryCommandOutputItems.endpointArn.S) ||
-    isNil(queryCommandOutputItems.createdAt.S) ||
-    isNil(queryCommandOutputItems.subscriptionArn.S)
-  ) {
-    throw new Error('queryCommandOutputItems is undefined');
+  if (!isTokenUserEntity(queryCommandOutputItems)) {
+    throw new Error('queryCommandOutputItems is not UserTokenEntity');
   }
 
   const tokenEntity: UserTokenEntity = {
-    pk: queryCommandOutput.Items[0].pk.S,
-    sk: queryCommandOutput.Items[0].sk.S,
+    userId: queryCommandOutputItems.pk.S.split('#')[1],
+    deviceToken: queryCommandOutputItems.sk.S.split('#')[1],
     entity: 'user',
-    platform: queryCommandOutput.Items[0].platform.S as Platform,
-    endpointArn: queryCommandOutput.Items[0].endpointArn.S,
-    createdAt: queryCommandOutput.Items[0].createdAt.S,
-    subscriptionArn: queryCommandOutput.Items[0].subscriptionArn.S,
+    platform: queryCommandOutputItems.platform.S as Platform,
+    endpointArn: queryCommandOutputItems.endpointArn.S,
+    createdAt: queryCommandOutputItems.createdAt.S,
+    subscriptionArn: queryCommandOutputItems.subscriptionArn.S,
   } as UserTokenEntity;
 
   return tokenEntity;
@@ -51,25 +75,18 @@ const getUserByTokenId = async (deviceToken: string): Promise<DeviceTokenEntity 
   }
   const queryCommandOutputItems: Record<string, AttributeValue> = queryCommandOutput.Items[0];
 
-  if (
-    isNil(queryCommandOutputItems.pk.S) ||
-    isNil(queryCommandOutputItems.sk.S) ||
-    isNil(queryCommandOutputItems.platform.S) ||
-    isNil(queryCommandOutputItems.endpointArn.S) ||
-    isNil(queryCommandOutputItems.createdAt.S) ||
-    isNil(queryCommandOutputItems.subscriptionArn.S)
-  ) {
-    throw new Error('queryCommandOutputItems is undefined');
+  if (!isTokenUserEntity(queryCommandOutputItems)) {
+    throw new Error('queryCommandOutputItems is not DeviceTokenEntity');
   }
 
   const tokenEntity: DeviceTokenEntity = {
-    pk: queryCommandOutput.Items[0].pk.S,
-    sk: queryCommandOutput.Items[0].sk.S,
+    deviceToken: queryCommandOutputItems.pk.S.split('#')[1],
+    userId: queryCommandOutputItems.sk.S.split('#')[1],
     entity: 'deviceToken',
-    platform: queryCommandOutput.Items[0].platform.S as Platform,
-    endpointArn: queryCommandOutput.Items[0].endpointArn.S,
-    createdAt: queryCommandOutput.Items[0].createdAt.S,
-    subscriptionArn: queryCommandOutput.Items[0].subscriptionArn.S,
+    platform: queryCommandOutputItems.platform.S as Platform,
+    endpointArn: queryCommandOutputItems.endpointArn.S,
+    createdAt: queryCommandOutputItems.createdAt.S,
+    subscriptionArn: queryCommandOutputItems.subscriptionArn.S,
   } as DeviceTokenEntity;
 
   return tokenEntity;

@@ -301,19 +301,19 @@ const snsHandler = async (event: SNSEvent) => {
 
   for (const record of Records) {
     const deviceToken = deviceTokenEntities.find(
-      (deviceTokenEntity) => deviceTokenEntity.pk.split('#')[1] === record.Sns.Token,
+      (deviceTokenEntity) => deviceTokenEntity.deviceToken === record.Sns.Token,
     );
     if (isUndefined(deviceToken)) {
       continue;
     }
     await logFactory.createFailLog({
       messageIds: [record.Sns.MessageId],
-      userIds: [deviceToken.sk],
+      userIds: [deviceToken.userId],
     });
 
     await snsFactory.unSubscribe(deviceToken.subscriptionArn);
     await snsFactory.cancelEndPoint(deviceToken.endpointArn);
-    await userService.deleteUser(deviceToken.pk.split('#')[1], deviceToken.sk.split('#')[1]);
+    await userService.deleteUser(deviceToken.deviceToken, deviceToken.userId);
   }
   return response(204, status.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT));
 };
