@@ -7,22 +7,20 @@ import {
   PublishCommand,
   PublishCommandOutput,
   CreatePlatformEndpointCommandOutput,
-  CreatePlatformApplicationCommandInput,
   CreatePlatformEndpointInput,
+  SubscribeCommandOutput,
 } from '@aws-sdk/client-sns';
 
 const snsClient = new SNSClient({ region: process.env.AWS_REGION });
 
-const subscribe = async (arn: string) => {
+const subscribe = async (arn: string): Promise<SubscribeCommandOutput> => {
   const command = new SubscribeCommand({
     TopicArn: process.env.ALL_TOPIC_ARN,
     Protocol: 'application',
     Endpoint: arn,
   });
 
-  const topicSubscribeData = await snsClient.send(command);
-
-  return topicSubscribeData;
+  return await snsClient.send(command);
 };
 
 const unSubscribe = async (arn: string): Promise<void> => {
@@ -37,7 +35,7 @@ const unSubscribe = async (arn: string): Promise<void> => {
 };
 
 const registerEndPoint = async (
-  fcmToken: string,
+  deviceToken: string,
   platform: string,
   userId: string | undefined,
 ): Promise<CreatePlatformEndpointCommandOutput> => {
@@ -48,7 +46,7 @@ const registerEndPoint = async (
 
   const input: CreatePlatformEndpointInput = {
     PlatformApplicationArn: platformApplicationArn,
-    Token: fcmToken,
+    Token: deviceToken,
   };
 
   if (userId) {

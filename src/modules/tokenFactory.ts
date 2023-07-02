@@ -15,9 +15,9 @@ import dayjs from 'dayjs';
 
 const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 
-const getPrimaryKey = (userId = 'unknown', fcmToken: string) => {
+const getPrimaryKey = (userId = 'unknown', deviceToken: string) => {
   const userInfo = `u#${userId}`;
-  const tokenInfo = `d#${fcmToken}`;
+  const tokenInfo = `d#${deviceToken}`;
 
   return {
     userInfo,
@@ -26,13 +26,13 @@ const getPrimaryKey = (userId = 'unknown', fcmToken: string) => {
 };
 
 const createToken = async (
-  fcmToken: string,
+  deviceToken: string,
   platform: Platform,
   endpointArn: string,
   subscriptionArn: string,
   userId?: string,
 ): Promise<void> => {
-  const { userInfo, tokenInfo } = getPrimaryKey(userId, fcmToken);
+  const { userInfo, tokenInfo } = getPrimaryKey(userId, deviceToken);
   const createdAt = dayjs().toISOString();
 
   const userEntityPutCommand = new PutItemCommand({
@@ -66,8 +66,8 @@ const createToken = async (
   await Promise.all([putUserEntityRequest, putTokenEntityRequest]);
 };
 
-const getToken = async (fcmToken: string, userId?: string): Promise<GetItemCommandOutput> => {
-  const { userInfo, tokenInfo } = getPrimaryKey(userId, fcmToken);
+const getToken = async (deviceToken: string, userId?: string): Promise<GetItemCommandOutput> => {
+  const { userInfo, tokenInfo } = getPrimaryKey(userId, deviceToken);
 
   const command = new GetItemCommand({
     TableName: process.env.DYNAMODB_TABLE,
@@ -82,15 +82,15 @@ const getToken = async (fcmToken: string, userId?: string): Promise<GetItemComma
   return tokenData;
 };
 
-const updateToken = async (fcmToken: string): Promise<UpdateItemCommandOutput> => {
+const updateToken = async (deviceToken: string): Promise<UpdateItemCommandOutput> => {
   const command = new UpdateItemCommand({
     TableName: process.env.DYNAMODB_TABLE,
     Key: {
-      pk: { S: `d#${fcmToken}` },
+      pk: { S: `d#${deviceToken}` },
     },
-    UpdateExpression: 'SET fcmToken = :tokenValue',
+    UpdateExpression: 'SET deviceToken = :tokenValue',
     ExpressionAttributeValues: {
-      ':tokenValue': { S: `d#${fcmToken}` },
+      ':tokenValue': { S: `d#${deviceToken}` },
     },
   });
 
@@ -99,8 +99,8 @@ const updateToken = async (fcmToken: string): Promise<UpdateItemCommandOutput> =
   return tokenData;
 };
 
-const deleteToken = async (fcmToken: string, userId?: string): Promise<DeleteItemCommandOutput> => {
-  const { userInfo, tokenInfo } = getPrimaryKey(userId, fcmToken);
+const deleteToken = async (deviceToken: string, userId?: string): Promise<DeleteItemCommandOutput> => {
+  const { userInfo, tokenInfo } = getPrimaryKey(userId, deviceToken);
 
   const userEntityDeleteCommand = new DeleteItemCommand({
     TableName: process.env.DYNAMODB_TABLE,
@@ -127,11 +127,11 @@ const deleteToken = async (fcmToken: string, userId?: string): Promise<DeleteIte
   return deletedUserData;
 };
 
-const updateUserId = async (fcmToken: string, userId: string): Promise<void> => {
+const updateUserId = async (deviceToken: string, userId: string): Promise<void> => {
   const command = new UpdateItemCommand({
     TableName: process.env.DYNAMODB_TABLE,
     Key: {
-      pk: { S: `d#${fcmToken}` },
+      pk: { S: `d#${deviceToken}` },
     },
     UpdateExpression: 'SET userId = :uidValue',
     ExpressionAttributeValues: {

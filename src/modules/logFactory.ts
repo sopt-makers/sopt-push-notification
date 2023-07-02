@@ -9,7 +9,7 @@ const createLog = async ({
   transactionId,
   title = 'NULL',
   content = 'NULL',
-  fcmToken,
+  deviceToken,
   webLink = 'NULL',
   applink = 'NULL',
   notificationType,
@@ -25,7 +25,7 @@ const createLog = async ({
   transactionId: string;
   title?: string;
   content?: string;
-  fcmToken: string;
+  deviceToken: string;
   webLink?: string;
   applink?: string;
   notificationType: NotificationType;
@@ -50,7 +50,7 @@ const createLog = async ({
       entity: { S: Entity.HISTORY },
       title: { S: title },
       content: { S: content },
-      fcmToken: { S: fcmToken },
+      deviceToken: { S: deviceToken },
       webLink: { S: webLink },
       applink: { S: applink },
       notificationType: { S: notificationType },

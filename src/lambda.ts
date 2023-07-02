@@ -25,7 +25,7 @@ import dtoValidator from './modules/dtoValidator';
 
 const registerUser = async (
   transactionId: string,
-  fcmToken: string,
+  deviceToken: string,
   platform: Platform,
   service: Services,
   userIds?: string[],
@@ -34,7 +34,7 @@ const registerUser = async (
     await logFactory.createLog({
       transactionId,
       userIds,
-      fcmToken,
+      deviceToken,
       platform: platform as Platform,
       action: Actions.REGISTER,
       notificationType: NotificationType.PUSH,
@@ -42,12 +42,12 @@ const registerUser = async (
       status: NotificationStatus.START,
     });
 
-    await userService.registerToken(fcmToken, platform, userIds?.[0]);
+    await userService.registerToken(deviceToken, platform, userIds?.[0]);
 
     await logFactory.createLog({
       transactionId,
       userIds,
-      fcmToken,
+      deviceToken,
       platform: platform as Platform,
       action: Actions.REGISTER,
       notificationType: NotificationType.PUSH,
@@ -58,7 +58,7 @@ const registerUser = async (
     await logFactory.createLog({
       transactionId,
       userIds,
-      fcmToken,
+      deviceToken,
       platform: platform as Platform,
       action: Actions.REGISTER,
       notificationType: NotificationType.PUSH,
@@ -71,7 +71,7 @@ const registerUser = async (
 };
 
 const deleteToken = async (
-  fcmToken: string,
+  deviceToken: string,
   service: Services,
   platform: Platform,
   transactionId: string,
@@ -80,7 +80,7 @@ const deleteToken = async (
   await logFactory.createLog({
     transactionId,
     userIds: logUserIds,
-    fcmToken,
+    deviceToken,
     platform: platform as Platform,
     action: Actions.CANCEL,
     notificationType: NotificationType.PUSH,
@@ -89,7 +89,7 @@ const deleteToken = async (
   });
 
   try {
-    const deletedData = await tokenFactory.deleteToken(fcmToken);
+    const deletedData = await tokenFactory.deleteToken(deviceToken);
 
     const arn = deletedData.Attributes?.endpointArn.S;
     const topicArn = deletedData.Attributes?.subscriptionArn.S;
@@ -102,7 +102,7 @@ const deleteToken = async (
     await logFactory.createLog({
       transactionId,
       userIds: logUserIds,
-      fcmToken,
+      deviceToken,
       platform: platform as Platform,
       action: Actions.CANCEL,
       notificationType: NotificationType.PUSH,
@@ -113,7 +113,7 @@ const deleteToken = async (
     await logFactory.createLog({
       transactionId,
       userIds: logUserIds,
-      fcmToken,
+      deviceToken,
       platform: platform as Platform,
       action: Actions.CANCEL,
       notificationType: NotificationType.PUSH,
@@ -161,7 +161,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
       action: Actions.SEND,
       messageIds: messageIds,
       platform: Platform.None,
-      fcmToken: '',
+      deviceToken: '',
       userIds: userIds.map((userId) => `u#${userId}`),
     });
     //todo send webHooks
@@ -198,7 +198,7 @@ const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
       action: Actions.SEND,
       messageIds: [result.messageId],
       platform: Platform.None,
-      fcmToken: '',
+      deviceToken: '',
       userIds: [User.ALL],
     });
     //todo send webHooks
@@ -217,7 +217,7 @@ const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
   }
   const eventBody: RequestBodyDTO = JSON.parse(event.body);
   const { platform, action, transactionId, service } = event.headers;
-  const { fcmToken, userIds } = eventBody;
+  const { deviceToken, userIds } = eventBody;
 
   if (
     isEnum(platform, Platform) === false ||
@@ -231,11 +231,11 @@ const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
   try {
     switch (action) {
       case Actions.REGISTER:
-        await registerUser(transactionId, fcmToken, platform as Platform, service as Services, userIds);
+        await registerUser(transactionId, deviceToken, platform as Platform, service as Services, userIds);
 
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_REGISTER_SUCCESS));
       case Actions.CANCEL:
-        await deleteToken(fcmToken, service as Services, platform as Platform, transactionId);
+        await deleteToken(deviceToken, service as Services, platform as Platform, transactionId);
 
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_CANCEL_SUCCESS));
       case Actions.SEND: {

@@ -51,7 +51,7 @@ interface RequestHeaderDTO {
 }
 
 interface RequestBodyDTO {
-  fcmToken: string;
+  deviceToken: string;
   userIds?: string[];
 }
 
