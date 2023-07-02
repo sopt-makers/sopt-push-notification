@@ -1,5 +1,4 @@
 import { AttributeValue, QueryCommandOutput } from '@aws-sdk/client-dynamodb';
-import { isNil, isUndefined } from 'lodash';
 import { DeviceTokenEntity, UserTokenEntity } from '../types/tokens';
 import tokenFactory from '../modules/tokenFactory';
 import { Platform } from '../types';
@@ -19,12 +18,12 @@ function isTokenUserEntity(queryCommandOutputItems: Record<string, AttributeValu
   subscriptionArn: AttributeValue.SMember;
 } {
   if (
-    isNil(queryCommandOutputItems.pk.S) ||
-    isNil(queryCommandOutputItems.sk.S) ||
-    isNil(queryCommandOutputItems.platform.S) ||
-    isNil(queryCommandOutputItems.endpointArn.S) ||
-    isNil(queryCommandOutputItems.createdAt.S) ||
-    isNil(queryCommandOutputItems.subscriptionArn.S)
+    queryCommandOutputItems.pk.S === undefined ||
+    queryCommandOutputItems.sk.S === undefined ||
+    queryCommandOutputItems.platform.S === undefined ||
+    queryCommandOutputItems.endpointArn.S === undefined ||
+    queryCommandOutputItems.createdAt.S === undefined ||
+    queryCommandOutputItems.subscriptionArn.S === undefined
   ) {
     return false;
   }
@@ -41,7 +40,7 @@ function isTokenUserEntity(queryCommandOutputItems: Record<string, AttributeValu
 const getTokenByUserId = async (userId: string): Promise<UserTokenEntity | null> => {
   const queryCommandOutput = await tokenFactory.queryTokenByUserId(userId);
 
-  if (isNil(queryCommandOutput.Items)) {
+  if (queryCommandOutput.Items === undefined) {
     throw new Error('queryCommandOutput.Items is undefined');
   }
 
@@ -69,7 +68,7 @@ const getTokenByUserId = async (userId: string): Promise<UserTokenEntity | null>
 
 const getUserByTokenId = async (deviceToken: string): Promise<DeviceTokenEntity | null> => {
   const queryCommandOutput: QueryCommandOutput = await tokenFactory.queryTokenByDeviceToken(deviceToken);
-  if (isNil(queryCommandOutput.Items)) {
+  if (queryCommandOutput.Items === undefined) {
     return null;
   }
 

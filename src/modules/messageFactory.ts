@@ -1,4 +1,3 @@
-import { isNil } from 'lodash';
 import { MessageFactoryDTO } from '../types';
 
 type APNsMessage = {
@@ -43,10 +42,10 @@ const apnsMessage = (dto: MessageFactoryDTO): string => {
     },
   };
 
-  if (!isNil(deepLink)) {
+  if (deepLink !== undefined) {
     message.deepLink = deepLink;
   }
-  if (!isNil(webLink)) {
+  if (webLink !== undefined) {
     message.webLink = webLink;
   }
   if (process.env.STAGE === 'dev') {
@@ -64,11 +63,11 @@ const fcmMessage = (dto: MessageFactoryDTO): string => {
     },
   };
 
-  if (!isNil(deepLink)) {
+  if (deepLink !== undefined) {
     message.data = { deepLink };
   }
 
-  if (!isNil(webLink)) {
+  if (webLink !== undefined) {
     message.data = { ...(message.data || {}), webLink };
   }
   return JSON.stringify({ default: DEFAULT, GCM: JSON.stringify(message) });

@@ -15,12 +15,12 @@ interface PushDTO extends PushMessageDTO {
   endpointArn: string;
 }
 
-async function push(topicArn: string, message: string, sendAll = false): Promise<ResponsePushNotification | null> {
+async function push(arn: string, message: string, sendAll = false): Promise<ResponsePushNotification | null> {
   let result: PublishCommandOutput | null;
   if (sendAll) {
-    result = await snsFactory.publishToTopicArn(topicArn, message);
+    result = await snsFactory.publishToTopicArn(arn, message);
   } else {
-    result = await snsFactory.publishToEndpoint(topicArn, message);
+    result = await snsFactory.publishToEndpoint(arn, message);
   }
   if (result === null) {
     return null;

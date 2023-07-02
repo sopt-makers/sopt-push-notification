@@ -19,7 +19,6 @@ import { APIGatewayProxyEvent, SNSEvent } from 'aws-lambda';
 import logFactory from './modules/logFactory';
 import notificationService from './services/notificationService';
 import { DeviceTokenEntity, UserTokenEntity } from './types/tokens';
-import { isNull, isUndefined } from 'lodash';
 import { ResponsePushNotification } from './types/notifications';
 import User from './constants/user';
 import dtoValidator from './modules/dtoValidator';
@@ -147,7 +146,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
     );
     const messageIds = await Promise.all(executors).then((results: (ResponsePushNotification | null)[]) =>
       results
-        .filter((result: ResponsePushNotification | null): result is ResponsePushNotification => !isNull(result))
+        .filter((result: ResponsePushNotification | null): result is ResponsePushNotification => result !== null)
         .map((result: ResponsePushNotification) => result.messageId),
     );
     await logFactory.createLog({
@@ -213,7 +212,6 @@ const isEnum = <T extends Record<string, any>>(value: any, enumType: T): value i
 };
 
 const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
-  console.log(event.headers);
   if (event.body === null || event.headers.platform === undefined || event.headers.action === undefined) {
     return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
   }
@@ -288,7 +286,7 @@ const snsHandler = async (event: SNSEvent) => {
     const deviceToken = deviceTokenEntities.find(
       (deviceTokenEntity) => deviceTokenEntity.deviceToken === record.Sns.Token,
     );
-    if (isUndefined(deviceToken)) {
+    if (deviceToken === undefined) {
       continue;
     }
     await logFactory.createFailLog({
