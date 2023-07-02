@@ -72,31 +72,41 @@ const cancelEndPoint = async (arn: string): Promise<void> => {
 };
 
 const publishToTopicArn = async (arn: string, message: string): Promise<PublishCommandOutput | null> => {
-  const command = new PublishCommand({
-    TopicArn: arn,
-    Message: message,
-    MessageStructure: 'json',
-  });
-  const result = await snsClient.send(command);
-  if (result.$metadata.httpStatusCode !== 200) {
-    console.error('SNS publish error', result.$metadata);
+  try {
+    const command = new PublishCommand({
+      TopicArn: arn,
+      Message: message,
+      MessageStructure: 'json',
+    });
+    const result = await snsClient.send(command);
+    if (result.$metadata.httpStatusCode !== 200) {
+      console.error('SNS publish TopicArn error', result);
+      return null;
+    }
+    return result;
+  } catch (error) {
+    console.error('SNS publish TopicArn error', error);
     return null;
   }
-  return result;
 };
 
 const publishToEndpoint = async (arn: string, message: string): Promise<PublishCommandOutput | null> => {
-  const command = new PublishCommand({
-    TargetArn: arn,
-    Message: message,
-    MessageStructure: 'json',
-  });
-  const result = await snsClient.send(command);
-  if (result.$metadata.httpStatusCode !== 200) {
-    console.error('SNS publish error', result.$metadata);
+  try {
+    const command = new PublishCommand({
+      TargetArn: arn,
+      Message: message,
+      MessageStructure: 'json',
+    });
+    const result = await snsClient.send(command);
+    if (result.$metadata.httpStatusCode !== 200) {
+      console.error('SNS endpoint publish error', result);
+      return null;
+    }
+    return result;
+  } catch (error) {
+    console.error('SNS endpoint publish error', error);
     return null;
   }
-  return result;
 };
 
 const snsFactory = {
