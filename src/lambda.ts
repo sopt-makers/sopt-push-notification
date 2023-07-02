@@ -279,7 +279,9 @@ const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
 const snsHandler = async (event: SNSEvent) => {
   console.log('SNS event', JSON.stringify(event));
   const { Records } = event;
-  const deviceTokens = Records.map((record) => record.Sns.Token).filter((token): token is string => isUndefined(token));
+  const deviceTokens: string[] = Records.map((record) => record.Sns.Token).filter(
+    (token): token is string => token !== undefined,
+  );
   const deviceTokenEntities: DeviceTokenEntity[] = await userService.findUserByTokenIds(deviceTokens);
 
   for (const record of Records) {
