@@ -51,7 +51,7 @@ interface RequestHeaderDTO {
 }
 
 interface RequestBodyDTO {
-  fcmToken: string;
+  deviceToken: string;
   userIds?: string[];
 }
 
@@ -62,6 +62,8 @@ interface RequestSendPushMessageDTO extends Omit<RequestHeaderDTO, 'platform' | 
   deepLink?: string;
   webLink?: string;
 }
+
+type RequestSendAllPushMessageDTO = Omit<RequestSendPushMessageDTO, 'userIds'>;
 
 interface MessageFactoryDTO {
   topic: PushTopic;
@@ -83,4 +85,5 @@ export {
   RequestSendPushMessageDTO,
   PushTopic,
   MessageFactoryDTO,
+  RequestSendAllPushMessageDTO,
 };

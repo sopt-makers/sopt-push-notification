@@ -9,6 +9,7 @@ import {
   NotificationType,
   Platform,
   RequestBodyDTO,
+  RequestSendAllPushMessageDTO,
   RequestSendPushMessageDTO,
   Services,
 } from './types';
@@ -17,14 +18,14 @@ import * as userService from './services/userService';
 import { APIGatewayProxyEvent, SNSEvent } from 'aws-lambda';
 import logFactory from './modules/logFactory';
 import notificationService from './services/notificationService';
-import { UserTokenEntity } from './types/tokens';
-import { isNull } from 'lodash';
+import { DeviceTokenEntity, UserTokenEntity } from './types/tokens';
 import { ResponsePushNotification } from './types/notifications';
 import User from './constants/user';
+import dtoValidator from './modules/dtoValidator';
 
 const registerUser = async (
   transactionId: string,
-  fcmToken: string,
+  deviceToken: string,
   platform: Platform,
   service: Services,
   userIds?: string[],
@@ -33,7 +34,7 @@ const registerUser = async (
     await logFactory.createLog({
       transactionId,
       userIds,
-      fcmToken,
+      deviceToken,
       platform: platform as Platform,
       action: Actions.REGISTER,
       notificationType: NotificationType.PUSH,
@@ -41,44 +42,12 @@ const registerUser = async (
       status: NotificationStatus.START,
     });
 
-    const userId = userIds?.[0];
-    const tokenData = await tokenFactory.getToken(fcmToken);
-
-    if (!tokenData.Item) {
-      const endPointData = await snsFactory.registerEndPoint(fcmToken, platform);
-      const arn = endPointData.EndpointArn;
-
-      if (arn === undefined) {
-        throw new Error('arn is undefined');
-      }
-
-      const topicData = await snsFactory.subscribe(arn);
-      const topicArn = topicData.SubscriptionArn;
-
-      if (topicArn === undefined) {
-        throw new Error('topicArn is undefined');
-      }
-
-      await tokenFactory.createToken(fcmToken, platform, arn, topicArn, userId);
-    } else if (tokenData.Item.sk.S === `u#unknown`) {
-      if (tokenData.Item.endpointArn.S === undefined || tokenData.Item.subscriptionArn.S === undefined) {
-        throw new Error('endpointArn or topicArn is undefined');
-      }
-
-      await tokenFactory.deleteToken(fcmToken);
-      await tokenFactory.createToken(
-        fcmToken,
-        platform,
-        tokenData.Item.endpointArn.S,
-        tokenData.Item.subscriptionArn.S,
-        userId,
-      );
-    }
+    await userService.registerToken(deviceToken, platform, userIds?.[0]);
 
     await logFactory.createLog({
       transactionId,
       userIds,
-      fcmToken,
+      deviceToken,
       platform: platform as Platform,
       action: Actions.REGISTER,
       notificationType: NotificationType.PUSH,
@@ -89,7 +58,7 @@ const registerUser = async (
     await logFactory.createLog({
       transactionId,
       userIds,
-      fcmToken,
+      deviceToken,
       platform: platform as Platform,
       action: Actions.REGISTER,
       notificationType: NotificationType.PUSH,
@@ -102,7 +71,7 @@ const registerUser = async (
 };
 
 const deleteToken = async (
-  fcmToken: string,
+  deviceToken: string,
   service: Services,
   platform: Platform,
   transactionId: string,
@@ -111,7 +80,7 @@ const deleteToken = async (
   await logFactory.createLog({
     transactionId,
     userIds: logUserIds,
-    fcmToken,
+    deviceToken,
     platform: platform as Platform,
     action: Actions.CANCEL,
     notificationType: NotificationType.PUSH,
@@ -120,7 +89,7 @@ const deleteToken = async (
   });
 
   try {
-    const deletedData = await tokenFactory.deleteToken(fcmToken);
+    const deletedData = await tokenFactory.deleteToken(deviceToken);
 
     const arn = deletedData.Attributes?.endpointArn.S;
     const topicArn = deletedData.Attributes?.subscriptionArn.S;
@@ -133,7 +102,7 @@ const deleteToken = async (
     await logFactory.createLog({
       transactionId,
       userIds: logUserIds,
-      fcmToken,
+      deviceToken,
       platform: platform as Platform,
       action: Actions.CANCEL,
       notificationType: NotificationType.PUSH,
@@ -144,7 +113,7 @@ const deleteToken = async (
     await logFactory.createLog({
       transactionId,
       userIds: logUserIds,
-      fcmToken,
+      deviceToken,
       platform: platform as Platform,
       action: Actions.CANCEL,
       notificationType: NotificationType.PUSH,
@@ -177,7 +146,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
     );
     const messageIds = await Promise.all(executors).then((results: (ResponsePushNotification | null)[]) =>
       results
-        .filter((result: ResponsePushNotification | null): result is ResponsePushNotification => !isNull(result))
+        .filter((result: ResponsePushNotification | null): result is ResponsePushNotification => result !== null)
         .map((result: ResponsePushNotification) => result.messageId),
     );
     await logFactory.createLog({
@@ -192,7 +161,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
       action: Actions.SEND,
       messageIds: messageIds,
       platform: Platform.None,
-      fcmToken: '',
+      deviceToken: '',
       userIds: userIds.map((userId) => `u#${userId}`),
     });
     //todo send webHooks
@@ -200,7 +169,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
     throw new Error(`send Push error: ${e}`);
   }
 };
-const sendPushAll = async (dto: RequestSendPushMessageDTO) => {
+const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
   try {
     const { transactionId, title, content, webLink, deepLink, service } = dto;
 
@@ -229,7 +198,7 @@ const sendPushAll = async (dto: RequestSendPushMessageDTO) => {
       action: Actions.SEND,
       messageIds: [result.messageId],
       platform: Platform.None,
-      fcmToken: '',
+      deviceToken: '',
       userIds: [User.ALL],
     });
     //todo send webHooks
@@ -248,7 +217,7 @@ const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
   }
   const eventBody: RequestBodyDTO = JSON.parse(event.body);
   const { platform, action, transactionId, service } = event.headers;
-  const { fcmToken, userIds } = eventBody;
+  const { deviceToken, userIds } = eventBody;
 
   if (
     isEnum(platform, Platform) === false ||
@@ -262,27 +231,39 @@ const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
   try {
     switch (action) {
       case Actions.REGISTER:
-        await registerUser(transactionId, fcmToken, platform as Platform, service as Services, userIds);
+        await registerUser(transactionId, deviceToken, platform as Platform, service as Services, userIds);
 
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_REGISTER_SUCCESS));
       case Actions.CANCEL:
-        await deleteToken(fcmToken, service as Services, platform as Platform, transactionId);
+        await deleteToken(deviceToken, service as Services, platform as Platform, transactionId);
 
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_CANCEL_SUCCESS));
-      case Actions.SEND:
-        await sendPush({
+      case Actions.SEND: {
+        const dto: RequestSendPushMessageDTO = {
           ...JSON.parse(event.body),
           transactionId,
           service,
-        } as RequestSendPushMessageDTO);
+        };
+        if (!dtoValidator.toRequestSendPushMessageDto(dto)) {
+          return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
+        }
+        await sendPush(dto);
         return response(200, status.success(statusCode.OK, responseMessage.SEND_SUCCESS));
-      case Actions.SEND_ALL:
-        await sendPushAll({
+      }
+      case Actions.SEND_ALL: {
+        const dto: RequestSendAllPushMessageDTO = {
           ...JSON.parse(event.body),
           transactionId,
           service,
-        } as RequestSendPushMessageDTO);
+        };
+
+        if (!dtoValidator.toRequestSendAllPushMessageDTO(dto)) {
+          return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
+        }
+
+        await sendPushAll(dto);
         return response(200, status.success(statusCode.OK, responseMessage.SEND_SUCCESS));
+      }
       default:
         return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
     }
@@ -294,8 +275,26 @@ const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
 };
 
 const snsHandler = async (event: SNSEvent) => {
+  console.log('SNS event', JSON.stringify(event));
   const { Records } = event;
-  console.log(JSON.stringify(Records));
+  const deviceTokens: string[] = Records.map((record) => record.Sns.Token).filter(
+    (token): token is string => token !== undefined,
+  );
+  const deviceTokenEntities: DeviceTokenEntity[] = await userService.findUserByTokenIds(deviceTokens);
+
+  for (const record of Records) {
+    const deviceToken = deviceTokenEntities.find(
+      (deviceTokenEntity) => deviceTokenEntity.deviceToken === record.Sns.Token,
+    );
+    if (deviceToken === undefined) {
+      continue;
+    }
+    await logFactory.createFailLog({
+      messageIds: [record.Sns.MessageId],
+      userIds: [deviceToken.userId],
+    });
+    await userService.unRegisterToken(deviceToken);
+  }
   return response(204, status.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT));
 };
 

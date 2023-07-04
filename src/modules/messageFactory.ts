@@ -1,15 +1,29 @@
-import { isNil } from 'lodash';
 import { MessageFactoryDTO } from '../types';
 
 type APNsMessage = {
   aps: {
     alert: {
       title: string;
-      content: string;
+      body: string;
     };
   };
   webLink?: string;
   deepLink?: string;
+};
+
+type ResponseApnsMessage =
+  | {
+      default: string;
+      APNS: string;
+    }
+  | {
+      default: string;
+      APNS_SANDBOX: string;
+    };
+
+type ResponseFCMMessage = {
+  default: string;
+  GCM: string;
 };
 
 type FCMMessage = {
@@ -25,32 +39,37 @@ type FCMMessage = {
 
 type AllTopicMessage = {
   default: string;
-  APNS: string;
-  APNS_SANDBOX: string;
-  GCM: string;
+  APNS: ResponseApnsMessage;
+  APNS_SANDBOX: ResponseApnsMessage;
+  GCM: ResponseFCMMessage;
 };
+const DEFAULT =
+  'This is the default message which must be present when publishing a message to a topic. The default message will only be used if a message is not present for one of the notification platforms.';
 
-const apnsMessage = (dto: MessageFactoryDTO): string => {
+const apnsMessage = (dto: MessageFactoryDTO): ResponseApnsMessage => {
   const { title, content, webLink, deepLink } = dto;
   const message: APNsMessage = {
     aps: {
       alert: {
         title,
-        content,
+        body: content,
       },
     },
   };
 
-  if (!isNil(deepLink)) {
+  if (deepLink !== undefined) {
     message.deepLink = deepLink;
   }
-  if (!isNil(webLink)) {
+  if (webLink !== undefined) {
     message.webLink = webLink;
   }
-  return JSON.stringify(message);
+  if (process.env.STAGE === 'dev') {
+    return { default: DEFAULT, APNS_SANDBOX: JSON.stringify(message) };
+  }
+  return { default: DEFAULT, APNS: JSON.stringify(message) };
 };
 
-const fcmMessage = (dto: MessageFactoryDTO): string => {
+const fcmMessage = (dto: MessageFactoryDTO): ResponseFCMMessage => {
   const { title, content, webLink, deepLink } = dto;
   const message: FCMMessage = {
     notification: {
@@ -59,36 +78,35 @@ const fcmMessage = (dto: MessageFactoryDTO): string => {
     },
   };
 
-  if (!isNil(deepLink)) {
+  if (deepLink !== undefined) {
     message.data = { deepLink };
   }
 
-  if (!isNil(webLink)) {
+  if (webLink !== undefined) {
     message.data = { ...(message.data || {}), webLink };
   }
-  return JSON.stringify(message);
+  return { default: DEFAULT, GCM: JSON.stringify(message) };
 };
 
 //todo dev prod 나눠서 보내기
-const allMessage = (dto: MessageFactoryDTO): string => {
-  const message: AllTopicMessage = {
-    default: 'hello',
-    APNS: JSON.stringify(apnsMessage(dto)),
-    APNS_SANDBOX: JSON.stringify(apnsMessage(dto)),
-    GCM: JSON.stringify(fcmMessage(dto)),
+const allMessage = (dto: MessageFactoryDTO): AllTopicMessage => {
+  return {
+    default: DEFAULT,
+    APNS: apnsMessage(dto),
+    APNS_SANDBOX: apnsMessage(dto),
+    GCM: fcmMessage(dto),
   };
-  return JSON.stringify(message);
 };
 
 const createNewMessage = (dto: MessageFactoryDTO): string => {
   if (dto.topic === 'apns') {
-    return apnsMessage(dto);
+    return JSON.stringify(apnsMessage(dto));
   }
   if (dto.topic === 'fcm') {
-    return fcmMessage(dto);
+    return JSON.stringify(fcmMessage(dto));
   }
   if (dto.topic === 'all') {
-    return allMessage(dto);
+    return JSON.stringify(allMessage(dto));
   }
   throw new Error('Invalid topic');
 };
