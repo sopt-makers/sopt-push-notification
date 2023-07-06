@@ -13,6 +13,10 @@ provider:
   region: ap-northeast-2
   environment:
     DYNAMODB_TABLE: ${env:DYNAMODB_TABLE}
+    PLATFORM_APPLICATION_iOS: ${env:PLATFORM_APPLICATION_iOS}
+    PLATFORM_APPLICATION_ANDROID: ${env:PLATFORM_APPLICATION_ANDROID}
+    ALL_TOPIC_ARN: ${env:ALL_TOPIC_ARN}
+    STAGE: ${env:STAGE}
   iam:
     role:
       statements:
@@ -25,10 +29,19 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}'
+        - Effect: Allow
+          Action:
+            - sns:Subscribe
+            - sns:Unsubscribe
+            - sns:Publish
+          Resource:
+            - '${self:provider.environment.PLATFORM_APPLICATION_iOS}'
+            - '${self:provider.environment.PLATFORM_APPLICATION_ANDROID}'
 
 custom:
   serverless-offline:
     httpPort: 4000
+    printOutput: true
 
 functions:
   service:
