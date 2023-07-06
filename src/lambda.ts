@@ -8,9 +8,10 @@ import {
   NotificationStatus,
   NotificationType,
   Platform,
-  RequestBodyDTO,
   RequestSendAllPushMessageDTO,
   RequestSendPushMessageDTO,
+  RequestRegisterUserDTO,
+  RequestDeleteTokenDTO,
   Services,
 } from './types';
 import responseMessage from './constants/responseMessage';
@@ -23,13 +24,9 @@ import { ResponsePushNotification } from './types/notifications';
 import User from './constants/user';
 import dtoValidator from './modules/dtoValidator';
 
-const registerUser = async (
-  transactionId: string,
-  deviceToken: string,
-  platform: Platform,
-  service: Services,
-  userIds?: string[],
-): Promise<void> => {
+const registerUser = async (dto: RequestRegisterUserDTO): Promise<void> => {
+  const { transactionId, deviceToken, platform, service, userIds } = dto;
+
   try {
     await logFactory.createLog({
       transactionId,
@@ -70,14 +67,11 @@ const registerUser = async (
   }
 };
 
-const deleteToken = async (
-  deviceToken: string,
-  service: Services,
-  platform: Platform,
-  transactionId: string,
-  userIds?: string[],
-): Promise<void> => {
+const deleteToken = async (dto: RequestDeleteTokenDTO): Promise<void> => {
+  const { deviceToken, service, platform, transactionId, userIds } = dto;
+
   const logUserIds = ['NULL'];
+
   await logFactory.createLog({
     transactionId,
     userIds: logUserIds,
@@ -213,32 +207,42 @@ const isEnum = <T extends Record<string, any>>(value: any, enumType: T): value i
 };
 
 const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
-  if (event.body === null || event.headers.platform === undefined || event.headers.action === undefined) {
+  if (event.body === null || event.headers.action === undefined) {
     return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
   }
-  const eventBody: RequestBodyDTO = JSON.parse(event.body);
-  const { platform, action, transactionId, service } = event.headers;
-  const { deviceToken, userIds } = eventBody;
 
-  if (
-    isEnum(platform, Platform) === false ||
-    isEnum(action, Actions) === false ||
-    isEnum(service, Services) === false ||
-    transactionId === undefined
-  ) {
-    return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
-  }
+  const { platform, action, transactionId, service } = event.headers;
 
   try {
     switch (action) {
-      case Actions.REGISTER:
-        await registerUser(transactionId, deviceToken, platform as Platform, service as Services, userIds);
+      case Actions.REGISTER: {
+        const dto: RequestRegisterUserDTO = {
+          ...JSON.parse(event.body),
+          transactionId,
+          service,
+          platform,
+        };
+        if (!dtoValidator.toRequestRegisterUserDto(dto)) {
+          return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
+        }
 
+        await registerUser(dto);
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_REGISTER_SUCCESS));
-      case Actions.CANCEL:
-        await deleteToken(deviceToken, service as Services, platform as Platform, transactionId, userIds);
+      }
+      case Actions.CANCEL: {
+        const dto: RequestDeleteTokenDTO = {
+          ...JSON.parse(event.body),
+          transactionId,
+          service,
+          platform,
+        };
+        if (!dtoValidator.toRequestDeleteTokenDto(dto)) {
+          return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
+        }
 
+        await deleteToken(dto);
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_CANCEL_SUCCESS));
+      }
       case Actions.SEND: {
         const dto: RequestSendPushMessageDTO = {
           ...JSON.parse(event.body),
@@ -265,8 +269,9 @@ const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
         await sendPushAll(dto);
         return response(200, status.success(statusCode.OK, responseMessage.SEND_SUCCESS));
       }
-      default:
+      default: {
         return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
+      }
     }
   } catch (e) {
     console.error(e);
