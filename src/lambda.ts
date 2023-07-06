@@ -75,6 +75,7 @@ const deleteToken = async (
   service: Services,
   platform: Platform,
   transactionId: string,
+  userIds?: string[],
 ): Promise<void> => {
   const logUserIds = ['NULL'];
   await logFactory.createLog({
@@ -89,7 +90,7 @@ const deleteToken = async (
   });
 
   try {
-    const deletedData = await tokenFactory.deleteToken(deviceToken);
+    const deletedData = await tokenFactory.deleteToken(deviceToken, userIds?.[0]);
 
     const arn = deletedData.Attributes?.endpointArn.S;
     const topicArn = deletedData.Attributes?.subscriptionArn.S;
@@ -235,7 +236,7 @@ const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
 
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_REGISTER_SUCCESS));
       case Actions.CANCEL:
-        await deleteToken(deviceToken, service as Services, platform as Platform, transactionId);
+        await deleteToken(deviceToken, service as Services, platform as Platform, transactionId, userIds);
 
         return response(200, status.success(statusCode.OK, responseMessage.TOKEN_CANCEL_SUCCESS));
       case Actions.SEND: {
