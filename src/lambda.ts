@@ -202,10 +202,6 @@ const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
   }
 };
 
-const isEnum = <T extends Record<string, any>>(value: any, enumType: T): value is T => {
-  return Object.values(enumType).includes(value);
-};
-
 const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
   if (event.body === null || event.headers.action === undefined) {
     return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
