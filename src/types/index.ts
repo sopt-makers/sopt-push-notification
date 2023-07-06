@@ -50,7 +50,12 @@ interface RequestHeaderDTO {
   action: Actions;
 }
 
-interface RequestBodyDTO {
+interface RequestRegisterUserDTO extends Omit<RequestHeaderDTO, 'action'> {
+  deviceToken: string;
+  userIds?: string[];
+}
+
+interface RequestDeleteTokenDTO extends Omit<RequestHeaderDTO, 'action'> {
   deviceToken: string;
   userIds?: string[];
 }
@@ -78,7 +83,6 @@ export {
   Actions,
   NotificationType,
   NotificationStatus,
-  RequestBodyDTO,
   RequestHeaderDTO,
   Platform,
   Entity,
@@ -86,4 +90,6 @@ export {
   PushTopic,
   MessageFactoryDTO,
   RequestSendAllPushMessageDTO,
+  RequestRegisterUserDTO,
+  RequestDeleteTokenDTO,
 };
