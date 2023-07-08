@@ -104,12 +104,12 @@ const findUserByTokenIds = async (deviceTokens: string[]): Promise<DeviceTokenEn
   return result.filter((user: DeviceTokenEntity | null): user is DeviceTokenEntity => user !== null);
 };
 
-const changedUserPayload = (tokeUserId: string, inputUserId?: string): boolean => {
-  if (inputUserId === tokeUserId) {
+const changedUserPayload = (tokenUserId: string, inputUserId?: string): boolean => {
+  if (inputUserId === tokenUserId) {
     return false;
   }
 
-  if (inputUserId === undefined && tokeUserId === user.UNKNOWN) {
+  if (inputUserId === undefined && tokenUserId === user.UNKNOWN) {
     return false;
   }
 

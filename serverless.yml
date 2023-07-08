@@ -34,9 +34,16 @@ provider:
             - sns:Subscribe
             - sns:Unsubscribe
             - sns:Publish
+            - sns:DeleteEndpoint
+            - sns:ListEndpointsByPlatformApplication
+            - sns:GetTopicAttributes
+            - sns:CreatePlatformEndpoint
+            - sns:SetTopicAttributes
+            - sns:ListPlatformApplications
           Resource:
             - '${self:provider.environment.PLATFORM_APPLICATION_iOS}'
             - '${self:provider.environment.PLATFORM_APPLICATION_ANDROID}'
+            - '${self:provider.environment.ALL_TOPIC_ARN}'
 
 custom:
   serverless-offline:
