@@ -272,7 +272,7 @@ const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
   } catch (e) {
     console.error(e);
 
-    return response(500, status.success(statusCode.INTERNAL_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
+    return response(500, status.fail(statusCode.INTERNAL_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
   }
 };
 
