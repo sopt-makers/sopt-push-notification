@@ -27,11 +27,9 @@ type ResponseFCMMessage = {
 };
 
 type FCMMessage = {
-  notification: {
+  data: {
     title: string;
     content: string;
-  };
-  data?: {
     webLink?: string;
     deepLink?: string;
   };
@@ -72,18 +70,18 @@ const apnsMessage = (dto: MessageFactoryDTO): ResponseApnsMessage => {
 const fcmMessage = (dto: MessageFactoryDTO): ResponseFCMMessage => {
   const { title, content, webLink, deepLink } = dto;
   const message: FCMMessage = {
-    notification: {
+    data: {
       title,
       content,
     },
   };
 
   if (deepLink !== undefined) {
-    message.data = { deepLink };
+    message.data.deepLink = deepLink;
   }
 
   if (webLink !== undefined) {
-    message.data = { ...(message.data || {}), webLink };
+    message.data.webLink = webLink;
   }
   return { default: DEFAULT, GCM: JSON.stringify(message) };
 };
