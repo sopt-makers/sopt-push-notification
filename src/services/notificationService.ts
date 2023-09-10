@@ -49,7 +49,7 @@ const pushArn = async (dto: PushDTO) => {
 
 const pushFcm = async (dto: PushDTO): Promise<ResponsePushNotification | null> => {
   const message = messageFactory.createNewMessage({
-    topic: PushTopic.Apns,
+    topic: PushTopic.Fcm,
     title: dto.title,
     content: dto.content,
     deepLink: dto.deepLink,
