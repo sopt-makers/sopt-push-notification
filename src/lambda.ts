@@ -13,6 +13,7 @@ import {
   RequestRegisterUserDTO,
   RequestDeleteTokenDTO,
   Services,
+  Category,
 } from './types';
 import responseMessage from './constants/responseMessage';
 import * as userService from './services/userService';
@@ -122,7 +123,7 @@ const deleteToken = async (dto: RequestDeleteTokenDTO): Promise<void> => {
 
 const sendPush = async (dto: RequestSendPushMessageDTO) => {
   try {
-    const { transactionId, title, content, webLink, deepLink, userIds, service } = dto;
+    const { transactionId, title, content, webLink, deepLink, userIds, service, category } = dto;
     const users = await userService.findTokenByUserIds(userIds);
     if (users.length === 0) {
       return;
@@ -135,6 +136,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
             content,
             webLink,
             deepLink,
+            category,
           },
           endpointPayload: { endpointArn: user.endpointArn, platform: user.platform },
         }),
@@ -157,6 +159,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
       messageIds: messageIds,
       platform: Platform.None,
       deviceToken: '',
+      category: category as Category,
       userIds: userIds.map((userId) => `u#${userId}`),
     });
     //todo send webHooks
@@ -166,12 +169,13 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
 };
 const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
   try {
-    const { transactionId, title, content, webLink, deepLink, service } = dto;
+    const { transactionId, title, content, category, webLink, deepLink, service } = dto;
 
     const result = await notificationService.allTopicPush({
       messagePayload: {
         title,
         content,
+        category,
         webLink,
         deepLink,
       },
@@ -194,6 +198,7 @@ const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
       messageIds: [result.messageId],
       platform: Platform.None,
       deviceToken: '',
+      category: category as Category,
       userIds: [User.ALL],
     });
     //todo send webHooks

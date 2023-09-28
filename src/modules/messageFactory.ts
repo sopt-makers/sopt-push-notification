@@ -1,4 +1,4 @@
-import { MessageFactoryDTO } from '../types';
+import { Category, MessageFactoryDTO } from '../types';
 
 type APNsMessage = {
   aps: {
@@ -7,6 +7,7 @@ type APNsMessage = {
       body: string;
     };
   };
+  category: Category;
   webLink?: string;
   deepLink?: string;
 };
@@ -30,6 +31,7 @@ type FCMMessage = {
   data: {
     title: string;
     content: string;
+    category: Category;
     webLink?: string;
     deepLink?: string;
   };
@@ -45,7 +47,7 @@ const DEFAULT =
   'This is the default message which must be present when publishing a message to a topic. The default message will only be used if a message is not present for one of the notification platforms.';
 
 const apnsMessage = (dto: MessageFactoryDTO): ResponseApnsMessage => {
-  const { title, content, webLink, deepLink } = dto;
+  const { title, content, category, webLink, deepLink } = dto;
   const message: APNsMessage = {
     aps: {
       alert: {
@@ -53,6 +55,7 @@ const apnsMessage = (dto: MessageFactoryDTO): ResponseApnsMessage => {
         body: content,
       },
     },
+    category: category,
   };
 
   if (deepLink !== undefined) {
@@ -68,11 +71,12 @@ const apnsMessage = (dto: MessageFactoryDTO): ResponseApnsMessage => {
 };
 
 const fcmMessage = (dto: MessageFactoryDTO): ResponseFCMMessage => {
-  const { title, content, webLink, deepLink } = dto;
+  const { title, content, category, webLink, deepLink } = dto;
   const message: FCMMessage = {
     data: {
       title,
       content,
+      category,
     },
   };
 

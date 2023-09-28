@@ -1,4 +1,4 @@
-import { Platform, PushTopic } from '../types';
+import { Category, Platform, PushTopic } from '../types';
 import messageFactory from '../modules/messageFactory';
 import snsFactory from '../modules/snsFactory';
 import { ResponsePushNotification } from '../types/notifications';
@@ -7,6 +7,7 @@ import { PublishCommandOutput } from '@aws-sdk/client-sns';
 interface PushMessageDTO {
   title: string;
   content: string;
+  category: Category;
   deepLink?: string;
   webLink?: string;
 }
@@ -40,6 +41,7 @@ const pushArn = async (dto: PushDTO) => {
     topic: PushTopic.Apns,
     title: dto.title,
     content: dto.content,
+    category: dto.category,
     deepLink: dto.deepLink,
     webLink: dto.webLink,
   });
@@ -52,6 +54,7 @@ const pushFcm = async (dto: PushDTO): Promise<ResponsePushNotification | null> =
     topic: PushTopic.Fcm,
     title: dto.title,
     content: dto.content,
+    category: dto.category,
     deepLink: dto.deepLink,
     webLink: dto.webLink,
   });
@@ -68,6 +71,7 @@ const platformPush = async (dto: {
       endpointArn: dto.endpointPayload.endpointArn,
       title: dto.messagePayload.title,
       content: dto.messagePayload.content,
+      category: dto.messagePayload.category,
       deepLink: dto.messagePayload.deepLink,
       webLink: dto.messagePayload.webLink,
     });
@@ -77,6 +81,7 @@ const platformPush = async (dto: {
       endpointArn: dto.endpointPayload.endpointArn,
       title: dto.messagePayload.title,
       content: dto.messagePayload.content,
+      category: dto.messagePayload.category,
       deepLink: dto.messagePayload.deepLink,
       webLink: dto.messagePayload.webLink,
     });
@@ -90,6 +95,7 @@ const pushAll = async (dto: PushMessageDTO): Promise<ResponsePushNotification | 
     topic: PushTopic.All,
     title: dto.title,
     content: dto.content,
+    category: dto.category,
     deepLink: dto.deepLink,
     webLink: dto.webLink,
   });
