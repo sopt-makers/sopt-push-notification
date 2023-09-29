@@ -33,10 +33,10 @@ const registerUser = async (dto: RequestRegisterUserDTO): Promise<void> => {
       transactionId,
       userIds,
       deviceToken,
-      platform: platform as Platform,
+      platform: platform,
       action: Actions.REGISTER,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.START,
     });
 
@@ -46,10 +46,10 @@ const registerUser = async (dto: RequestRegisterUserDTO): Promise<void> => {
       transactionId,
       userIds,
       deviceToken,
-      platform: platform as Platform,
+      platform: platform,
       action: Actions.REGISTER,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.SUCCESS,
     });
   } catch (e) {
@@ -57,10 +57,10 @@ const registerUser = async (dto: RequestRegisterUserDTO): Promise<void> => {
       transactionId,
       userIds,
       deviceToken,
-      platform: platform as Platform,
+      platform: platform,
       action: Actions.REGISTER,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.FAIL,
     });
 
@@ -77,10 +77,10 @@ const deleteToken = async (dto: RequestDeleteTokenDTO): Promise<void> => {
     transactionId,
     userIds: logUserIds,
     deviceToken,
-    platform: platform as Platform,
+    platform: platform,
     action: Actions.CANCEL,
     notificationType: NotificationType.PUSH,
-    orderServiceName: service as Services,
+    orderServiceName: service,
     status: NotificationStatus.START,
   });
 
@@ -102,7 +102,7 @@ const deleteToken = async (dto: RequestDeleteTokenDTO): Promise<void> => {
       platform: platform as Platform,
       action: Actions.CANCEL,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.SUCCESS,
     });
   } catch (e) {
@@ -110,10 +110,10 @@ const deleteToken = async (dto: RequestDeleteTokenDTO): Promise<void> => {
       transactionId,
       userIds: logUserIds,
       deviceToken,
-      platform: platform as Platform,
+      platform: platform,
       action: Actions.CANCEL,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.FAIL,
     });
 
@@ -153,13 +153,13 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
       webLink: webLink,
       applink: deepLink,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.SUCCESS,
       action: Actions.SEND,
       messageIds: messageIds,
       platform: Platform.None,
       deviceToken: '',
-      category: category as Category,
+      category: category,
       userIds: userIds.map((userId) => `u#${userId}`),
     });
     //todo send webHooks
@@ -192,13 +192,13 @@ const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
       webLink: webLink,
       applink: deepLink,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.SUCCESS,
       action: Actions.SEND,
       messageIds: [result.messageId],
       platform: Platform.None,
       deviceToken: '',
-      category: category as Category,
+      category: category,
       userIds: [User.ALL],
     });
     //todo send webHooks
