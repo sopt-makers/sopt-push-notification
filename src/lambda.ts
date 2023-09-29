@@ -12,8 +12,7 @@ import {
   RequestSendPushMessageDTO,
   RequestRegisterUserDTO,
   RequestDeleteTokenDTO,
-  Services,
-  Category,
+  PushSuccessMessageDTO,
 } from './types';
 import responseMessage from './constants/responseMessage';
 import * as userService from './services/userService';
@@ -24,6 +23,7 @@ import { DeviceTokenEntity, UserTokenEntity } from './types/tokens';
 import { ResponsePushNotification } from './types/notifications';
 import User from './constants/user';
 import dtoValidator from './modules/dtoValidator';
+import webHookService from './services/webHookService';
 
 const registerUser = async (dto: RequestRegisterUserDTO): Promise<void> => {
   const { transactionId, deviceToken, platform, service, userIds } = dto;
@@ -162,6 +162,20 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
       category: category,
       userIds: userIds.map((userId) => `u#${userId}`),
     });
+
+    const webHookDto: PushSuccessMessageDTO = {
+      userIds: userIds,
+      title: title,
+      content: content,
+      category: category,
+      deepLink: deepLink,
+      webLink: webLink,
+      messageIds: messageIds,
+      service: service,
+      action: Actions.SEND,
+    };
+
+    await webHookService.pushSuccessWebHook(webHookDto);
     //todo send webHooks
   } catch (e) {
     throw new Error(`send Push error: ${e}`);
@@ -202,6 +216,19 @@ const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
       userIds: [User.ALL],
     });
     //todo send webHooks
+    const webHookDto: PushSuccessMessageDTO = {
+      userIds: [User.ALL],
+      title: title,
+      content: content,
+      category: category,
+      deepLink: deepLink,
+      webLink: webLink,
+      messageIds: [result.messageId],
+      service: service,
+      action: Actions.SEND_ALL,
+    };
+
+    await webHookService.pushSuccessWebHook(webHookDto);
   } catch (e) {
     throw new Error(`send Push error: ${e}`);
   }

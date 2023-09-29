@@ -77,6 +77,16 @@ interface RequestSendPushMessageDTO extends Omit<RequestHeaderDTO, 'platform' | 
 
 type RequestSendAllPushMessageDTO = Omit<RequestSendPushMessageDTO, 'userIds'>;
 
+interface PushSuccessMessageDTO extends Omit<RequestHeaderDTO, 'platform' | 'transactionId'> {
+  messageIds: string[];
+  userIds: string[];
+  title: string;
+  content: string;
+  category: Category;
+  deepLink?: string;
+  webLink?: string;
+}
+
 interface MessageFactoryDTO {
   topic: PushTopic;
   title: string;
@@ -95,6 +105,7 @@ export {
   Platform,
   Entity,
   RequestSendPushMessageDTO,
+  PushSuccessMessageDTO,
   PushTopic,
   Category,
   MessageFactoryDTO,
