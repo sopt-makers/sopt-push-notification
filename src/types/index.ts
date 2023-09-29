@@ -44,9 +44,9 @@ enum PushTopic {
 }
 
 enum Category {
-  NOTICE = 'notice',
-  NEWS = 'news',
-  None = '',
+  NOTICE = 'NOTICE',
+  NEWS = 'NEWS',
+  NONE = 'NONE',
 }
 
 interface RequestHeaderDTO {

@@ -17,7 +17,7 @@ const createLog = async ({
   status,
   action,
   platform,
-  category = Category.None,
+  category = Category.NONE,
   errorCode = 'NULL',
   errorMessage = 'NULL',
   userIds = ['NULL'],
