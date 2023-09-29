@@ -1,4 +1,5 @@
 import {
+  Category,
   Platform,
   RequestDeleteTokenDTO,
   RequestRegisterUserDTO,
@@ -76,9 +77,14 @@ const toRequestSendPushMessageDto = (dto: unknown): dto is RequestSendPushMessag
     return false;
   }
 
-  const { transactionId, service, userIds, title, content, deepLink, webLink } = dto as RequestSendPushMessageDTO;
+  const { transactionId, service, userIds, title, content, category, deepLink, webLink } =
+    dto as RequestSendPushMessageDTO;
 
   if (isEnum(service, Services) == false) {
+    return false;
+  }
+
+  if (isEnum(category, Category) == false) {
     return false;
   }
 
@@ -102,6 +108,10 @@ const toRequestSendPushMessageDto = (dto: unknown): dto is RequestSendPushMessag
     return false;
   }
 
+  if (typeof category !== 'string') {
+    return false;
+  }
+
   if (deepLink && typeof deepLink !== 'string') {
     return false;
   }
@@ -118,9 +128,13 @@ const toRequestSendAllPushMessageDTO = (dto: unknown): dto is RequestSendAllPush
     return false;
   }
 
-  const { transactionId, service, title, content, deepLink, webLink } = dto as RequestSendAllPushMessageDTO;
+  const { transactionId, service, title, content, category, deepLink, webLink } = dto as RequestSendAllPushMessageDTO;
 
   if (isEnum(service, Services) == false) {
+    return false;
+  }
+
+  if (isEnum(category, Category) == false) {
     return false;
   }
 
@@ -137,6 +151,10 @@ const toRequestSendAllPushMessageDTO = (dto: unknown): dto is RequestSendAllPush
   }
 
   if (typeof content !== 'string') {
+    return false;
+  }
+
+  if (typeof category !== 'string') {
     return false;
   }
 
