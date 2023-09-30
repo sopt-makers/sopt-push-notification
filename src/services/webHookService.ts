@@ -24,7 +24,11 @@ interface OperationSuccessWebHookDTO {
 
 async function appWebHook(appSuccessWebHookDTO: AppSuccessWebHookDTO): Promise<void> {
   try {
-    await axios.post(process.env.MAKERS_APP_SERVER_URL as string, {
+    if (process.env.MAKERS_APP_SERVER_URL === undefined) {
+      throw new Error('env not defined');
+    }
+
+    await axios.post(process.env.MAKERS_APP_SERVER_URL, {
       appSuccessWebHookDTO,
     });
   } catch (e) {
@@ -34,7 +38,11 @@ async function appWebHook(appSuccessWebHookDTO: AppSuccessWebHookDTO): Promise<v
 
 async function operationWebHook(operationSuccessWebHookDTO: OperationSuccessWebHookDTO): Promise<void> {
   try {
-    await axios.post(process.env.MAKERS_OPERATION_SERVER_URL as string, {
+    if (process.env.MAKERS_OPERATION_SERVER_URL === undefined) {
+      throw new Error('env not defined');
+    }
+
+    await axios.post(process.env.MAKERS_OPERATION_SERVER_URL, {
       operationSuccessWebHookDTO,
     });
   } catch (e) {
