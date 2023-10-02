@@ -43,6 +43,12 @@ enum PushTopic {
   All = 'all',
 }
 
+enum Category {
+  NOTICE = 'NOTICE',
+  NEWS = 'NEWS',
+  NONE = 'NONE',
+}
+
 interface RequestHeaderDTO {
   transactionId: string;
   service: Services;
@@ -64,16 +70,28 @@ interface RequestSendPushMessageDTO extends Omit<RequestHeaderDTO, 'platform' | 
   userIds: string[];
   title: string;
   content: string;
+  category: Category;
   deepLink?: string;
   webLink?: string;
 }
 
 type RequestSendAllPushMessageDTO = Omit<RequestSendPushMessageDTO, 'userIds'>;
 
+interface PushSuccessMessageDTO extends Omit<RequestHeaderDTO, 'platform' | 'transactionId'> {
+  messageIds: string[];
+  userIds: string[];
+  title: string;
+  content: string;
+  category: Category;
+  deepLink?: string;
+  webLink?: string;
+}
+
 interface MessageFactoryDTO {
   topic: PushTopic;
   title: string;
   content: string;
+  category: Category;
   deepLink?: string;
   webLink?: string;
 }
@@ -87,7 +105,9 @@ export {
   Platform,
   Entity,
   RequestSendPushMessageDTO,
+  PushSuccessMessageDTO,
   PushTopic,
+  Category,
   MessageFactoryDTO,
   RequestSendAllPushMessageDTO,
   RequestRegisterUserDTO,

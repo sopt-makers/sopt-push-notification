@@ -1,7 +1,7 @@
 import { DynamoDBClient, PutItemCommand, PutItemCommandOutput } from '@aws-sdk/client-dynamodb';
 import dayjs from 'dayjs';
 import { v4 as uuid } from 'uuid';
-import { Actions, Entity, NotificationStatus, NotificationType, Platform, Services } from '../types';
+import { Actions, Category, Entity, NotificationStatus, NotificationType, Platform, Services } from '../types';
 
 const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 
@@ -17,6 +17,7 @@ const createLog = async ({
   status,
   action,
   platform,
+  category = Category.NONE,
   errorCode = 'NULL',
   errorMessage = 'NULL',
   userIds = ['NULL'],
@@ -33,6 +34,7 @@ const createLog = async ({
   status: NotificationStatus;
   action: Actions;
   platform: Platform;
+  category?: Category;
   errorCode?: string;
   errorMessage?: string;
   userIds?: string[];
@@ -58,6 +60,7 @@ const createLog = async ({
       status: { S: status },
       action: { S: action },
       platform: { S: platform },
+      category: { S: category },
       userIds: { SS: userIds },
       messageIds: { SS: messageIds },
       errorCode: { S: errorCode },

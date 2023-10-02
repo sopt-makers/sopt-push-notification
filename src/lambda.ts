@@ -12,7 +12,7 @@ import {
   RequestSendPushMessageDTO,
   RequestRegisterUserDTO,
   RequestDeleteTokenDTO,
-  Services,
+  PushSuccessMessageDTO,
 } from './types';
 import responseMessage from './constants/responseMessage';
 import * as userService from './services/userService';
@@ -23,6 +23,7 @@ import { DeviceTokenEntity, UserTokenEntity } from './types/tokens';
 import { ResponsePushNotification } from './types/notifications';
 import User from './constants/user';
 import dtoValidator from './modules/dtoValidator';
+import webHookService from './services/webHookService';
 
 const registerUser = async (dto: RequestRegisterUserDTO): Promise<void> => {
   const { transactionId, deviceToken, platform, service, userIds } = dto;
@@ -32,10 +33,10 @@ const registerUser = async (dto: RequestRegisterUserDTO): Promise<void> => {
       transactionId,
       userIds,
       deviceToken,
-      platform: platform as Platform,
+      platform: platform,
       action: Actions.REGISTER,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.START,
     });
 
@@ -45,10 +46,10 @@ const registerUser = async (dto: RequestRegisterUserDTO): Promise<void> => {
       transactionId,
       userIds,
       deviceToken,
-      platform: platform as Platform,
+      platform: platform,
       action: Actions.REGISTER,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.SUCCESS,
     });
   } catch (e) {
@@ -56,10 +57,10 @@ const registerUser = async (dto: RequestRegisterUserDTO): Promise<void> => {
       transactionId,
       userIds,
       deviceToken,
-      platform: platform as Platform,
+      platform: platform,
       action: Actions.REGISTER,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.FAIL,
     });
 
@@ -76,10 +77,10 @@ const deleteToken = async (dto: RequestDeleteTokenDTO): Promise<void> => {
     transactionId,
     userIds: logUserIds,
     deviceToken,
-    platform: platform as Platform,
+    platform: platform,
     action: Actions.CANCEL,
     notificationType: NotificationType.PUSH,
-    orderServiceName: service as Services,
+    orderServiceName: service,
     status: NotificationStatus.START,
   });
 
@@ -101,7 +102,7 @@ const deleteToken = async (dto: RequestDeleteTokenDTO): Promise<void> => {
       platform: platform as Platform,
       action: Actions.CANCEL,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.SUCCESS,
     });
   } catch (e) {
@@ -109,10 +110,10 @@ const deleteToken = async (dto: RequestDeleteTokenDTO): Promise<void> => {
       transactionId,
       userIds: logUserIds,
       deviceToken,
-      platform: platform as Platform,
+      platform: platform,
       action: Actions.CANCEL,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.FAIL,
     });
 
@@ -122,7 +123,7 @@ const deleteToken = async (dto: RequestDeleteTokenDTO): Promise<void> => {
 
 const sendPush = async (dto: RequestSendPushMessageDTO) => {
   try {
-    const { transactionId, title, content, webLink, deepLink, userIds, service } = dto;
+    const { transactionId, title, content, webLink, deepLink, userIds, service, category } = dto;
     const users = await userService.findTokenByUserIds(userIds);
     if (users.length === 0) {
       return;
@@ -135,6 +136,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
             content,
             webLink,
             deepLink,
+            category,
           },
           endpointPayload: { endpointArn: user.endpointArn, platform: user.platform },
         }),
@@ -151,14 +153,29 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
       webLink: webLink,
       applink: deepLink,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.SUCCESS,
       action: Actions.SEND,
       messageIds: messageIds,
       platform: Platform.None,
       deviceToken: '',
+      category: category,
       userIds: userIds.map((userId) => `u#${userId}`),
     });
+
+    const webHookDto: PushSuccessMessageDTO = {
+      userIds: userIds,
+      title: title,
+      content: content,
+      category: category,
+      deepLink: deepLink,
+      webLink: webLink,
+      messageIds: messageIds,
+      service: service,
+      action: Actions.SEND,
+    };
+
+    await webHookService.pushSuccessWebHook(webHookDto);
     //todo send webHooks
   } catch (e) {
     throw new Error(`send Push error: ${e}`);
@@ -166,12 +183,13 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
 };
 const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
   try {
-    const { transactionId, title, content, webLink, deepLink, service } = dto;
+    const { transactionId, title, content, category, webLink, deepLink, service } = dto;
 
     const result = await notificationService.allTopicPush({
       messagePayload: {
         title,
         content,
+        category,
         webLink,
         deepLink,
       },
@@ -188,15 +206,29 @@ const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
       webLink: webLink,
       applink: deepLink,
       notificationType: NotificationType.PUSH,
-      orderServiceName: service as Services,
+      orderServiceName: service,
       status: NotificationStatus.SUCCESS,
       action: Actions.SEND,
       messageIds: [result.messageId],
       platform: Platform.None,
       deviceToken: '',
+      category: category,
       userIds: [User.ALL],
     });
     //todo send webHooks
+    const webHookDto: PushSuccessMessageDTO = {
+      userIds: [User.ALL],
+      title: title,
+      content: content,
+      category: category,
+      deepLink: deepLink,
+      webLink: webLink,
+      messageIds: [result.messageId],
+      service: service,
+      action: Actions.SEND_ALL,
+    };
+
+    await webHookService.pushSuccessWebHook(webHookDto);
   } catch (e) {
     throw new Error(`send Push error: ${e}`);
   }
