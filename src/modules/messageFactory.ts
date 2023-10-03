@@ -12,15 +12,10 @@ type APNsMessage = {
   deepLink?: string;
 };
 
-type ResponseApnsMessage =
-  | {
-      default: string;
-      APNS: string;
-    }
-  | {
-      default: string;
-      APNS_SANDBOX: string;
-    };
+type ResponseApnsMessage = {
+  default: string;
+  APNS: string;
+};
 
 type ResponseFCMMessage = {
   default: string;
@@ -40,7 +35,6 @@ type FCMMessage = {
 type AllTopicMessage = {
   default: string;
   APNS: ResponseApnsMessage;
-  APNS_SANDBOX: ResponseApnsMessage;
   GCM: ResponseFCMMessage;
 };
 const DEFAULT =
@@ -64,9 +58,7 @@ const apnsMessage = (dto: MessageFactoryDTO): ResponseApnsMessage => {
   if (webLink !== undefined) {
     message.webLink = webLink;
   }
-  if (process.env.STAGE === 'dev') {
-    return { default: DEFAULT, APNS_SANDBOX: JSON.stringify(message) };
-  }
+
   return { default: DEFAULT, APNS: JSON.stringify(message) };
 };
 
@@ -95,7 +87,6 @@ const allMessage = (dto: MessageFactoryDTO): AllTopicMessage => {
   return {
     default: DEFAULT,
     APNS: apnsMessage(dto),
-    APNS_SANDBOX: apnsMessage(dto),
     GCM: fcmMessage(dto),
   };
 };
