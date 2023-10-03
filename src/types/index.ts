@@ -49,6 +49,12 @@ enum Category {
   NONE = 'NONE',
 }
 
+enum WebHookType {
+  SEND = 'SEND',
+  SEND_ALL = 'SEND_ALL',
+  FAIL = 'FAIL',
+}
+
 interface RequestHeaderDTO {
   transactionId: string;
   service: Services;
@@ -77,14 +83,15 @@ interface RequestSendPushMessageDTO extends Omit<RequestHeaderDTO, 'platform' | 
 
 type RequestSendAllPushMessageDTO = Omit<RequestSendPushMessageDTO, 'userIds'>;
 
-interface PushSuccessMessageDTO extends Omit<RequestHeaderDTO, 'platform' | 'transactionId'> {
-  messageIds: string[];
-  userIds: string[];
+interface PushSuccessMessageDTO {
+  userIds?: string[];
   title: string;
   content: string;
   category: Category;
   deepLink?: string;
   webLink?: string;
+  service: Services;
+  type: WebHookType;
 }
 
 interface MessageFactoryDTO {
@@ -108,6 +115,7 @@ export {
   PushSuccessMessageDTO,
   PushTopic,
   Category,
+  WebHookType,
   MessageFactoryDTO,
   RequestSendAllPushMessageDTO,
   RequestRegisterUserDTO,

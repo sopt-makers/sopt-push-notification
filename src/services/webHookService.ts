@@ -1,26 +1,28 @@
-import { PushSuccessMessageDTO, Services, Category, Actions } from '../types';
+import { PushSuccessMessageDTO, Services, Category, WebHookType } from '../types';
 import axios from 'axios';
 
 interface AppSuccessWebHookDTO {
-  userIds: string[];
+  userIds?: string[];
   title: string;
   content: string;
   category: Category;
   deepLink?: string;
   webLink?: string;
-  messageIds: string[];
-  action: Actions;
+  type: WebHookType;
 }
 
 interface OperationSuccessWebHookDTO {
-  userIds: string[];
+  userIds?: string[];
   title: string;
   content: string;
   category: Category;
   deepLink?: string;
   webLink?: string;
-  messageIds: string[];
 }
+
+const axiosInstance = axios.create({
+  headers: { 'Content-Type': `application/json` },
+});
 
 async function appWebHook(appSuccessWebHookDTO: AppSuccessWebHookDTO): Promise<void> {
   try {
@@ -28,9 +30,7 @@ async function appWebHook(appSuccessWebHookDTO: AppSuccessWebHookDTO): Promise<v
       throw new Error('env not defined');
     }
 
-    await axios.post(process.env.MAKERS_APP_SERVER_URL, {
-      appSuccessWebHookDTO,
-    });
+    await axiosInstance.post(process.env.MAKERS_APP_SERVER_URL, JSON.stringify(appSuccessWebHookDTO));
   } catch (e) {
     throw new Error('APP SERVER webhook failed');
   }
@@ -42,16 +42,14 @@ async function operationWebHook(operationSuccessWebHookDTO: OperationSuccessWebH
       throw new Error('env not defined');
     }
 
-    await axios.post(process.env.MAKERS_OPERATION_SERVER_URL, {
-      operationSuccessWebHookDTO,
-    });
+    await axiosInstance.post(process.env.MAKERS_OPERATION_SERVER_URL, JSON.stringify(operationSuccessWebHookDTO));
   } catch (e) {
     throw new Error('OPERATION SERVER webhook failed');
   }
 }
 
 const pushSuccessWebHook = async (dto: PushSuccessMessageDTO): Promise<void> => {
-  const { userIds, title, content, category, deepLink, webLink, messageIds, service, action } = dto;
+  const { userIds, title, content, category, deepLink, webLink, service, type } = dto;
 
   switch (service) {
     case Services.APP: {
@@ -62,8 +60,7 @@ const pushSuccessWebHook = async (dto: PushSuccessMessageDTO): Promise<void> => 
         category: category,
         deepLink: deepLink,
         webLink: webLink,
-        messageIds: messageIds,
-        action: action,
+        type: type,
       };
 
       await appWebHook(appSuccessWebHookDTO);
@@ -77,7 +74,6 @@ const pushSuccessWebHook = async (dto: PushSuccessMessageDTO): Promise<void> => 
         category: category,
         deepLink: deepLink,
         webLink: webLink,
-        messageIds: messageIds,
       };
 
       await operationWebHook(operationSuccessWebHookDTO);

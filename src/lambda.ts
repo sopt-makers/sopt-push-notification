@@ -8,6 +8,7 @@ import {
   NotificationStatus,
   NotificationType,
   Platform,
+  WebHookType,
   RequestSendAllPushMessageDTO,
   RequestSendPushMessageDTO,
   RequestRegisterUserDTO,
@@ -146,6 +147,20 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
         .filter((result: ResponsePushNotification | null): result is ResponsePushNotification => result !== null)
         .map((result: ResponsePushNotification) => result.messageId),
     );
+
+    const webHookDto: PushSuccessMessageDTO = {
+      userIds: userIds,
+      title: title,
+      content: content,
+      category: category,
+      deepLink: deepLink,
+      webLink: webLink,
+      service: service,
+      type: WebHookType.SEND,
+    };
+
+    await webHookService.pushSuccessWebHook(webHookDto);
+
     await logFactory.createLog({
       transactionId,
       title: title,
@@ -162,21 +177,6 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
       category: category,
       userIds: userIds.map((userId) => `u#${userId}`),
     });
-
-    const webHookDto: PushSuccessMessageDTO = {
-      userIds: userIds,
-      title: title,
-      content: content,
-      category: category,
-      deepLink: deepLink,
-      webLink: webLink,
-      messageIds: messageIds,
-      service: service,
-      action: Actions.SEND,
-    };
-
-    await webHookService.pushSuccessWebHook(webHookDto);
-    //todo send webHooks
   } catch (e) {
     throw new Error(`send Push error: ${e}`);
   }
@@ -199,6 +199,18 @@ const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
       throw new Error('sendPushAll error');
     }
 
+    const webHookDto: PushSuccessMessageDTO = {
+      title: title,
+      content: content,
+      category: category,
+      deepLink: deepLink,
+      webLink: webLink,
+      service: service,
+      type: WebHookType.SEND_ALL,
+    };
+
+    await webHookService.pushSuccessWebHook(webHookDto);
+
     await logFactory.createLog({
       transactionId,
       title: title,
@@ -215,20 +227,6 @@ const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
       category: category,
       userIds: [User.ALL],
     });
-    //todo send webHooks
-    const webHookDto: PushSuccessMessageDTO = {
-      userIds: [User.ALL],
-      title: title,
-      content: content,
-      category: category,
-      deepLink: deepLink,
-      webLink: webLink,
-      messageIds: [result.messageId],
-      service: service,
-      action: Actions.SEND_ALL,
-    };
-
-    await webHookService.pushSuccessWebHook(webHookDto);
   } catch (e) {
     throw new Error(`send Push error: ${e}`);
   }
