@@ -51,32 +51,33 @@ async function operationWebHook(operationSuccessWebHookDTO: OperationSuccessWebH
 const pushSuccessWebHook = async (dto: PushSuccessMessageDTO): Promise<void> => {
   const { userIds, title, content, category, deepLink, webLink, service, type } = dto;
 
+  const appSuccessWebHookDTO: AppSuccessWebHookDTO = {
+    userIds: userIds,
+    title: title,
+    content: content,
+    category: category,
+    deepLink: deepLink,
+    webLink: webLink,
+    type: type,
+  };
+
   switch (service) {
     case Services.APP: {
-      const appSuccessWebHookDTO: AppSuccessWebHookDTO = {
-        userIds: userIds,
-        title: title,
-        content: content,
-        category: category,
-        deepLink: deepLink,
-        webLink: webLink,
-        type: type,
-      };
-
       await appWebHook(appSuccessWebHookDTO);
       return;
     }
     case Services.OPERATION: {
-      const operationSuccessWebHookDTO: OperationSuccessWebHookDTO = {
-        userIds: userIds,
-        title: title,
-        content: content,
-        category: category,
-        deepLink: deepLink,
-        webLink: webLink,
-      };
+      // const operationSuccessWebHookDTO: OperationSuccessWebHookDTO = {
+      //   userIds: userIds,
+      //   title: title,
+      //   content: content,
+      //   category: category,
+      //   deepLink: deepLink,
+      //   webLink: webLink,
+      // };
 
-      await operationWebHook(operationSuccessWebHookDTO);
+      //await operationWebHook(operationSuccessWebHookDTO);
+      await appWebHook(appSuccessWebHookDTO);
       return;
     }
     case Services.CREW: {
