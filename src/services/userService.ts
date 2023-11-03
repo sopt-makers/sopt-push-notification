@@ -37,7 +37,7 @@ function isTokenUserEntity(queryCommandOutputItems: Record<string, AttributeValu
   return true;
 }
 
-const getTokenByUserId = async (userId: string): Promise<UserTokenEntity | null> => {
+const getTokenByUserId = async (userId: string): Promise<UserTokenEntity[] | []> => {
   const queryCommandOutput = await tokenFactory.queryTokenByUserId(userId);
 
   if (queryCommandOutput.Items === undefined) {
@@ -45,24 +45,25 @@ const getTokenByUserId = async (userId: string): Promise<UserTokenEntity | null>
   }
 
   if (queryCommandOutput.Items.length === 0) {
-    return null;
+    return [];
   }
-  const queryCommandOutputItems: Record<string, AttributeValue> = queryCommandOutput.Items[0];
+  const queryCommandOutputItems: Record<string, AttributeValue>[] = queryCommandOutput.Items;
 
-  if (!isTokenUserEntity(queryCommandOutputItems)) {
+  if (!queryCommandOutputItems.every(isTokenUserEntity)) {
     throw new Error('queryCommandOutputItems is not UserTokenEntity');
   }
 
-  const tokenEntity: UserTokenEntity = {
-    userId: queryCommandOutputItems.pk.S.split('#')[1],
-    deviceToken: queryCommandOutputItems.sk.S.split('#')[1],
-    entity: 'user',
-    platform: queryCommandOutputItems.platform.S as Platform,
-    endpointArn: queryCommandOutputItems.endpointArn.S,
-    createdAt: queryCommandOutputItems.createdAt.S,
-    subscriptionArn: queryCommandOutputItems.subscriptionArn.S,
-  } as UserTokenEntity;
-
+  const tokenEntity: UserTokenEntity[] = queryCommandOutputItems.map((queryCommandOutputItems) => {
+    return {
+      userId: queryCommandOutputItems.pk.S.split('#')[1],
+      deviceToken: queryCommandOutputItems.sk.S.split('#')[1],
+      entity: 'user',
+      platform: queryCommandOutputItems.platform.S as Platform,
+      endpointArn: queryCommandOutputItems.endpointArn.S,
+      createdAt: queryCommandOutputItems.createdAt.S,
+      subscriptionArn: queryCommandOutputItems.subscriptionArn.S,
+    };
+  });
   return tokenEntity;
 };
 
@@ -95,8 +96,10 @@ const getUserByTokenId = async (deviceToken: string): Promise<DeviceTokenEntity 
 };
 
 const findTokenByUserIds = async (userIds: string[]): Promise<UserTokenEntity[]> => {
-  const result = await Promise.all(userIds.map(async (userId) => getTokenByUserId(userId)));
-  return result.filter((user: UserTokenEntity | null): user is UserTokenEntity => user !== null);
+  const tokens = await Promise.all(userIds.flatMap(async (userId) => getTokenByUserId(userId)));
+  const result = tokens.flat();
+  console.log(result);
+  return result.filter((user: UserTokenEntity | []): user is UserTokenEntity => user !== null);
 };
 
 const findUserByTokenIds = async (deviceTokens: string[]): Promise<DeviceTokenEntity[]> => {

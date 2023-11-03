@@ -150,8 +150,6 @@ const queryTokenByUserId = async (userId: string): Promise<QueryCommandOutput> =
       ':pk': { S: `u#${userId}` },
       ':sk': { S: 'd#' },
     },
-
-    Limit: 1,
   });
   return await ddbClient.send(command);
 };
