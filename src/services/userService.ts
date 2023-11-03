@@ -98,7 +98,6 @@ const getUserByTokenId = async (deviceToken: string): Promise<DeviceTokenEntity 
 const findTokenByUserIds = async (userIds: string[]): Promise<UserTokenEntity[]> => {
   const tokens = await Promise.all(userIds.flatMap(async (userId) => getTokenByUserId(userId)));
   const result = tokens.flat();
-  console.log(result);
   return result.filter((user: UserTokenEntity | []): user is UserTokenEntity => user !== null);
 };
 
