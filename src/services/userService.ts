@@ -37,7 +37,7 @@ function isTokenUserEntity(queryCommandOutputItems: Record<string, AttributeValu
   return true;
 }
 
-const getTokenByUserId = async (userId: string): Promise<UserTokenEntity[] | []> => {
+const getTokenByUserId = async (userId: string): Promise<UserTokenEntity[]> => {
   const queryCommandOutput = await tokenFactory.queryTokenByUserId(userId);
 
   if (queryCommandOutput.Items === undefined) {
@@ -96,9 +96,9 @@ const getUserByTokenId = async (deviceToken: string): Promise<DeviceTokenEntity 
 };
 
 const findTokenByUserIds = async (userIds: string[]): Promise<UserTokenEntity[]> => {
-  const tokens = await Promise.all(userIds.flatMap(async (userId) => getTokenByUserId(userId)));
+  const tokens = await Promise.all(userIds.map(async (userId) => getTokenByUserId(userId)));
   const result = tokens.flat();
-  return result.filter((user: UserTokenEntity | []): user is UserTokenEntity => user !== null);
+  return result.filter((user: UserTokenEntity): user is UserTokenEntity => user !== null);
 };
 
 const findUserByTokenIds = async (deviceTokens: string[]): Promise<DeviceTokenEntity[]> => {
