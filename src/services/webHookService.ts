@@ -2,6 +2,7 @@ import { PushSuccessMessageDTO, Services, Category, WebHookType } from '../types
 import axios from 'axios';
 
 interface AppSuccessWebHookDTO {
+  id: string;
   userIds?: string[];
   title: string;
   content: string;
@@ -12,6 +13,7 @@ interface AppSuccessWebHookDTO {
 }
 
 interface OperationSuccessWebHookDTO {
+  id: string;
   userIds?: string[];
   title: string;
   content: string;
@@ -49,16 +51,17 @@ async function operationWebHook(operationSuccessWebHookDTO: OperationSuccessWebH
 }
 
 const pushSuccessWebHook = async (dto: PushSuccessMessageDTO): Promise<void> => {
-  const { userIds, title, content, category, deepLink, webLink, service, type } = dto;
+  const { userIds, title, content, category, deepLink, webLink, service, type, id } = dto;
 
   const appSuccessWebHookDTO: AppSuccessWebHookDTO = {
-    userIds: userIds,
-    title: title,
-    content: content,
-    category: category,
-    deepLink: deepLink,
-    webLink: webLink,
-    type: type,
+    id,
+    userIds,
+    title,
+    content,
+    category,
+    deepLink,
+    webLink,
+    type,
   };
 
   switch (service) {
