@@ -85,14 +85,14 @@ type RequestSendAllPushMessageDTO = Omit<RequestSendPushMessageDTO, 'userIds'>;
 
 interface PushSuccessMessageDTO {
   id: string;
-  userIds?: string[];
   title: string;
   content: string;
   category: Category;
-  deepLink?: string;
-  webLink?: string;
   service: Services;
   type: WebHookType;
+  deepLink?: string;
+  webLink?: string;
+  userIds?: string[];
 }
 
 interface MessageFactoryDTO {
