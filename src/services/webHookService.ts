@@ -3,23 +3,23 @@ import axios from 'axios';
 
 interface AppSuccessWebHookDTO {
   id: string;
-  userIds?: string[];
   title: string;
   content: string;
   category: Category;
+  type: WebHookType;
   deepLink?: string;
   webLink?: string;
-  type: WebHookType;
+  userIds?: string[];
 }
 
 interface OperationSuccessWebHookDTO {
   id: string;
-  userIds?: string[];
   title: string;
   content: string;
   category: Category;
   deepLink?: string;
   webLink?: string;
+  userIds?: string[];
 }
 
 const axiosInstance = axios.create({
