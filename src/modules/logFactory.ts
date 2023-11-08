@@ -22,6 +22,7 @@ const createLog = async ({
   errorMessage = 'NULL',
   userIds = ['NULL'],
   messageIds = ['NULL'],
+  id = 'NULL',
 }: {
   transactionId: string;
   title?: string;
@@ -39,6 +40,7 @@ const createLog = async ({
   errorMessage?: string;
   userIds?: string[];
   messageIds?: string[];
+  id?: string;
 }): Promise<void> => {
   const now = dayjs();
   const year = now.format('YYYY');
@@ -65,6 +67,7 @@ const createLog = async ({
       messageIds: { SS: messageIds },
       errorCode: { S: errorCode },
       errorMessage: { S: errorMessage },
+      id: { S: id },
     },
   });
 

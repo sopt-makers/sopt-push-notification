@@ -84,6 +84,7 @@ interface RequestSendPushMessageDTO extends Omit<RequestHeaderDTO, 'platform' | 
 type RequestSendAllPushMessageDTO = Omit<RequestSendPushMessageDTO, 'userIds'>;
 
 interface PushSuccessMessageDTO {
+  id: string;
   userIds?: string[];
   title: string;
   content: string;
