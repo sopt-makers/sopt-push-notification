@@ -7,38 +7,40 @@ const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 
 const createLog = async ({
   transactionId,
-  title = 'NULL',
-  content = 'NULL',
-  deviceToken,
-  webLink = 'NULL',
-  applink = 'NULL',
   notificationType,
   orderServiceName,
   status,
   action,
   platform,
+  deviceToken,
+  title = 'NULL',
+  content = 'NULL',
+  webLink = 'NULL',
+  applink = 'NULL',
   category = Category.NONE,
   errorCode = 'NULL',
   errorMessage = 'NULL',
   userIds = ['NULL'],
   messageIds = ['NULL'],
+  id = 'NULL',
 }: {
   transactionId: string;
-  title?: string;
-  content?: string;
   deviceToken: string;
-  webLink?: string;
-  applink?: string;
   notificationType: NotificationType;
   orderServiceName: Services;
   status: NotificationStatus;
   action: Actions;
   platform: Platform;
+  title?: string;
+  content?: string;
+  webLink?: string;
+  applink?: string;
   category?: Category;
   errorCode?: string;
   errorMessage?: string;
   userIds?: string[];
   messageIds?: string[];
+  id?: string;
 }): Promise<void> => {
   const now = dayjs();
   const year = now.format('YYYY');
@@ -65,6 +67,7 @@ const createLog = async ({
       messageIds: { SS: messageIds },
       errorCode: { S: errorCode },
       errorMessage: { S: errorMessage },
+      id: { S: id },
     },
   });
 

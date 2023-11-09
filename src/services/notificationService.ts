@@ -8,6 +8,8 @@ interface PushMessageDTO {
   title: string;
   content: string;
   category: Category;
+  /* 메세지 고유 식별 아이디 입니다. SNS에서 발행하는 Message Id와는 무관함 */
+  id: string;
   deepLink?: string;
   webLink?: string;
 }
@@ -74,6 +76,7 @@ const platformPush = async (dto: {
       category: dto.messagePayload.category,
       deepLink: dto.messagePayload.deepLink,
       webLink: dto.messagePayload.webLink,
+      id: dto.messagePayload.id,
     });
   }
   if (dto.endpointPayload.platform === Platform.Android) {
@@ -84,6 +87,7 @@ const platformPush = async (dto: {
       category: dto.messagePayload.category,
       deepLink: dto.messagePayload.deepLink,
       webLink: dto.messagePayload.webLink,
+      id: dto.messagePayload.id,
     });
   }
   console.error('platformPush error: platform is not defined', JSON.stringify(dto));

@@ -2,22 +2,24 @@ import { PushSuccessMessageDTO, Services, Category, WebHookType } from '../types
 import axios from 'axios';
 
 interface AppSuccessWebHookDTO {
-  userIds?: string[];
+  id: string;
   title: string;
   content: string;
   category: Category;
+  type: WebHookType;
   deepLink?: string;
   webLink?: string;
-  type: WebHookType;
+  userIds?: string[];
 }
 
 interface OperationSuccessWebHookDTO {
-  userIds?: string[];
+  id: string;
   title: string;
   content: string;
   category: Category;
   deepLink?: string;
   webLink?: string;
+  userIds?: string[];
 }
 
 const axiosInstance = axios.create({
@@ -49,16 +51,17 @@ async function operationWebHook(operationSuccessWebHookDTO: OperationSuccessWebH
 }
 
 const pushSuccessWebHook = async (dto: PushSuccessMessageDTO): Promise<void> => {
-  const { userIds, title, content, category, deepLink, webLink, service, type } = dto;
+  const { userIds, title, content, category, deepLink, webLink, service, type, id } = dto;
 
   const appSuccessWebHookDTO: AppSuccessWebHookDTO = {
-    userIds: userIds,
-    title: title,
-    content: content,
-    category: category,
-    deepLink: deepLink,
-    webLink: webLink,
-    type: type,
+    id,
+    userIds,
+    title,
+    content,
+    category,
+    deepLink,
+    webLink,
+    type,
   };
 
   switch (service) {

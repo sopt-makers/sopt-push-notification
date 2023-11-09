@@ -1,3 +1,6 @@
+import { APIGatewayProxyEvent, SNSEvent } from 'aws-lambda';
+import { v4 as uuid } from 'uuid';
+
 import tokenFactory from './modules/tokenFactory';
 import snsFactory from './modules/snsFactory';
 import response from './constants/response';
@@ -17,7 +20,6 @@ import {
 } from './types';
 import responseMessage from './constants/responseMessage';
 import * as userService from './services/userService';
-import { APIGatewayProxyEvent, SNSEvent } from 'aws-lambda';
 import logFactory from './modules/logFactory';
 import notificationService from './services/notificationService';
 import { DeviceTokenEntity, UserTokenEntity } from './types/tokens';
@@ -129,6 +131,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
     if (users.length === 0) {
       return;
     }
+    const messageId = uuid();
     const executors = users.map(
       async (user: UserTokenEntity) =>
         await notificationService.platformPush({
@@ -138,6 +141,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
             webLink,
             deepLink,
             category,
+            id: messageId,
           },
           endpointPayload: { endpointArn: user.endpointArn, platform: user.platform },
         }),
@@ -149,6 +153,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
     );
 
     const webHookDto: PushSuccessMessageDTO = {
+      id: messageId,
       userIds: userIds,
       title: title,
       content: content,
@@ -175,6 +180,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
       platform: Platform.None,
       deviceToken: '',
       category: category,
+      id: messageId,
       userIds: userIds.map((userId) => `u#${userId}`),
     });
   } catch (e) {
@@ -184,6 +190,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
 const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
   try {
     const { transactionId, title, content, category, webLink, deepLink, service } = dto;
+    const messageId = uuid();
 
     const result = await notificationService.allTopicPush({
       messagePayload: {
@@ -192,6 +199,7 @@ const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
         category,
         webLink,
         deepLink,
+        id: messageId,
       },
     });
 
@@ -200,6 +208,7 @@ const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
     }
 
     const webHookDto: PushSuccessMessageDTO = {
+      id: messageId,
       title: title,
       content: content,
       category: category,
@@ -226,6 +235,7 @@ const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
       deviceToken: '',
       category: category,
       userIds: [User.ALL],
+      id: messageId,
     });
   } catch (e) {
     throw new Error(`send Push error: ${e}`);
