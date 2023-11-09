@@ -46,6 +46,7 @@ const pushArn = async (dto: PushDTO) => {
     category: dto.category,
     deepLink: dto.deepLink,
     webLink: dto.webLink,
+    id: dto.id,
   });
   const endpointArn = dto.endpointArn;
   return await push(endpointArn, message);
@@ -59,6 +60,7 @@ const pushFcm = async (dto: PushDTO): Promise<ResponsePushNotification | null> =
     category: dto.category,
     deepLink: dto.deepLink,
     webLink: dto.webLink,
+    id: dto.id,
   });
   const endpointArn = dto.endpointArn;
   return await push(endpointArn, message);
@@ -96,6 +98,7 @@ const platformPush = async (dto: {
 
 const pushAll = async (dto: PushMessageDTO): Promise<ResponsePushNotification | null> => {
   const message = messageFactory.createNewMessage({
+    id: dto.id,
     topic: PushTopic.All,
     title: dto.title,
     content: dto.content,

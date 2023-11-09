@@ -97,6 +97,7 @@ interface PushSuccessMessageDTO {
 
 interface MessageFactoryDTO {
   topic: PushTopic;
+  id: string;
   title: string;
   content: string;
   category: Category;
