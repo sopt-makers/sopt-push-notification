@@ -86,7 +86,6 @@ const fcmMessage = (dto: MessageFactoryDTO): ResponseFCMMessage => {
   return { default: DEFAULT, GCM: JSON.stringify(message) };
 };
 
-//todo dev prod 나눠서 보내기
 const allMessage = (dto: MessageFactoryDTO): AllTopicMessage => {
   return {
     default: DEFAULT,
