@@ -8,6 +8,7 @@ type APNsMessage = {
     };
   };
   category: Category;
+  id: string;
   webLink?: string;
   deepLink?: string;
 };
@@ -27,6 +28,7 @@ type FCMMessage = {
     title: string;
     content: string;
     category: Category;
+    id: string;
     webLink?: string;
     deepLink?: string;
   };
@@ -41,7 +43,7 @@ const DEFAULT =
   'This is the default message which must be present when publishing a message to a topic. The default message will only be used if a message is not present for one of the notification platforms.';
 
 const apnsMessage = (dto: MessageFactoryDTO): ResponseApnsMessage => {
-  const { title, content, category, webLink, deepLink } = dto;
+  const { title, content, category, webLink, deepLink, id } = dto;
   const message: APNsMessage = {
     aps: {
       alert: {
@@ -49,7 +51,8 @@ const apnsMessage = (dto: MessageFactoryDTO): ResponseApnsMessage => {
         body: content,
       },
     },
-    category: category,
+    category,
+    id,
   };
 
   if (deepLink !== undefined) {
@@ -63,9 +66,10 @@ const apnsMessage = (dto: MessageFactoryDTO): ResponseApnsMessage => {
 };
 
 const fcmMessage = (dto: MessageFactoryDTO): ResponseFCMMessage => {
-  const { title, content, category, webLink, deepLink } = dto;
+  const { title, content, category, webLink, deepLink, id } = dto;
   const message: FCMMessage = {
     data: {
+      id,
       title,
       content,
       category,
@@ -82,7 +86,6 @@ const fcmMessage = (dto: MessageFactoryDTO): ResponseFCMMessage => {
   return { default: DEFAULT, GCM: JSON.stringify(message) };
 };
 
-//todo dev prod 나눠서 보내기
 const allMessage = (dto: MessageFactoryDTO): AllTopicMessage => {
   return {
     default: DEFAULT,
