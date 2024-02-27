@@ -70,20 +70,11 @@ const pushSuccessWebHook = async (dto: PushSuccessMessageDTO): Promise<void> => 
       return;
     }
     case Services.OPERATION: {
-      // const operationSuccessWebHookDTO: OperationSuccessWebHookDTO = {
-      //   userIds: userIds,
-      //   title: title,
-      //   content: content,
-      //   category: category,
-      //   deepLink: deepLink,
-      //   webLink: webLink,
-      // };
-
-      //await operationWebHook(operationSuccessWebHookDTO);
       await appWebHook(appSuccessWebHookDTO);
       return;
     }
     case Services.CREW: {
+      await appWebHook(appSuccessWebHookDTO);
       return;
     }
   }
