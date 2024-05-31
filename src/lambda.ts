@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, SNSEvent } from 'aws-lambda';
+import { APIGatewayProxyEvent, EventBridgeEvent, SNSEvent } from 'aws-lambda';
 import { v4 as uuid } from 'uuid';
 
 import tokenFactory from './modules/tokenFactory';
@@ -187,6 +187,7 @@ const sendPush = async (dto: RequestSendPushMessageDTO) => {
     throw new Error(`send Push error: ${e}`);
   }
 };
+
 const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
   try {
     const { transactionId, title, content, category, webLink, deepLink, service } = dto;
@@ -239,6 +240,54 @@ const sendPushAll = async (dto: RequestSendAllPushMessageDTO) => {
     });
   } catch (e) {
     throw new Error(`send Push error: ${e}`);
+  }
+};
+
+const eventBridgeHandler = async (event: EventBridgeEvent<string, any>) => {
+  const { header, body } = event.detail;
+
+  if (!header || !body) {
+    return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
+  }
+
+  const { action, transactionId, service } = header;
+
+  try {
+    switch (action) {
+      case Actions.SEND: {
+        const dto: RequestSendPushMessageDTO = {
+          ...body,
+          transactionId,
+          service,
+        };
+
+        if (!dtoValidator.toRequestSendPushMessageDto(dto)) {
+          return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
+        }
+
+        await sendPush(dto);
+        return response(200, status.success(statusCode.OK, responseMessage.SEND_SUCCESS));
+      }
+      case Actions.SEND_ALL: {
+        const dto: RequestSendAllPushMessageDTO = {
+          ...body,
+          transactionId,
+          service,
+        };
+
+        if (!dtoValidator.toRequestSendAllPushMessageDTO(dto)) {
+          return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
+        }
+
+        await sendPushAll(dto);
+        return response(200, status.success(statusCode.OK, responseMessage.SEND_SUCCESS));
+      }
+      default: {
+        return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
+      }
+    }
+  } catch (error) {
+    return response(500, status.fail(statusCode.INTERNAL_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
   }
 };
 
@@ -340,9 +389,11 @@ const snsHandler = async (event: SNSEvent) => {
   return response(204, status.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT));
 };
 
-export const service = async (event: APIGatewayProxyEvent | SNSEvent): Promise<any> => {
+export const service = async (event: APIGatewayProxyEvent | EventBridgeEvent<string, any> | SNSEvent): Promise<any> => {
   if ('Records' in event) {
     return await snsHandler(event);
+  } else if ('detail' in event) {
+    return await eventBridgeHandler(event);
   } else {
     return await apiGateWayHandler(event);
   }
