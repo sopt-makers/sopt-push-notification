@@ -43,3 +43,6 @@ Thumbs.db
 dist/**/*
 
 .serverless/
+
+endpoints.json
+subscriptions.json
