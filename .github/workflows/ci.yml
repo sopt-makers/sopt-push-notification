@@ -36,7 +36,7 @@ jobs:
           ENV_FILE: ${{ secrets.ENV_DEV }}
         run: |
           touch .env.dev
-          ehco "$ENV_FILE" >> .env.dev
+          echo "$ENV_FILE" >> .env.dev
           
           npm run start
 
