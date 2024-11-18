@@ -36,7 +36,7 @@ jobs:
         run: |
           touch .env.dev
           echo "$ENV_FILE" >> .env.dev
-          nohup npm run start >/dev/null &
+          nohup npm run start > nohup.out 2>&1 &
 
           sleep 5
 
