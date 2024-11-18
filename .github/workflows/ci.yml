@@ -28,7 +28,7 @@ jobs:
       #   run: npm run lint
 
       - name: Build Project
-        run: npm run build
+        run: npm run start
 
       - name: Run Validate Script
         run: |
