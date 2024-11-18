@@ -30,8 +30,16 @@ jobs:
       - name: Build Project
         run: npm run build
 
+
       - name: Run Serverless-offline
-        run: npm run start
+        env:
+          ENV_FILE: ${{ secrets.ENV_DEV }}
+        run: |
+          touch .env.dev
+          ehco "$ENV_FILE" >> .env.dev
+          
+          npm run start
+
 
       - name: Run Validate Script
         run: |
