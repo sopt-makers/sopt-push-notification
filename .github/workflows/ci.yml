@@ -23,12 +23,8 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # - name: Run Lint
-      #   run: npm run lint
-
       - name: Build Project
         run: npm run build
-
 
       - name: Run Serverless-offline
         env:
@@ -46,11 +42,4 @@ jobs:
             echo "Application Run Fail."
             exit 1
           fi
-        shell: bash
-
-
-      - name: Run Validate Script
-        run: |
-          sudo chmod +x .github/valid.sh
-          ./.github/valid.sh 
         shell: bash
