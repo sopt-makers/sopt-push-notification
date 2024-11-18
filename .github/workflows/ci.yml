@@ -28,6 +28,9 @@ jobs:
       #   run: npm run lint
 
       - name: Build Project
+        run: npm run build
+
+      - name: Run Serverless-offline
         run: npm run start
 
       - name: Run Validate Script
