@@ -1,0 +1,7 @@
+name: SOPT Notification Production Server CD
+
+on:    
+  workflow_dispatch:
+  push:
+    branches:
+      - main
