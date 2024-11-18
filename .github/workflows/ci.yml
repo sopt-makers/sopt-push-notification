@@ -51,6 +51,6 @@ jobs:
 
       - name: Run Validate Script
         run: |
-          sudo chmod +x valid.sh
-          ./valid.sh
+          sudo chmod +x .github/valid.sh
+          ./.github/valid.sh 
         shell: bash
