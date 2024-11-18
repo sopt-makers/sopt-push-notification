@@ -41,7 +41,7 @@ jobs:
 
           sleep 5
 
-          if grep -q "Server reader" nohup.out; then
+          if grep -q "Server ready" nohup.out; then
             echo "Application Run Success."
           else
             echo "Application Run Fail."
