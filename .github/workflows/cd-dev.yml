@@ -30,7 +30,7 @@ jobs:
           touch .env.dev
           echo "$ENV_FILE" >> .env.dev
 
-      - name: Set AWS Credentials by export
+      - name: Set AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
