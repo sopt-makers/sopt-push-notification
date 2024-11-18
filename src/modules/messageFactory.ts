@@ -1,4 +1,5 @@
 import { Category, MessageFactoryDTO } from '../types';
+import dayjs from 'dayjs';
 
 type APNsMessage = {
   aps: {
@@ -11,6 +12,7 @@ type APNsMessage = {
   id: string;
   webLink?: string;
   deepLink?: string;
+  sendAt: string;
 };
 
 type ResponseApnsMessage = {
@@ -31,6 +33,7 @@ type FCMMessage = {
     id: string;
     webLink?: string;
     deepLink?: string;
+    sendAt: string;
   };
 };
 
@@ -44,15 +47,19 @@ const DEFAULT =
 
 const apnsMessage = (dto: MessageFactoryDTO): ResponseApnsMessage => {
   const { title, content, category, webLink, deepLink, id } = dto;
+  const now = dayjs();
+  const sendAt = now.format("YYYY-MM-DD HH:mm:ss");
   const message: APNsMessage = {
     aps: {
       alert: {
         title,
         body: content,
       },
+
     },
     category,
     id,
+    sendAt,
   };
 
   if (deepLink !== undefined) {
@@ -67,12 +74,15 @@ const apnsMessage = (dto: MessageFactoryDTO): ResponseApnsMessage => {
 
 const fcmMessage = (dto: MessageFactoryDTO): ResponseFCMMessage => {
   const { title, content, category, webLink, deepLink, id } = dto;
+  const now = dayjs();
+  const sendAt = now.format("YYYY-MM-DD HH:mm:ss");
   const message: FCMMessage = {
     data: {
       id,
       title,
       content,
       category,
+      sendAt,
     },
   };
 
