@@ -5,7 +5,7 @@ on:
   push:
     branches: [ main ]
 
-job:
+jobs:
   deploy:
     name: Deploy to AWS Lambda
     runs-on: ubuntu-latest
