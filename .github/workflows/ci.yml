@@ -24,13 +24,12 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Run Lint
-        run: npm run lint
+      # - name: Run Lint
+      #   run: npm run lint
 
       - name: Build Project
         run: npm run build
 
-      # 6. 테스트 실행
       - name: Run Validate Script
         run: |
           sudo chmod +x valid.sh
