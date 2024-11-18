@@ -3,8 +3,7 @@ name: SOPT Notification Server CI
 on:    
   workflow_dispatch:
   pull_request:
-    branches:
-      - develop
+    branches: [ develop ]
 
 jobs:
   validate:

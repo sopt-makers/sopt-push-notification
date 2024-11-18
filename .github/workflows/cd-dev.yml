@@ -3,8 +3,7 @@ name: SOPT Notification Development Server CD
 on:    
   workflow_dispatch:
   push:
-    branches:
-      - develop
+    branches: [ develop ]
 
 job:
   deploy:
