@@ -37,8 +37,17 @@ jobs:
         run: |
           touch .env.dev
           echo "$ENV_FILE" >> .env.dev
-          
-          npm run start
+          nohup npm run start >/dev/null &
+
+          sleep 5
+
+          if grep -q "Server reader" nohup.out; then
+            echo "Application Run Success."
+          else
+            echo "Application Run Fail."
+            exit 1
+          fi
+        shell: bash
 
 
       - name: Run Validate Script
