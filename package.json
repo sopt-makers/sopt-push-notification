@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc --build --clean",
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
     "watch": "tsc -w",
     "lint": "eslint .",
     "format": "prettier --write .",
