@@ -11,8 +11,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "start": "serverless offline start",
-    "deploy:dev": "NODE_ENV=dev sls deploy --stage dev",
-    "deploy:prod": "NODE_ENV=prod sls deploy --stage prod"
+    "deploy:dev": "npm run clean && npm run build && NODE_ENV=dev sls deploy --stage dev",
+    "deploy:prod": "npm run clean && npm run build && NODE_ENV=prod sls deploy --stage prod"
   },
   "keywords": [],
   "author": "",
