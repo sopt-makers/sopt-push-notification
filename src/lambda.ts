@@ -250,7 +250,7 @@ const eventBridgeHandler = async (event: EventBridgeEvent<string, any>) => {
     return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
   }
 
-  const { action, transactionId, service } = header;
+  const { action, transactionId, service, alarmId } = header;
 
   try {
     switch (action) {
@@ -266,6 +266,7 @@ const eventBridgeHandler = async (event: EventBridgeEvent<string, any>) => {
         }
 
         await sendPush(dto);
+        await webHookService.scheduleSuccessWebHook(alarmId);
         return response(200, status.success(statusCode.OK, responseMessage.SEND_SUCCESS));
       }
       case Actions.SEND_ALL: {
@@ -280,6 +281,7 @@ const eventBridgeHandler = async (event: EventBridgeEvent<string, any>) => {
         }
 
         await sendPushAll(dto);
+        await webHookService.scheduleSuccessWebHook(alarmId);
         return response(200, status.success(statusCode.OK, responseMessage.SEND_SUCCESS));
       }
       default: {
