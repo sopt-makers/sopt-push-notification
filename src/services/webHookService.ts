@@ -1,5 +1,6 @@
 import { PushSuccessMessageDTO, Services, Category, WebHookType } from '../types';
 import axios from 'axios';
+import dayjs from 'dayjs';
 
 interface AppSuccessWebHookDTO {
   id: string;
@@ -11,15 +12,8 @@ interface AppSuccessWebHookDTO {
   webLink?: string;
   userIds?: string[];
 }
-
-interface OperationSuccessWebHookDTO {
-  id: string;
-  title: string;
-  content: string;
-  category: Category;
-  deepLink?: string;
-  webLink?: string;
-  userIds?: string[];
+interface OperationScheduleSuccessWebHookDTO {
+  sendAt: string;
 }
 
 const axiosInstance = axios.create({
@@ -38,13 +32,13 @@ async function appWebHook(appSuccessWebHookDTO: AppSuccessWebHookDTO): Promise<v
   }
 }
 
-async function operationWebHook(operationSuccessWebHookDTO: OperationSuccessWebHookDTO): Promise<void> {
+async function operationScheduleSuccessWebHook(alarmId: number, dto: OperationScheduleSuccessWebHookDTO): Promise<void> {
   try {
     if (process.env.MAKERS_OPERATION_SERVER_URL === undefined) {
       throw new Error('env not defined');
     }
-
-    await axiosInstance.post(process.env.MAKERS_OPERATION_SERVER_URL, JSON.stringify(operationSuccessWebHookDTO));
+    const statusUpdateEndpoint = process.env.MAKERS_OPERATION_SERVER_URL + alarmId;
+    await axiosInstance.patch(statusUpdateEndpoint, JSON.stringify(dto));
   } catch (e) {
     throw new Error('OPERATION SERVER webhook failed');
   }
@@ -80,4 +74,17 @@ const pushSuccessWebHook = async (dto: PushSuccessMessageDTO): Promise<void> => 
   }
 };
 
-export default { pushSuccessWebHook };
+const scheduleSuccessWebHook = async (alarmId: number): Promise<void> => {
+  if (alarmId === undefined) {
+    throw new Error('schedule alarm id not defined');
+  }
+
+  const sendAt = dayjs().format('YYYY-MM-DD hh:mm');
+  const updateStatusWebHookDTO: OperationScheduleSuccessWebHookDTO = {
+    sendAt
+  };
+
+  await operationScheduleSuccessWebHook(alarmId, updateStatusWebHookDTO);
+}
+
+export default { pushSuccessWebHook, scheduleSuccessWebHook };
