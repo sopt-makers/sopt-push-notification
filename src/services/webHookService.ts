@@ -37,7 +37,7 @@ async function operationScheduleSuccessWebHook(alarmId: number, dto: OperationSc
     if (process.env.MAKERS_OPERATION_SERVER_URL === undefined) {
       throw new Error('env not defined');
     }
-    const statusUpdateEndpoint = process.env.MAKERS_OPERATION_SERVER_URL + alarmId;
+    const statusUpdateEndpoint = process.env.MAKERS_OPERATION_SERVER_URL + "/" + alarmId;
     await axiosInstance.patch(statusUpdateEndpoint, JSON.stringify(dto));
   } catch (e) {
     throw new Error('OPERATION SERVER webhook failed');
