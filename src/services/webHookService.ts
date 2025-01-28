@@ -81,7 +81,7 @@ const scheduleSuccessWebHook = async (alarmId: number): Promise<void> => {
 
   const sendAt = dayjs().format('YYYY-MM-DD hh:mm');
   const updateStatusWebHookDTO: OperationScheduleSuccessWebHookDTO = {
-    sendAt
+    sendAt: sendAt
   };
 
   await operationScheduleSuccessWebHook(alarmId, updateStatusWebHookDTO);
