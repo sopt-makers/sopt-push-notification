@@ -37,8 +37,8 @@ async function operationScheduleSuccessWebHook(alarmId: number, dto: OperationSc
     if (process.env.MAKERS_OPERATION_SERVER_URL === undefined) {
       throw new Error('env not defined');
     }
-    const statusUpdateEndpoint = process.env.MAKERS_OPERATION_SERVER_URL + "/" + alarmId;
-    await axiosInstance.patch(statusUpdateEndpoint, JSON.stringify(dto));
+    const statusUpdateEndpoint = `${process.env.MAKERS_OPERATION_SERVER_URL}/${alarmId}`;
+    await axiosInstance.patch(statusUpdateEndpoint, dto);
   } catch (e) {
     throw new Error('OPERATION SERVER webhook failed');
   }
@@ -79,9 +79,9 @@ const scheduleSuccessWebHook = async (alarmId: number): Promise<void> => {
     throw new Error('schedule alarm id not defined');
   }
 
-  const sendAt = dayjs().format('YYYY-MM-DD hh:mm');
+  const sendAt = dayjs().format('YYYY-MM-DD HH:mm');
   const updateStatusWebHookDTO: OperationScheduleSuccessWebHookDTO = {
-    sendAt: sendAt
+    sendAt
   };
 
   await operationScheduleSuccessWebHook(alarmId, updateStatusWebHookDTO);
