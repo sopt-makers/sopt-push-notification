@@ -294,6 +294,7 @@ const eventBridgeHandler = async (event: EventBridgeEvent<string, any>) => {
 };
 
 const apiGateWayHandler = async (event: APIGatewayProxyEvent) => {
+  console.log('apiGatewayHandler event', JSON.stringify(event));
   if (event.body === null || event.headers.action === undefined) {
     return response(400, status.success(statusCode.BAD_REQUEST, responseMessage.INVALID_REQUEST));
   }
