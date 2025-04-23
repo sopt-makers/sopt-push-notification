@@ -5,6 +5,7 @@ frameworkVersion: '3'
 useDotenv: true
 
 plugins:
+  - serverless-esbuild
   - serverless-offline
 
 provider:

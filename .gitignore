@@ -43,3 +43,6 @@ Thumbs.db
 dist/**/*
 
 .serverless/
+
+# test 
+src/test/*
