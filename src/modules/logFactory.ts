@@ -55,7 +55,7 @@ const createLog = async ({
       title: { S: title },
       content: { S: content },
       deviceToken: { S: deviceToken ?? 'NULL' },
-      webLink: { S: webLink },
+      webLink: { S: webLink ?? 'NULL' },
       applink: { S: applink ?? 'NULL' },
       notificationType: { S: notificationType },
       orderServiceName: { S: orderServiceName },
