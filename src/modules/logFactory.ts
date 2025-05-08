@@ -1,5 +1,5 @@
 import { DynamoDBClient, PutItemCommand, PutItemCommandOutput } from '@aws-sdk/client-dynamodb';
-import dayjs from 'dayjs';
+import dayjs from './../utils/dayjsWrapper';
 import { v4 as uuid } from 'uuid';
 import { Actions, Category, Entity, NotificationStatus, NotificationType, Platform, Services } from '../types';
 
@@ -54,14 +54,14 @@ const createLog = async ({
       entity: { S: Entity.HISTORY },
       title: { S: title },
       content: { S: content },
-      deviceToken: { S: deviceToken },
-      webLink: { S: webLink },
-      applink: { S: applink },
+      deviceToken: { S: deviceToken ?? 'NULL' },
+      webLink: { S: webLink ?? 'NULL' },
+      applink: { S: applink ?? 'NULL' },
       notificationType: { S: notificationType },
       orderServiceName: { S: orderServiceName },
       status: { S: status },
       action: { S: action },
-      platform: { S: platform },
+      platform: { S: platform ?? 'NULL' },
       category: { S: category },
       userIds: { SS: userIds },
       messageIds: { SS: messageIds },
