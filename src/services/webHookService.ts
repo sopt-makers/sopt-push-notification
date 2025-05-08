@@ -1,6 +1,6 @@
 import { PushSuccessMessageDTO, Services, Category, WebHookType } from '../types';
 import axios from 'axios';
-import dayjs from 'dayjs';
+import dayjs from './../utils/dayjsWrapper';
 
 interface AppSuccessWebHookDTO {
   id: string;
@@ -32,7 +32,10 @@ async function appWebHook(appSuccessWebHookDTO: AppSuccessWebHookDTO): Promise<v
   }
 }
 
-async function operationScheduleSuccessWebHook(alarmId: number, dto: OperationScheduleSuccessWebHookDTO): Promise<void> {
+async function operationScheduleSuccessWebHook(
+  alarmId: number,
+  dto: OperationScheduleSuccessWebHookDTO,
+): Promise<void> {
   try {
     if (process.env.MAKERS_OPERATION_SERVER_URL === undefined) {
       throw new Error('env not defined');
@@ -81,10 +84,10 @@ const scheduleSuccessWebHook = async (alarmId: number): Promise<void> => {
 
   const sendAt = dayjs().format('YYYY-MM-DD HH:mm');
   const updateStatusWebHookDTO: OperationScheduleSuccessWebHookDTO = {
-    sendAt
+    sendAt,
   };
 
   await operationScheduleSuccessWebHook(alarmId, updateStatusWebHookDTO);
-}
+};
 
 export default { pushSuccessWebHook, scheduleSuccessWebHook };
