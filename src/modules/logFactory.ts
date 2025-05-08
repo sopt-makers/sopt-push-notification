@@ -1,5 +1,5 @@
 import { DynamoDBClient, PutItemCommand, PutItemCommandOutput } from '@aws-sdk/client-dynamodb';
-import dayjs from 'dayjs';
+import dayjs from './../utils/dayjsWrapper';
 import { v4 as uuid } from 'uuid';
 import { Actions, Category, Entity, NotificationStatus, NotificationType, Platform, Services } from '../types';
 

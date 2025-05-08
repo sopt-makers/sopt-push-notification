@@ -11,7 +11,7 @@ import {
   QueryCommandOutput,
 } from '@aws-sdk/client-dynamodb';
 import { Entity, Platform } from '../types';
-import dayjs from 'dayjs';
+import dayjs from './../utils/dayjsWrapper';
 
 const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 
