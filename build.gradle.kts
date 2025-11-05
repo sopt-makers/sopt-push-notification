@@ -1,6 +1,8 @@
 plugins {
     id("java")
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.diffplug.spotless") version "6.23.3"
+    id("checkstyle")
 }
 
 group = "com.sopt.push"
@@ -32,7 +34,7 @@ dependencies {
     
     // Validation
     implementation("jakarta.validation:jakarta.validation-api:3.0.2")
-    implementation("org.hibernate.validator:hibernate-validator:8.0.1")
+    implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
     
     // Logging
     implementation("org.slf4j:slf4j-api:2.0.13")
@@ -46,6 +48,34 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.5.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.5.0")
 }
+
+// Spotless (코드 포매팅)
+spotless {
+    java {
+        target("src/**/*.java")
+        googleJavaFormat("1.23.0")
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+// Checkstyle (코드 스타일 검사)
+checkstyle {
+    toolVersion = "10.12.5"
+    configFile = file("config/checkstyle/checkstyle.xml")
+    isIgnoreFailures = false
+}
+
+tasks.named<Checkstyle>("checkstyleMain") {
+    setSource("src/main/java")
+}
+
+tasks.named<Checkstyle>("checkstyleTest") {
+    setSource("src/test/java")
+}
+
+// PMD는 현재 사용하지 않음 (필요 시 규칙 파일 추가 후 활성화)
 
 tasks {
     test {
@@ -64,6 +94,25 @@ tasks {
     
     build {
         dependsOn(shadowJar)
+    }
+    
+    // CI에서 포맷 검사도 함께 실행되도록 연결
+    named("check") {
+        dependsOn("spotlessCheck")
+    }
+    
+    // 포매팅 자동 적용
+    register("format") {
+        group = "formatting"
+        description = "Format code using Spotless"
+        dependsOn("spotlessApply")
+    }
+    
+    // 포매팅 검사만 (자동 적용 안 함)
+    register("checkFormat") {
+        group = "formatting"
+        description = "Check code formatting"
+        dependsOn("spotlessCheck")
     }
 }
 

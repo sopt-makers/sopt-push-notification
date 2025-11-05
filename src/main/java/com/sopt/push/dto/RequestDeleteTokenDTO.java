@@ -1,6 +1,5 @@
 package com.sopt.push.dto;
 
 public class RequestDeleteTokenDTO {
-    // TODO: Define request DTO
+  // TODO: Define request DTO
 }
-
