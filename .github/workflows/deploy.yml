@@ -76,7 +76,8 @@ jobs:
 
       - name: Install Serverless Framework and plugins
         run: |
-          npm install serverless@3.38.0 serverless-offline@13
+          npm install -g serverless@3.38.0
+          npm install serverless-offline@13
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -94,7 +95,7 @@ jobs:
       - name: Deploy to AWS Lambda (dev)
         id: deploy
         run: |
-          npx serverless deploy --stage dev --verbose
+          serverless deploy --stage dev --verbose
 
   deploy-prod:
     needs: build
@@ -127,7 +128,8 @@ jobs:
 
       - name: Install Serverless Framework and plugins
         run: |
-          npm install serverless@3.38.0 serverless-offline@13
+          npm install -g serverless@3.38.0
+          npm install serverless-offline@13
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -145,4 +147,4 @@ jobs:
       - name: Deploy to AWS Lambda (prod)
         id: deploy
         run: |
-          npx serverless deploy --stage prod --verbose
+          serverless deploy --stage prod --verbose
