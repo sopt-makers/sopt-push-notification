@@ -13,7 +13,7 @@ provider:
   region: ap-northeast-2
   timeout: 30
   memorySize: 1024
-  stackName: sopt-push-notification-lambda-${self:provider.stage}
+  stackName: sopt-push-notification-lambda-${self:provider.environment.stage}
   environment:
     DYNAMODB_TABLE: ${env:DYNAMODB_TABLE}
     PLATFORM_APPLICATION_iOS: ${env:PLATFORM_APPLICATION_iOS}
@@ -59,7 +59,7 @@ package:
 
 functions:
   service:
-    name: ${self:service}-${self:provider.stage}
+    name: ${self:service}-${self:provider.environment.stage}
     handler: com.sopt.push.lambda.ApiHandler
     events:
       - http:
