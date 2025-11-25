@@ -25,7 +25,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Cache Gradle dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
@@ -51,12 +51,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        stage: [dev, prod]
-    if: |
-      (github.ref == 'refs/heads/develop' && matrix.stage == 'dev') ||
-      (github.ref == 'refs/heads/prod' && matrix.stage == 'prod')
+        include:
+          - stage: dev
+            branch: develop
+          - stage: prod
+            branch: prod
     environment:
-      name: ${{ matrix.stage == 'dev' && 'dev' || 'production' }}
+      name: ${{ matrix.stage == 'dev' && 'dev' || 'prod' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -92,11 +93,28 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Create .env file
+        if: github.ref == 'refs/heads/${{ matrix.branch }}'
         env:
           ENV_FILE: ${{ matrix.stage == 'dev' && secrets.ENV_DEV || secrets.ENV_PROD }}
         run: |
           printf '%s\n' "$ENV_FILE" > .env
 
       - name: Deploy to AWS Lambda
-        run: serverless deploy --stage ${{ matrix.stage }} --verbose
+        if: github.ref == 'refs/heads/${{ matrix.branch }}'
+        id: deploy
+        run: |
+          serverless deploy --stage ${{ matrix.stage }} --verbose | tee deploy.log
+          # Extract endpoint from deploy output or serverless info
+          ENDPOINT=$(grep -oP 'endpoints:\s*\K[^\s]+' deploy.log 2>/dev/null || \
+                     serverless info --stage ${{ matrix.stage }} 2>/dev/null | grep -oP 'endpoints:\s*\K[^\s]+' || \
+                     echo "")
+          if [ -n "$ENDPOINT" ]; then
+            echo "endpoint=$ENDPOINT" >> $GITHUB_OUTPUT
+            echo "Deployment endpoint: $ENDPOINT"
+          fi
+
+      - name: Set deployment URL
+        if: github.ref == 'refs/heads/${{ matrix.branch }}' && steps.deploy.outputs.endpoint != ''
+        run: |
+          echo "::notice::Deployment endpoint: ${{ steps.deploy.outputs.endpoint }}"
 
