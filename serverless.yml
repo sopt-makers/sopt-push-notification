@@ -1,0 +1,69 @@
+service: sopt-push-notification
+
+frameworkVersion: '3'
+
+useDotenv: true
+
+plugins:
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: java21
+  region: ap-northeast-2
+  timeout: 30
+  memorySize: 1024
+  stackName: sopt-push-notification-lambda-${self:provider.stage}
+  environment:
+    DYNAMODB_TABLE: ${env:DYNAMODB_TABLE}
+    PLATFORM_APPLICATION_iOS: ${env:PLATFORM_APPLICATION_iOS}
+    PLATFORM_APPLICATION_ANDROID: ${env:PLATFORM_APPLICATION_ANDROID}
+    ALL_TOPIC_ARN: ${env:ALL_TOPIC_ARN}
+    STAGE: ${env:STAGE}
+    MAKERS_APP_SERVER_URL: ${env:MAKERS_APP_SERVER_URL}
+    MAKERS_OPERATION_SERVER_URL: ${env:MAKERS_OPERATION_SERVER_URL}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}'
+        - Effect: Allow
+          Action:
+            - sns:Subscribe
+            - sns:Unsubscribe
+            - sns:Publish
+            - sns:DeleteEndpoint
+            - sns:ListEndpointsByPlatformApplication
+            - sns:GetTopicAttributes
+            - sns:CreatePlatformEndpoint
+            - sns:SetTopicAttributes
+            - sns:ListPlatformApplications
+          Resource:
+            - '${self:provider.environment.PLATFORM_APPLICATION_iOS}'
+            - '${self:provider.environment.PLATFORM_APPLICATION_ANDROID}'
+            - '${self:provider.environment.ALL_TOPIC_ARN}'
+
+custom:
+  serverless-offline:
+    httpPort: 4000
+    printOutput: true
+
+package:
+  artifact: build/libs/app.jar
+
+functions:
+  service:
+    name: ${self:service}-${self:provider.stage}
+    handler: com.sopt.push.lambda.ApiHandler
+    events:
+      - http:
+          path: ''
+          method: post
+          cors: true
+
