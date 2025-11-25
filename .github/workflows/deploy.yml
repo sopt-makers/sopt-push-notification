@@ -76,8 +76,7 @@ jobs:
 
       - name: Install Serverless Framework and plugins
         run: |
-          npm install -g serverless@3.38.0
-          npm install serverless-offline@13
+          npm install serverless@3.38.0 serverless-offline@13
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -128,8 +127,7 @@ jobs:
 
       - name: Install Serverless Framework and plugins
         run: |
-          npm install -g serverless@3.38.0
-          npm install serverless-offline@13
+          npm install serverless@3.38.0 serverless-offline@13
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
