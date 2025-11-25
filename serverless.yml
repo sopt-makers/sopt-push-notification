@@ -1,7 +1,6 @@
 service: sopt-push-notification
 
 frameworkVersion: '3.38.0'
-
 useDotenv: true
 
 plugins:
@@ -11,17 +10,19 @@ provider:
   name: aws
   runtime: java21
   region: ap-northeast-2
+  stage: ${opt:stage, 'dev'}
   timeout: 30
   memorySize: 1024
-  stackName: sopt-push-notification-lambda-${self:provider.environment.stage}
+  stackName: sopt-push-notification-lambda-${self:provider.stage}
   environment:
     DYNAMODB_TABLE: ${env:DYNAMODB_TABLE}
     PLATFORM_APPLICATION_iOS: ${env:PLATFORM_APPLICATION_iOS}
     PLATFORM_APPLICATION_ANDROID: ${env:PLATFORM_APPLICATION_ANDROID}
     ALL_TOPIC_ARN: ${env:ALL_TOPIC_ARN}
-    STAGE: ${env:STAGE}
+    STAGE: ${self:provider.stage}
     MAKERS_APP_SERVER_URL: ${env:MAKERS_APP_SERVER_URL}
     MAKERS_OPERATION_SERVER_URL: ${env:MAKERS_OPERATION_SERVER_URL}
+
   iam:
     role:
       statements:
@@ -32,7 +33,8 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
-          Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}'
+          Resource: 'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}'
+
         - Effect: Allow
           Action:
             - sns:Subscribe
@@ -59,11 +61,10 @@ package:
 
 functions:
   service:
-    name: ${self:service}-${self:provider.environment.stage}
+    name: ${self:service}-${self:provider.stage}
     handler: com.sopt.push.lambda.ApiHandler
     events:
       - http:
           path: ''
           method: post
           cors: true
-
