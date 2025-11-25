@@ -2,7 +2,9 @@ name: SOPT Push Notification Server CI
 
 on:
   pull_request:
-    branches: [develop]
+    branches:
+      - prod
+      - develop
   workflow_dispatch:
 
 jobs:
