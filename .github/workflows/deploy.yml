@@ -52,7 +52,6 @@ jobs:
     if: github.ref == 'refs/heads/develop'
     environment:
       name: dev
-      url: ${{ steps.deploy.outputs.endpoint }}
     
     steps:
       - name: Checkout code
@@ -95,7 +94,6 @@ jobs:
           printf '%s\n' "$ENV_FILE" > .env
 
       - name: Deploy to AWS Lambda (dev)
-        id: deploy
         run: |
           serverless deploy --stage dev --verbose
 
@@ -105,7 +103,6 @@ jobs:
     if: github.ref == 'refs/heads/prod'
     environment:
       name: production
-      url: ${{ steps.deploy.outputs.endpoint }}
     
     steps:
       - name: Checkout code
@@ -148,7 +145,6 @@ jobs:
           printf '%s\n' "$ENV_FILE" > .env
 
       - name: Deploy to AWS Lambda (prod)
-        id: deploy
         run: |
           serverless deploy --stage prod --verbose
 
