@@ -1,0 +1,140 @@
+name: SOPT Push Notification Server Deploy to AWS Lambda
+
+on:
+  push:
+    branches:
+      - prod
+      - develop
+  pull_request:
+    branches:
+      - prod
+      - develop
+  workflow_dispatch:  # 수동 실행 가능
+
+env:
+  AWS_REGION: ap-northeast-2
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build shadowJar
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: lambda-jar
+          path: build/libs/app.jar
+
+  deploy-dev:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: dev
+      url: ${{ steps.deploy.outputs.endpoint }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: lambda-jar
+          path: build/libs/
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Serverless Framework
+        run: npm install -g serverless
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Create .env file for deployment
+        env:
+          ENV_FILE: ${{ secrets.ENV_DEV }}
+        run: |
+          printf '%s\n' "$ENV_FILE" > .env
+
+      - name: Deploy to AWS Lambda (dev)
+        id: deploy
+        run: |
+          serverless deploy --stage dev --verbose
+
+  deploy-prod:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/prod'
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.endpoint }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: lambda-jar
+          path: build/libs/
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Serverless Framework
+        run: npm install -g serverless
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Create .env file for deployment
+        env:
+          ENV_FILE: ${{ secrets.ENV_PROD }}
+        run: |
+          printf '%s\n' "$ENV_FILE" > .env
+
+      - name: Deploy to AWS Lambda (prod)
+        id: deploy
+        run: |
+          serverless deploy --stage prod --verbose
+
