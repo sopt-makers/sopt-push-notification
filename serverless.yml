@@ -13,6 +13,7 @@ provider:
   region: ap-northeast-2
   timeout: 30
   memorySize: 512
+  stackName: sopt-push-notification-lambda-${self:provider.stage}
   environment:
     DYNAMODB_TABLE: ${env:DYNAMODB_TABLE}
     PLATFORM_APPLICATION_iOS: ${env:PLATFORM_APPLICATION_iOS}
