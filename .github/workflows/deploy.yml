@@ -94,7 +94,7 @@ jobs:
       - name: Deploy to AWS Lambda (dev)
         id: deploy
         run: |
-          serverless deploy --stage dev --verbose
+          npx serverless deploy --stage dev --verbose
 
   deploy-prod:
     needs: build
@@ -145,4 +145,4 @@ jobs:
       - name: Deploy to AWS Lambda (prod)
         id: deploy
         run: |
-          serverless deploy --stage prod --verbose
+          npx serverless deploy --stage prod --verbose
