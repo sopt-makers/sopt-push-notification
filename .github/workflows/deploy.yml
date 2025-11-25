@@ -75,7 +75,7 @@ jobs:
             ${{ runner.os }}-node-serverless-
 
       - name: Install Serverless Framework
-        run: npm install -g serverless
+        run: npm install -g serverless@3.38.0
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -125,7 +125,7 @@ jobs:
             ${{ runner.os }}-node-serverless-
 
       - name: Install Serverless Framework
-        run: npm install -g serverless
+        run: npm install -g serverless@3.38.0
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
