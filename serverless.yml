@@ -9,10 +9,10 @@ plugins:
 
 provider:
   name: aws
-  runtime: java17
+  runtime: java21
   region: ap-northeast-2
   timeout: 30
-  memorySize: 512
+  memorySize: 1024
   stackName: sopt-push-notification-lambda-${self:provider.stage}
   environment:
     DYNAMODB_TABLE: ${env:DYNAMODB_TABLE}
@@ -28,7 +28,6 @@ provider:
         - Effect: Allow
           Action:
             - dynamodb:Query
-            - dynamodb:Scan
             - dynamodb:GetItem
             - dynamodb:PutItem
             - dynamodb:UpdateItem
