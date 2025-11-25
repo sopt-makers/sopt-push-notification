@@ -13,7 +13,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -46,19 +46,11 @@ jobs:
           name: lambda-jar
           path: build/libs/app.jar
 
-  deploy:
+  deploy-dev:
     needs: build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - stage: dev
-            branch: develop
-          - stage: prod
-            branch: prod
-    if: github.ref_name == matrix.branch
-    environment:
-      name: ${{ matrix.stage == 'dev' && 'dev' || 'prod' }}
+    if: github.ref == 'refs/heads/develop'
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -93,27 +85,63 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Create .env file
+      - name: Create .env file for deployment
         env:
-          ENV_FILE: ${{ matrix.stage == 'dev' && secrets.ENV_DEV || secrets.ENV_PROD }}
+          ENV_FILE: ${{ secrets.ENV_DEV }}
         run: |
           printf '%s\n' "$ENV_FILE" > .env
 
-      - name: Deploy to AWS Lambda
+      - name: Deploy to AWS Lambda (dev)
         id: deploy
         run: |
-          serverless deploy --stage ${{ matrix.stage }} --verbose | tee deploy.log
-          # Extract endpoint from deploy output or serverless info
-          ENDPOINT=$(grep -oP 'endpoints:\s*\K[^\s]+' deploy.log 2>/dev/null || \
-                     serverless info --stage ${{ matrix.stage }} 2>/dev/null | grep -oP 'endpoints:\s*\K[^\s]+' || \
-                     echo "")
-          if [ -n "$ENDPOINT" ]; then
-            echo "endpoint=$ENDPOINT" >> $GITHUB_OUTPUT
-            echo "Deployment endpoint: $ENDPOINT"
-          fi
+          serverless deploy --stage dev --verbose
 
-      - name: Set deployment URL
-        if: steps.deploy.outputs.endpoint != ''
+  deploy-prod:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/prod'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda-jar
+          path: build/libs/
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Cache npm packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-serverless-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-serverless-
+
+      - name: Install Serverless Framework
+        run: npm install -g serverless
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Create .env file for deployment
+        env:
+          ENV_FILE: ${{ secrets.ENV_PROD }}
         run: |
-          echo "::notice::Deployment endpoint: ${{ steps.deploy.outputs.endpoint }}"
+          printf '%s\n' "$ENV_FILE" > .env
 
+      - name: Deploy to AWS Lambda (prod)
+        id: deploy
+        run: |
+          serverless deploy --stage prod --verbose
