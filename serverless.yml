@@ -1,6 +1,6 @@
 service: sopt-push-notification
 
-frameworkVersion: '3.38.0'
+frameworkVersion: "3.x"
 
 useDotenv: true
 
