@@ -4,10 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sopt.push.common.BusinessException;
 import com.sopt.push.common.ErrorMessage;
+import com.sopt.push.config.ObjectMapperConfig;
 
 public class JsonUtil {
 
-  private static final ObjectMapper mapper = new ObjectMapper();
+  private static final ObjectMapper mapper = ObjectMapperConfig.getObjectMapper();
 
   private JsonUtil() {}
 
