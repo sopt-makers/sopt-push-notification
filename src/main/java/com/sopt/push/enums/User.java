@@ -25,7 +25,7 @@ public enum User {
       throw new BusinessException(ErrorMessage.INVALID_REQUEST, "User value cannot be null");
     }
 
-    if (value.equalsIgnoreCase("u#all")) {
+    if (value.equals("u#all")) {
       return ALL;
     } else {
       throw new BusinessException(ErrorMessage.INVALID_REQUEST, "Unknown User: " + value);
