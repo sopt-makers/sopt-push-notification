@@ -12,8 +12,8 @@ public class AllMessageBuilder {
   public static Map<String, Object> build(MessageFactoryDto dto) {
     Map<String, Object> message = new HashMap<>();
     message.put("default", Constants.DEFAULT_MESSAGE);
-    message.put("APNS", ApnsMessageBuilder.build(dto).get("APNS"));
-    message.put("GCM", FcmMessageBuilder.build(dto).get("GCM"));
+    message.put("APNS", ApnsMessageBuilder.build(dto));
+    message.put("GCM", FcmMessageBuilder.build(dto));
     return message;
   }
 }
