@@ -6,39 +6,35 @@ import com.sopt.push.common.BusinessException;
 import com.sopt.push.common.ErrorMessage;
 
 public enum Actions {
-    REGISTER("register"),
-    CANCEL("cancel"),
-    SEND("send"),
-    SEND_ALL("sendAll");
+  REGISTER("register"),
+  CANCEL("cancel"),
+  SEND("send"),
+  SEND_ALL("sendAll");
 
-    private final String value;
+  private final String value;
 
-    Actions(String value) {
-        this.value = value;
+  Actions(String value) {
+    this.value = value;
+  }
+
+  @JsonValue
+  public String getValue() {
+    return this.value;
+  }
+
+  @JsonCreator
+  public static Actions fromValue(String value) {
+    if (value == null) {
+      throw new BusinessException(ErrorMessage.INVALID_REQUEST, "Actions value cannot be null");
     }
 
-    @JsonValue
-    public String getValue() {
-        return this.value;
-    }
-
-    @JsonCreator
-    public static Actions fromValue(String value) {
-        if (value == null) {
-            throw new BusinessException(
-                    ErrorMessage.INVALID_REQUEST, "Actions value cannot be null"
-            );
-        }
-
-        return switch (value) {
-            case "register" -> REGISTER;
-            case "cancel" -> CANCEL;
-            case "send" -> SEND;
-            case "sendAll" -> SEND_ALL;
-            default -> throw new BusinessException(
-                    ErrorMessage.INVALID_REQUEST, "Unknown Actions: " + value
-            );
-        };
-    }
-
+    return switch (value) {
+      case "register" -> REGISTER;
+      case "cancel" -> CANCEL;
+      case "send" -> SEND;
+      case "sendAll" -> SEND_ALL;
+      default ->
+          throw new BusinessException(ErrorMessage.INVALID_REQUEST, "Unknown Actions: " + value);
+    };
+  }
 }

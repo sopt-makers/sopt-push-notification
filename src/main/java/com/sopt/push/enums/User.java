@@ -6,31 +6,29 @@ import com.sopt.push.common.BusinessException;
 import com.sopt.push.common.ErrorMessage;
 
 public enum User {
-    ALL("u#all");
+  ALL("u#all");
 
-    private final String value;
+  private final String value;
 
-    User(String value) {
-        this.value = value;
+  User(String value) {
+    this.value = value;
+  }
+
+  @JsonValue
+  public String getValue() {
+    return value;
+  }
+
+  @JsonCreator
+  public static User fromValue(String value) {
+    if (value == null) {
+      throw new BusinessException(ErrorMessage.INVALID_REQUEST, "User value cannot be null");
     }
 
-    @JsonValue
-    public String getValue() {
-        return value;
+    if (value.equalsIgnoreCase("u#all")) {
+      return ALL;
+    } else {
+      throw new BusinessException(ErrorMessage.INVALID_REQUEST, "Unknown User: " + value);
     }
-
-    @JsonCreator
-    public static User fromValue(String value) {
-        if (value == null) {
-            throw new BusinessException(
-                    ErrorMessage.INVALID_REQUEST, "User value cannot be null");
-        }
-
-        if (value.equalsIgnoreCase("u#all")) {
-            return ALL;
-        } else {
-            throw new BusinessException(
-                    ErrorMessage.INVALID_REQUEST, "Unknown User: " + value);
-        }
-    }
+  }
 }
