@@ -1,6 +1,7 @@
 package com.sopt.push.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.sopt.push.common.BusinessException;
 import com.sopt.push.common.ErrorMessage;
 
@@ -13,6 +14,11 @@ public enum PushTopic {
 
   PushTopic(String value) {
     this.value = value;
+  }
+
+  @JsonValue
+  public String getValue() {
+    return this.value;
   }
 
   @JsonCreator
