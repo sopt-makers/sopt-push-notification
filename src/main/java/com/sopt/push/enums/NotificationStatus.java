@@ -28,7 +28,7 @@ public enum NotificationStatus {
           ErrorMessage.INVALID_REQUEST, "NotificationStatus cannot be null");
     }
 
-    return switch (value.toLowerCase()) {
+    return switch (value) {
       case "start" -> START;
       case "fail" -> FAIL;
       case "success" -> SUCCESS;
