@@ -21,11 +21,12 @@ public enum User {
 
   @JsonCreator
   public static User fromValue(String value) {
-    if (value == null) {
-      throw new BusinessException(ErrorMessage.INVALID_REQUEST, "User value cannot be null");
+    if (value == null || value.isBlank()) {
+      throw new BusinessException(
+          ErrorMessage.INVALID_REQUEST, "User value cannot be null or blank");
     }
 
-    if (value.equals("u#all")) {
+    if (value.trim().equals("u#all")) {
       return ALL;
     } else {
       throw new BusinessException(ErrorMessage.INVALID_REQUEST, "Unknown User: " + value);

@@ -23,11 +23,12 @@ public enum WebHookType {
 
   @JsonCreator
   public static WebHookType fromValue(String value) {
-    if (value == null) {
-      throw new BusinessException(ErrorMessage.INVALID_REQUEST, "WebHookType value cannot be null");
+    if (value == null || value.isBlank()) {
+      throw new BusinessException(
+          ErrorMessage.INVALID_REQUEST, "WebHookType value cannot be null or blank");
     }
 
-    return switch (value) {
+    return switch (value.trim()) {
       case "SEND" -> SEND;
       case "SEND_ALL" -> SEND_ALL;
       case "FAIL" -> FAIL;

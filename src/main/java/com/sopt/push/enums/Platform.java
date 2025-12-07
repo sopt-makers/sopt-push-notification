@@ -28,11 +28,12 @@ public enum Platform {
 
   @JsonCreator
   public static Platform fromValue(String value) {
-    if (value == null) {
-      throw new BusinessException(ErrorMessage.INVALID_REQUEST, "Platform value cannot be null");
+    if (value == null || value.isBlank()) {
+      throw new BusinessException(
+          ErrorMessage.INVALID_REQUEST, "Platform value cannot be null or blank");
     }
 
-    return switch (value) {
+    return switch (value.trim()) {
       case "iOS" -> IOS;
       case "Android" -> ANDROID;
       default ->

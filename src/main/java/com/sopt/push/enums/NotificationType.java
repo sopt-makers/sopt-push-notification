@@ -23,12 +23,12 @@ public enum NotificationType {
 
   @JsonCreator
   public static NotificationType fromValue(String value) {
-    if (value == null) {
+    if (value == null || value.isBlank()) {
       throw new BusinessException(
-          ErrorMessage.INVALID_REQUEST, "NotificationType value cannot be null");
+          ErrorMessage.INVALID_REQUEST, "NotificationType value cannot be null or blank");
     }
 
-    return switch (value) {
+    return switch (value.trim()) {
       case "email" -> EMAIL;
       case "push" -> PUSH;
       case "sms" -> SMS;

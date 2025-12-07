@@ -24,11 +24,12 @@ public enum Actions {
 
   @JsonCreator
   public static Actions fromValue(String value) {
-    if (value == null) {
-      throw new BusinessException(ErrorMessage.INVALID_REQUEST, "Actions value cannot be null");
+    if (value == null || value.isBlank()) {
+      throw new BusinessException(
+          ErrorMessage.INVALID_REQUEST, "Actions value cannot be null or blank");
     }
 
-    return switch (value) {
+    return switch (value.trim()) {
       case "register" -> REGISTER;
       case "cancel" -> CANCEL;
       case "send" -> SEND;

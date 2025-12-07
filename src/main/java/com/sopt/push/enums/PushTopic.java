@@ -23,11 +23,12 @@ public enum PushTopic {
 
   @JsonCreator
   public static PushTopic fromValue(String value) {
-    if (value == null) {
-      throw new BusinessException(ErrorMessage.INVALID_REQUEST, "PushTopic value cannot be null");
+    if (value == null || value.isBlank()) {
+      throw new BusinessException(
+          ErrorMessage.INVALID_REQUEST, "PushTopic value cannot be null or blank");
     }
 
-    return switch (value) {
+    return switch (value.trim()) {
       case "apns" -> APNS;
       case "fcm" -> FCM;
       case "all" -> ALL;

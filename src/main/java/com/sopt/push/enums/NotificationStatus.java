@@ -23,12 +23,12 @@ public enum NotificationStatus {
 
   @JsonCreator
   public static NotificationStatus fromValue(String value) {
-    if (value == null) {
+    if (value == null || value.isBlank()) {
       throw new BusinessException(
-          ErrorMessage.INVALID_REQUEST, "NotificationStatus cannot be null");
+          ErrorMessage.INVALID_REQUEST, "NotificationStatus cannot be null or blank");
     }
 
-    return switch (value) {
+    return switch (value.trim()) {
       case "start" -> START;
       case "fail" -> FAIL;
       case "success" -> SUCCESS;
