@@ -1,0 +1,28 @@
+package com.sopt.push.message;
+
+import static java.time.LocalDateTime.now;
+
+import com.sopt.push.dto.MessageFactoryDto;
+import com.sopt.push.util.JsonUtil;
+import java.util.HashMap;
+import java.util.Map;
+
+public class FcmMessageBuilder {
+
+  private FcmMessageBuilder() {}
+
+  public static String build(MessageFactoryDto dto) {
+    Map<String, Object> data = new HashMap<>();
+    data.put("id", dto.id());
+    data.put("title", dto.title());
+    data.put("content", dto.content());
+    data.put("category", dto.category().name());
+    data.put("webLink", dto.webLink());
+    data.put("deepLink", dto.deepLink());
+    data.put("sendAt", now());
+
+    Map<String, Object> payload = Map.of("data", data);
+
+    return JsonUtil.toJson(payload);
+  }
+}
