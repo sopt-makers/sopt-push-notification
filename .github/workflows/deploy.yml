@@ -38,7 +38,7 @@ jobs:
         run: ./gradlew shadowJar --no-daemon
 
       - name: Write params-dev.json from Secrets
-        run: echo '${{ secrets.PARAMS_DEV_JSON }}' > params-dev.json
+        run: printf '%s' '${{ secrets.PARAMS_DEV_JSON }}' > params-dev.json
 
       - name: Install SAM CLI
         run: pip install aws-sam-cli
@@ -52,11 +52,11 @@ jobs:
 
       - name: SAM Deploy (dev)
         run: |
-          PARAMS=$(cat params-dev.json | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]')
+          mapfile -d '' PARAMS < <(jq -r 'to_entries[] | "\(.key)=\(.value)\u0000"' params-dev.json)
           sam deploy \
             --stack-name sopt-push-dev \
             --template-file template.yaml \
-            --parameter-overrides $PARAMS \
+            --parameter-overrides "${PARAMS[@]}" \
             --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
             --resolve-s3 \
             --no-confirm-changeset
@@ -89,7 +89,7 @@ jobs:
         run: ./gradlew shadowJar --no-daemon
 
       - name: Write params-prod.json from Secrets
-        run: echo '${{ secrets.PARAMS_PROD_JSON }}' > params-prod.json
+        run: printf '%s' '${{ secrets.PARAMS_PROD_JSON }}' > params-prod.json
 
       - name: Install SAM CLI
         run: pip install aws-sam-cli
@@ -103,11 +103,11 @@ jobs:
 
       - name: SAM Deploy (prod)
         run: |
-          PARAMS=$(cat params-prod.json | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]')
+          mapfile -d '' PARAMS < <(jq -r 'to_entries[] | "\(.key)=\(.value)\u0000"' params-prod.json)
           sam deploy \
             --stack-name sopt-push-prod \
             --template-file template.yaml \
-            --parameter-overrides $PARAMS \
+            --parameter-overrides "${PARAMS[@]}" \
             --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
             --resolve-s3 \
             --no-confirm-changeset
