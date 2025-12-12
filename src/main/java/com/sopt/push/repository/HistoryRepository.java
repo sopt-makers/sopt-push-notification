@@ -14,13 +14,19 @@ public class HistoryRepository {
   }
 
   public void save(HistoryEntity historyEntity) {
-    if (historyEntity.getUserIds() == null || historyEntity.getUserIds().isEmpty()) {
-      historyEntity.setUserIds(null);
-    }
-    if (historyEntity.getMessageIds() == null || historyEntity.getMessageIds().isEmpty()) {
-      historyEntity.setMessageIds(null);
+    if (historyEntity == null) {
+      throw new IllegalArgumentException("historyEntity must not be null");
     }
 
-    historyTable.putItem(historyEntity);
+    HistoryEntity copy = new HistoryEntity(historyEntity);
+
+    if (historyEntity.getUserIds() == null || historyEntity.getUserIds().isEmpty()) {
+      copy.setUserIds(null);
+    }
+    if (historyEntity.getMessageIds() == null || historyEntity.getMessageIds().isEmpty()) {
+      copy.setMessageIds(null);
+    }
+
+    historyTable.putItem(copy);
   }
 }
