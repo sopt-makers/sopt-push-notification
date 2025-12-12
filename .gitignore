@@ -46,3 +46,7 @@ build/
 ### Java ###
 *.class
 *.jar
+
+### SAM ###
+.aws-sam/
+samconfig.toml
