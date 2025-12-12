@@ -30,11 +30,5 @@ jobs:
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
 
-      - name: Build
-        run: ./gradlew clean check build shadowJar --no-daemon
-
-      - name: Upload Lambda Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: lambda-jar
-          path: build/libs/app.jar
+      - name: Build & Check
+        run: ./gradlew clean check build --no-daemon

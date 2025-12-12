@@ -11,7 +11,6 @@ env:
   AWS_REGION: ap-northeast-2
 
 jobs:
-
   deploy-dev:
     name: Deploy to AWS (dev)
     runs-on: ubuntu-latest
@@ -21,15 +20,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download Lambda Artifact
-        uses: actions/download-artifact@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
         with:
-          name: lambda-jar
-          path: build/libs/
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+      - name: Build Deployable JAR
+        run: ./gradlew shadowJar --no-daemon
 
       - name: Write params-dev.json from Secrets
-        run: |
-          echo '${{ secrets.PARAMS_DEV_JSON }}' > params-dev.json
+        run: echo '${{ secrets.PARAMS_DEV_JSON }}' > params-dev.json
 
       - name: Install SAM CLI
         run: pip install aws-sam-cli
@@ -44,7 +53,6 @@ jobs:
       - name: SAM Deploy (dev)
         run: |
           PARAMS=$(cat params-dev.json | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]')
-
           sam deploy \
             --stack-name sopt-push-dev \
             --template-file template.yaml \
@@ -63,15 +71,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download Lambda Artifact
-        uses: actions/download-artifact@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
         with:
-          name: lambda-jar
-          path: build/libs/
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+      - name: Build Deployable JAR
+        run: ./gradlew shadowJar --no-daemon
 
       - name: Write params-prod.json from Secrets
-        run: |
-          echo '${{ secrets.PARAMS_PROD_JSON }}' > params-prod.json
+        run: echo '${{ secrets.PARAMS_PROD_JSON }}' > params-prod.json
 
       - name: Install SAM CLI
         run: pip install aws-sam-cli
@@ -86,7 +104,6 @@ jobs:
       - name: SAM Deploy (prod)
         run: |
           PARAMS=$(cat params-prod.json | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]')
-
           sam deploy \
             --stack-name sopt-push-prod \
             --template-file template.yaml \
