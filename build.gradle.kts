@@ -27,7 +27,7 @@ dependencies {
     implementation("com.amazonaws:aws-lambda-java-events:3.11.3")
     
     // AWS SDK v2
-    implementation(platform("software.amazon.awssdk:bom:2.20.162"))
+    implementation(platform("software.amazon.awssdk:bom:2.40.7"))
     implementation("software.amazon.awssdk:sns")
     implementation("software.amazon.awssdk:dynamodb")
     implementation("software.amazon.awssdk:url-connection-client")
