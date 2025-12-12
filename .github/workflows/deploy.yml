@@ -40,8 +40,14 @@ jobs:
       - name: Write params-dev.json from Secrets
         run: printf '%s' '${{ secrets.PARAMS_DEV_JSON }}' > params-dev.json
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
       - name: Install SAM CLI
-        run: pip install aws-sam-cli
+        run: pip install aws-sam-cli==1.149.0
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -91,8 +97,14 @@ jobs:
       - name: Write params-prod.json from Secrets
         run: printf '%s' '${{ secrets.PARAMS_PROD_JSON }}' > params-prod.json
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
       - name: Install SAM CLI
-        run: pip install aws-sam-cli
+        run: pip install aws-sam-cli==1.149.0
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
