@@ -1,13 +1,13 @@
 package com.sopt.push.util;
 
+import static com.sopt.push.common.StatusCode.INTERNAL_SERVER_ERROR;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sopt.push.common.SuccessMessage;
 import com.sopt.push.config.ObjectMapperConfig;
 import com.sopt.push.dto.ResponseDto;
 import java.util.Map;
-
-import static com.sopt.push.common.StatusCode.INTERNAL_SERVER_ERROR;
 
 public class ResponseUtil {
 
@@ -23,7 +23,6 @@ public class ResponseUtil {
   private static final String HEADER_VALUE_ALL = "*";
 
   private static final String ERROR_MESSAGE_FATAL = "fatal";
-
 
   private ResponseUtil() {}
 
