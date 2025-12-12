@@ -18,5 +18,7 @@ public class Constants {
   public static final String GCM = "GCM";
   public static final String APNS = "APNS";
 
+  public static final String DEFAULT_MESSAGE = "";
+
   private Constants() {}
 }
