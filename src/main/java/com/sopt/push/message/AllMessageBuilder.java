@@ -1,10 +1,10 @@
 package com.sopt.push.message;
 
+import static com.sopt.push.common.Constants.DEFAULT_MESSAGE;
+
 import com.sopt.push.dto.MessageFactoryDto;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.sopt.push.common.Constants.DEFAULT_MESSAGE;
 
 public class AllMessageBuilder {
 
