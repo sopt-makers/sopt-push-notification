@@ -30,7 +30,6 @@ jobs:
       - name: Write params-dev.json from Secrets
         run: |
           echo '${{ secrets.PARAMS_DEV_JSON }}' > params-dev.json
-          cat params-dev.json
 
       - name: Install SAM CLI
         run: pip install aws-sam-cli
@@ -73,7 +72,6 @@ jobs:
       - name: Write params-prod.json from Secrets
         run: |
           echo '${{ secrets.PARAMS_PROD_JSON }}' > params-prod.json
-          cat params-prod.json
 
       - name: Install SAM CLI
         run: pip install aws-sam-cli
