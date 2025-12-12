@@ -5,6 +5,7 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
@@ -36,11 +37,13 @@ public class HistoryEntity {
   private String id;
 
   @DynamoDbPartitionKey
+  @DynamoDbAttribute("pk")
   public String getPk() {
     return pk;
   }
 
   @DynamoDbSortKey
+  @DynamoDbAttribute("sk")
   public String getSk() {
     return sk;
   }
