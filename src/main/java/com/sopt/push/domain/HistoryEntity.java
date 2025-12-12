@@ -36,6 +36,28 @@ public class HistoryEntity {
   private String errorMessage;
   private String id;
 
+  public HistoryEntity(HistoryEntity historyEntity) {
+    this.pk = historyEntity.pk;
+    this.sk = historyEntity.sk;
+    this.entity = historyEntity.entity;
+    this.title = historyEntity.title;
+    this.content = historyEntity.content;
+    this.deviceToken = historyEntity.deviceToken;
+    this.webLink = historyEntity.webLink;
+    this.applink = historyEntity.applink;
+    this.notificationType = historyEntity.notificationType;
+    this.orderServiceName = historyEntity.orderServiceName;
+    this.status = historyEntity.status;
+    this.action = historyEntity.action;
+    this.platform = historyEntity.platform;
+    this.category = historyEntity.category;
+    this.userIds = historyEntity.userIds;
+    this.messageIds = historyEntity.messageIds;
+    this.errorCode = historyEntity.errorCode;
+    this.errorMessage = historyEntity.errorMessage;
+    this.id = historyEntity.id;
+  }
+
   @DynamoDbPartitionKey
   @DynamoDbAttribute("pk")
   public String getPk() {
