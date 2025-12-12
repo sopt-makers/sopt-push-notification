@@ -89,6 +89,10 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
+                  - sns:ListPlatformApplications
+                Resource: "*"
+              - Effect: Allow
+                Action:
                   - sns:Subscribe
                   - sns:Unsubscribe
                   - sns:Publish
@@ -97,7 +101,6 @@ Resources:
                   - sns:GetTopicAttributes
                   - sns:CreatePlatformEndpoint
                   - sns:SetTopicAttributes
-                  - sns:ListPlatformApplications
                 Resource:
                   - !Ref PlatformAppIOS
                   - !Ref PlatformAppAndroid
