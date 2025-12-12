@@ -31,7 +31,8 @@ dependencies {
     implementation("software.amazon.awssdk:sns")
     implementation("software.amazon.awssdk:dynamodb")
     implementation("software.amazon.awssdk:url-connection-client")
-    
+    implementation("software.amazon.awssdk:dynamodb-enhanced")
+
     // JSON
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
@@ -51,6 +52,15 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
     testImplementation("org.mockito:mockito-core:5.5.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.5.0")
+
+    // Lombok
+    compileOnly("org.projectlombok:lombok:1.18.32")
+    annotationProcessor("org.projectlombok:lombok:1.18.32")
+
+
+    // Lombok for test
+    testCompileOnly("org.projectlombok:lombok:1.18.32")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
 }
 
 // Spotless (코드 포매팅)
@@ -119,4 +129,3 @@ tasks {
         dependsOn("spotlessCheck")
     }
 }
-
