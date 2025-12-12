@@ -2,7 +2,7 @@ package com.sopt.push.client;
 
 import software.amazon.awssdk.services.sns.SnsClient;
 
-public class SnsClientProvider {
+public final class SnsClientProvider {
 
   private static final SnsClient snsClient;
 
