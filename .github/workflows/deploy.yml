@@ -44,7 +44,6 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-          cache: "pip"
 
       - name: Install SAM CLI
         run: pip install aws-sam-cli==1.149.0
@@ -101,7 +100,6 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-          cache: "pip"
 
       - name: Install SAM CLI
         run: pip install aws-sam-cli==1.149.0
