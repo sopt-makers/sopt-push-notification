@@ -1,15 +1,15 @@
-name: SOPT Push Notification Server CI
+name: SOPT Push Notification CI
 
 on:
   pull_request:
     branches:
-      - prod
       - develop
+      - prod
   workflow_dispatch:
 
 jobs:
-  validate:
-    name: Build
+  build:
+    name: Build & Validate
     runs-on: ubuntu-latest
 
     steps:
@@ -29,16 +29,6 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
 
-      - name: Create .env file for build
-        env:
-          ENV_FILE: ${{ secrets.ENV_DEV }}
-        run: |
-          if [ -n "$ENV_FILE" ]; then
-            printf '%s\n' "$ENV_FILE" > .env
-          fi
-
-      - name: Build (format check + lint + jar)
-        run: ./gradlew clean check build shadowJar --no-daemon
+      - name: Build & Check
+        run: ./gradlew clean check build --no-daemon
