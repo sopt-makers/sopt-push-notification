@@ -63,7 +63,7 @@ jobs:
             --stack-name sopt-push-dev \
             --template-file template.yaml \
             --parameter-overrides $PARAMS \
-            --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
             --resolve-s3 \
             --no-confirm-changeset
 
@@ -120,6 +120,6 @@ jobs:
             --stack-name sopt-push-prod \
             --template-file template.yaml \
             --parameter-overrides $PARAMS \
-            --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
             --resolve-s3 \
             --no-confirm-changeset
