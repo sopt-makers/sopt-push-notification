@@ -7,13 +7,13 @@ import software.amazon.awssdk.services.sns.SnsClient;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SnsClientProvider {
 
-  private static final SnsClient snsClient;
+  private static final SnsClient SNS_CLIENT;
 
   static {
-    snsClient = SnsClient.builder().build();
+    SNS_CLIENT = SnsClient.builder().build();
   }
 
   public static SnsClient getClient() {
-    return snsClient;
+    return SNS_CLIENT;
   }
 }
