@@ -33,9 +33,7 @@ public class ResponseUtil {
   public static Map<String, Object> errorResponse(int status, String message) {
     try {
       ResponseDto<?> body = ResponseDto.fail(status, message);
-      return Map.of(
-          KEY_STATUS_CODE, status,
-          KEY_BODY, MAPPER.writeValueAsString(body));
+      return Map.of(KEY_STATUS_CODE, status, KEY_BODY, MAPPER.writeValueAsString(body));
     } catch (Exception e) {
       return Map.of(KEY_STATUS_CODE, INTERNAL_SERVER_ERROR, KEY_BODY, ERROR_MESSAGE_FATAL);
     }
