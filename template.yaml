@@ -129,13 +129,12 @@ Resources:
       CodeUri: build/libs/app.jar
       Role: !GetAtt PushLambdaRole.Arn
       Events:
-        ApiRoot:
+        Root:
           Type: Api
           Properties:
             RestApiId: !Ref RestApi
             Path: /
-            Method: post
-            Cors: true
+            Method: ANY
 
   EventBridgeHandlerFunction:
     Type: AWS::Serverless::Function

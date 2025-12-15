@@ -44,7 +44,6 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-          cache: "pip"
 
       - name: Install SAM CLI
         run: pip install aws-sam-cli==1.149.0
@@ -58,12 +57,13 @@ jobs:
 
       - name: SAM Deploy (dev)
         run: |
-          mapfile -d '' PARAMS < <(jq -r 'to_entries[] | "\(.key)=\(.value)\u0000"' params-dev.json)
+          PARAMS=$(jq -r 'to_entries | map("\(.key)=\(.value)") | join(" ")' params-dev.json)
+          
           sam deploy \
             --stack-name sopt-push-dev \
             --template-file template.yaml \
-            --parameter-overrides "${PARAMS[@]}" \
-            --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+            --parameter-overrides $PARAMS \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
             --resolve-s3 \
             --no-confirm-changeset
 
@@ -101,7 +101,6 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-          cache: "pip"
 
       - name: Install SAM CLI
         run: pip install aws-sam-cli==1.149.0
@@ -115,11 +114,12 @@ jobs:
 
       - name: SAM Deploy (prod)
         run: |
-          mapfile -d '' PARAMS < <(jq -r 'to_entries[] | "\(.key)=\(.value)\u0000"' params-prod.json)
+          PARAMS=$(jq -r 'to_entries | map("\(.key)=\(.value)") | join(" ")' params-prod.json)
+          
           sam deploy \
             --stack-name sopt-push-prod \
             --template-file template.yaml \
-            --parameter-overrides "${PARAMS[@]}" \
-            --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+            --parameter-overrides $PARAMS \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
             --resolve-s3 \
             --no-confirm-changeset
