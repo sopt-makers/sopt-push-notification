@@ -3,7 +3,7 @@ package com.sopt.push.config;
 import lombok.Getter;
 
 @Getter
-public class EnvConfig {
+public final class EnvConfig {
 
   private static final String DYNAMODB_TABLE_ENV_VAR = "DYNAMODB_TABLE";
   private static final String ALL_TOPIC_ARN_ENV_VAR = "ALL_TOPIC_ARN";
@@ -12,16 +12,16 @@ public class EnvConfig {
   private final String allTopicArn;
 
   public EnvConfig() {
-    this.dynamoDbTableName = System.getenv(DYNAMODB_TABLE_ENV_VAR);
-    if (this.dynamoDbTableName == null || this.dynamoDbTableName.isBlank()) {
-      throw new IllegalStateException(
-          "Required environment variable '" + DYNAMODB_TABLE_ENV_VAR + "' is not set.");
-    }
+    this.dynamoDbTableName = getRequiredEnv(DYNAMODB_TABLE_ENV_VAR);
+    this.allTopicArn = getRequiredEnv(ALL_TOPIC_ARN_ENV_VAR);
+  }
 
-    this.allTopicArn = System.getenv(ALL_TOPIC_ARN_ENV_VAR);
-    if (this.allTopicArn == null || this.allTopicArn.isBlank()) {
+  private static String getRequiredEnv(String key) {
+    String value = System.getenv(key);
+    if (value == null || value.isBlank()) {
       throw new IllegalStateException(
-          "Required environment variable '" + ALL_TOPIC_ARN_ENV_VAR + "' is not set.");
+              "Required environment variable '" + key + "' is not set.");
     }
+    return value;
   }
 }
