@@ -3,12 +3,14 @@ package com.sopt.push.message;
 import static com.sopt.push.common.Constants.DEFAULT_MESSAGE;
 
 import com.sopt.push.dto.MessageFactoryDto;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.util.HashMap;
 import java.util.Map;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AllMessageBuilder {
-
-  private AllMessageBuilder() {}
 
   public static Map<String, Object> build(MessageFactoryDto dto) {
     Map<String, Object> message = new HashMap<>();

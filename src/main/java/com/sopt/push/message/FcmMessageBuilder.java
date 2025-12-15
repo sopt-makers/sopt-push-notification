@@ -4,12 +4,14 @@ import static java.time.LocalDateTime.now;
 
 import com.sopt.push.dto.MessageFactoryDto;
 import com.sopt.push.util.JsonUtil;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.util.HashMap;
 import java.util.Map;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FcmMessageBuilder {
-
-  private FcmMessageBuilder() {}
 
   public static String build(MessageFactoryDto dto) {
     Map<String, Object> data = new HashMap<>();

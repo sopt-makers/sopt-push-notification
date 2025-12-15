@@ -7,8 +7,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sopt.push.common.SuccessMessage;
 import com.sopt.push.config.ObjectMapperConfig;
 import com.sopt.push.dto.ResponseDto;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.util.Map;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ResponseUtil {
 
   private static final ObjectMapper MAPPER = ObjectMapperConfig.getObjectMapper();
@@ -23,8 +27,6 @@ public class ResponseUtil {
   private static final String HEADER_VALUE_ALL = "*";
 
   private static final String ERROR_MESSAGE_FATAL = "fatal";
-
-  private ResponseUtil() {}
 
   public static Map<String, Object> successResponse(SuccessMessage success)
       throws JsonProcessingException {

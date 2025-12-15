@@ -1,7 +1,10 @@
 package com.sopt.push.client;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import software.amazon.awssdk.services.sns.SnsClient;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SnsClientProvider {
 
   private static final SnsClient snsClient;
@@ -9,8 +12,6 @@ public final class SnsClientProvider {
   static {
     snsClient = SnsClient.builder().build();
   }
-
-  private SnsClientProvider() {}
 
   public static SnsClient getClient() {
     return snsClient;
