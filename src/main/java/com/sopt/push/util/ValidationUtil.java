@@ -5,10 +5,9 @@ import com.sopt.push.common.ErrorMessage;
 import com.sopt.push.config.ValidatorConfig;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-
-import java.util.Set;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ValidationUtil {

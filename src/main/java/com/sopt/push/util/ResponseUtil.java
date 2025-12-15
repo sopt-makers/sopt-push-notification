@@ -7,10 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sopt.push.common.SuccessMessage;
 import com.sopt.push.config.ObjectMapperConfig;
 import com.sopt.push.dto.ResponseDto;
+import java.util.Map;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-
-import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ResponseUtil {

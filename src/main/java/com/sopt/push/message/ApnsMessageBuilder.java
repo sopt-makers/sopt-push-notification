@@ -4,11 +4,10 @@ import static java.time.LocalDateTime.now;
 
 import com.sopt.push.dto.MessageFactoryDto;
 import com.sopt.push.util.JsonUtil;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
 import java.util.HashMap;
 import java.util.Map;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ApnsMessageBuilder {

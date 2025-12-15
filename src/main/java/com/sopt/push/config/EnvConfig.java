@@ -19,8 +19,7 @@ public final class EnvConfig {
   private static String getRequiredEnv(String key) {
     String value = System.getenv(key);
     if (value == null || value.isBlank()) {
-      throw new IllegalStateException(
-              "Required environment variable '" + key + "' is not set.");
+      throw new IllegalStateException("Required environment variable '" + key + "' is not set.");
     }
     return value;
   }
