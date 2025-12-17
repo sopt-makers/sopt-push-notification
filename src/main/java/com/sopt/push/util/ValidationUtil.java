@@ -16,7 +16,8 @@ public final class ValidationUtil {
 
   public static <T> void validate(T dto) {
     Set<ConstraintViolation<T>> violations = VALIDATOR.validate(dto);
-    if (!violations.isEmpty()) {
+    boolean isNotEmpty = !violations.isEmpty();
+    if (isNotEmpty) {
       throw new BusinessException(ErrorMessage.INVALID_REQUEST);
     }
   }
