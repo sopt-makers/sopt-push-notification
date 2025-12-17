@@ -1,8 +1,10 @@
 package com.sopt.push.common;
 
-public class StatusCode {
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-  private StatusCode() {}
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class StatusCode {
 
   public static final int OK = 200;
   public static final int CREATED = 201;

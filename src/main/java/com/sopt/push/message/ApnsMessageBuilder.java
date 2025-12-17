@@ -6,10 +6,11 @@ import com.sopt.push.dto.MessageFactoryDto;
 import com.sopt.push.util.JsonUtil;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ApnsMessageBuilder {
-
-  private ApnsMessageBuilder() {}
 
   public static String build(MessageFactoryDto dto) {
     Map<String, Object> aps =

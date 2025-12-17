@@ -1,5 +1,41 @@
 package com.sopt.push.util;
 
+import static com.sopt.push.common.StatusCode.INTERNAL_SERVER_ERROR;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sopt.push.common.SuccessMessage;
+import com.sopt.push.config.ObjectMapperConfig;
+import com.sopt.push.dto.ResponseDto;
+import java.util.Map;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ResponseUtil {
-  // TODO: Implement response utility
+
+  private static final ObjectMapper MAPPER = ObjectMapperConfig.getObjectMapper();
+
+  private static final String KEY_STATUS_CODE = "statusCode";
+  private static final String KEY_BODY = "body";
+
+  private static final String ERROR_MESSAGE_FATAL = "fatal";
+
+  public static Map<String, Object> successResponse(SuccessMessage success)
+      throws JsonProcessingException {
+    ResponseDto<?> body = ResponseDto.success(success);
+
+    return Map.of(
+        KEY_STATUS_CODE, success.getHttpStatus(),
+        KEY_BODY, MAPPER.writeValueAsString(body));
+  }
+
+  public static Map<String, Object> errorResponse(int status, String message) {
+    try {
+      ResponseDto<?> body = ResponseDto.fail(status, message);
+      return Map.of(KEY_STATUS_CODE, status, KEY_BODY, MAPPER.writeValueAsString(body));
+    } catch (Exception e) {
+      return Map.of(KEY_STATUS_CODE, INTERNAL_SERVER_ERROR, KEY_BODY, ERROR_MESSAGE_FATAL);
+    }
+  }
 }

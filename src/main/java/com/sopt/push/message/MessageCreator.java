@@ -2,10 +2,11 @@ package com.sopt.push.message;
 
 import com.sopt.push.dto.MessageFactoryDto;
 import com.sopt.push.util.JsonUtil;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MessageCreator {
-
-  private MessageCreator() {}
 
   public static String create(MessageFactoryDto dto) {
     return switch (dto.topic()) {
