@@ -125,8 +125,7 @@ public class SnsService {
       throw new ExternalException("SDK client error during publish to topic: " + e.getMessage(), e);
     } catch (RuntimeException e) {
       log.error("SNS publish TopicArn unexpected error", e);
-      throw new ExternalException(
-          "Unexpected error during publish to topic: " + e.getMessage(), e);
+      throw new ExternalException("Unexpected error during publish to topic: " + e.getMessage(), e);
     }
   }
 
