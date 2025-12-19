@@ -14,6 +14,7 @@ import com.sopt.push.domain.HistoryEntity;
 import com.sopt.push.enums.NotificationStatus;
 import com.sopt.push.repository.DeviceTokenRepository;
 import com.sopt.push.repository.HistoryRepository;
+import com.sopt.push.repository.UserRepository;
 import com.sopt.push.service.SnsService;
 import com.sopt.push.service.UserService;
 import java.time.Instant;
@@ -42,10 +43,12 @@ public class SnsHandler implements RequestHandler<SNSEvent, Void> {
     DynamoDbEnhancedClient enhancedClient = DynamoDbClientProvider.getClient();
     this.deviceTokenRepository =
         new DeviceTokenRepository(enhancedClient, envConfig.getDynamoDbTableName());
+    UserRepository userRepository =
+        new UserRepository(enhancedClient, envConfig.getDynamoDbTableName());
     this.historyRepository =
         new HistoryRepository(enhancedClient, envConfig.getDynamoDbTableName());
     SnsService snsService = new SnsService(envConfig);
-    this.userService = new UserService(deviceTokenRepository, snsService);
+    this.userService = new UserService(deviceTokenRepository, userRepository, snsService);
     this.objectMapper = ObjectMapperConfig.getObjectMapper();
   }
 
