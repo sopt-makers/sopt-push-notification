@@ -18,13 +18,12 @@ import software.amazon.awssdk.services.sns.model.SubscribeRequest;
 import software.amazon.awssdk.services.sns.model.SubscribeResponse;
 import software.amazon.awssdk.services.sns.model.UnsubscribeRequest;
 
+import static com.sopt.push.common.Constants.APPLICATION_PROTOCOL;
 import static com.sopt.push.common.Constants.JSON;
 
 @Slf4j
 @RequiredArgsConstructor
 public class SnsService {
-
-  private static final String APPLICATION_PROTOCOL = "application";
 
   private final EnvConfig envConfig;
   private final SnsClient snsClient = SnsClientProvider.getClient();
