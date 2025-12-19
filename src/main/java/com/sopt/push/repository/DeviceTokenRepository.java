@@ -28,4 +28,11 @@ public class DeviceTokenRepository {
     Key key = Key.builder().partitionValue(pk).sortValue(sk).build();
     return Optional.ofNullable(deviceTokenTable.getItem(key));
   }
+
+  public Optional<DeviceTokenEntity> findByPk(String pk) {
+    var queryResult = deviceTokenTable.query(
+        software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional.keyEqualTo(
+            Key.builder().partitionValue(pk).build()));
+    return queryResult.items().stream().findFirst();
+  }
 }
