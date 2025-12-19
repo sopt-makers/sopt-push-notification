@@ -50,3 +50,5 @@ build/
 ### SAM ###
 .aws-sam/
 samconfig.toml
+params-dev.json
+params-prod.json
