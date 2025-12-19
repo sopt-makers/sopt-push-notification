@@ -1,0 +1,67 @@
+package com.sopt.push.config;
+
+import com.sopt.push.repository.DeviceTokenRepository;
+import com.sopt.push.repository.HistoryRepository;
+import com.sopt.push.repository.UserRepository;
+import com.sopt.push.service.DeviceTokenService;
+import com.sopt.push.service.HistoryService;
+import com.sopt.push.service.InvalidEndpointCleaner;
+import com.sopt.push.service.NotificationService;
+import com.sopt.push.service.SendPushFacade;
+import com.sopt.push.service.UserService;
+import com.sopt.push.service.WebHookService;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
+import software.amazon.awssdk.services.sns.SnsClient;
+
+public class AppFactory {
+
+  private static AppFactory instance;
+
+  private final SendPushFacade sendPushFacade;
+  private final WebHookService webHookService;
+
+  private AppFactory() {
+
+    EnvConfig envConfig = new EnvConfig();
+    AwsConfig awsConfig = new AwsConfig(envConfig);
+    DynamoDbEnhancedClient dynamoClient = awsConfig.dynamoClient();
+    SnsClient snsClient = awsConfig.snsClient();
+    String tableName = awsConfig.tableName();
+
+    UserRepository userRepository = new UserRepository(dynamoClient, tableName);
+    HistoryRepository historyRepository = new HistoryRepository(dynamoClient, tableName);
+    DeviceTokenRepository tokenRepository = new DeviceTokenRepository(dynamoClient, tableName);
+
+    UserService userService = new UserService(userRepository);
+    HistoryService historyService = new HistoryService(historyRepository);
+    DeviceTokenService deviceTokenService = new DeviceTokenService(tokenRepository);
+    NotificationService notificationService = new NotificationService(snsClient, envConfig);
+    InvalidEndpointCleaner invalidEndpointCleaner =
+        new InvalidEndpointCleaner(userService, deviceTokenService, notificationService);
+
+    this.webHookService = new WebHookService();
+    this.sendPushFacade =
+        new SendPushFacade(
+            notificationService,
+            webHookService,
+            historyService,
+            userService,
+            deviceTokenService,
+            invalidEndpointCleaner);
+  }
+
+  public static synchronized AppFactory getInstance() {
+    if (instance == null) {
+      instance = new AppFactory();
+    }
+    return instance;
+  }
+
+  public SendPushFacade sendPushFacade() {
+    return sendPushFacade;
+  }
+
+  public WebHookService webHookService() {
+    return webHookService;
+  }
+}
