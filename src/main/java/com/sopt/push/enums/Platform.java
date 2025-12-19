@@ -4,13 +4,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.sopt.push.common.BusinessException;
 import com.sopt.push.common.ErrorMessage;
+import lombok.Getter;
 
 public enum Platform {
   IOS("iOS", PushTopic.APNS),
   ANDROID("Android", PushTopic.FCM);
 
   private final String value;
-  private final PushTopic topic;
+  @Getter private final PushTopic topic;
 
   Platform(String value, PushTopic topic) {
     this.value = value;
@@ -20,10 +21,6 @@ public enum Platform {
   @JsonValue
   public String getValue() {
     return this.value;
-  }
-
-  public PushTopic getTopic() {
-    return topic;
   }
 
   @JsonCreator
