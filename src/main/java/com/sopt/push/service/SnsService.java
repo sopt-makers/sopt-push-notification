@@ -71,11 +71,13 @@ public class SnsService {
             .platformApplicationArn(platformApplicationArn)
             .token(deviceToken);
 
-    if (userId != null && !userId.isBlank()) {
+    boolean hasUserId = userId != null && !userId.isBlank();
+    if (hasUserId) {
       builder.customUserData(userId);
     }
 
-    CreatePlatformEndpointResponse response = snsClient.createPlatformEndpoint(builder.build());
+    CreatePlatformEndpointResponse response =
+        snsClient.createPlatformEndpoint(builder.build());
     boolean hasError =
         response.sdkHttpResponse() == null || !response.sdkHttpResponse().isSuccessful();
 
