@@ -1,5 +1,8 @@
 package com.sopt.push.common;
 
+import lombok.Getter;
+
+@Getter
 public class BusinessException extends RuntimeException {
 
   private final ErrorMessage errorMessage;
@@ -14,7 +17,4 @@ public class BusinessException extends RuntimeException {
     this.errorMessage = errorMessage;
   }
 
-  public ErrorMessage getErrorMessage() {
-    return errorMessage;
-  }
 }

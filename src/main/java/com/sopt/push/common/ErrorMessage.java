@@ -1,5 +1,8 @@
 package com.sopt.push.common;
 
+import lombok.Getter;
+
+@Getter
 public enum ErrorMessage {
   /** 400 Bad Request */
   INVALID_REQUEST(StatusCode.BAD_REQUEST, "잘못된 요청입니다."),
@@ -16,13 +19,5 @@ public enum ErrorMessage {
   ErrorMessage(int httpStatus, String message) {
     this.httpStatus = httpStatus;
     this.message = message;
-  }
-
-  public int getHttpStatus() {
-    return httpStatus;
-  }
-
-  public String getMessage() {
-    return message;
   }
 }
