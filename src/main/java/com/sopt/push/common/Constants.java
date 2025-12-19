@@ -23,4 +23,8 @@ public class Constants {
   public static final String APNS = "APNS";
 
   public static final String DEFAULT_MESSAGE = "";
+
+  public static final String DELIMITER = "#";
+
+  public static final String YEAR_MONTH_FORMAT = "%04d-%02d";
 }
