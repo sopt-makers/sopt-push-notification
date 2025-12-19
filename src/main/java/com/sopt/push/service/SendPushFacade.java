@@ -124,11 +124,11 @@ public class SendPushFacade {
   }
 
   public void sendPushAll(RequestSendAllPushMessageDto dto) {
+    PushContext pushContext = PushContext.from(dto);
+    final String messageId = UUID.randomUUID().toString();
+    String actualSnsMessageId;
     try {
-      PushContext pushContext = PushContext.from(dto);
-      final String messageId = UUID.randomUUID().toString();
-
-      String actualSnsMessageId =
+      actualSnsMessageId =
           notificationService.allTopicPush(
               pushContext.title(),
               pushContext.content(),
@@ -136,7 +136,13 @@ public class SendPushFacade {
               pushContext.webLink(),
               pushContext.deepLink(),
               messageId);
+    } catch (Exception e) {
+      String errorMessage = String.format("Send Push All error: %s", e.getMessage());
+      log.error(errorMessage, e);
+      throw new PushFailException(errorMessage, e);
+    }
 
+    try {
       PushSuccessMessageDto webHookDto =
           new PushSuccessMessageDto(
               messageId,
@@ -148,9 +154,12 @@ public class SendPushFacade {
               pushContext.deepLink(),
               pushContext.webLink(),
               Set.of(User.ALL.getValue()));
-
       webHookService.pushSuccessWebHook(webHookDto);
+    } catch (Exception e) {
+      log.warn("Failed to send webhook for successful push. messageId: {}", messageId, e);
+    }
 
+    try {
       CreateHistoryDto createHistoryDto =
           new CreateHistoryDto(
               pushContext.transactionId(),
@@ -170,12 +179,9 @@ public class SendPushFacade {
               Set.of(actualSnsMessageId),
               null,
               null);
-
       historyService.createLog(createHistoryDto);
-
     } catch (Exception e) {
-      log.error("Send Push All error: " + e.getMessage());
-      throw new PushFailException("Send Push All error: " + e.getMessage(), e);
+      log.warn("Failed to create history log for successful push. messageId: {}", messageId, e);
     }
   }
 }
