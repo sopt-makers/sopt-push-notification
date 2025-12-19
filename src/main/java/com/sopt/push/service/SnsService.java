@@ -1,5 +1,8 @@
 package com.sopt.push.service;
 
+import static com.sopt.push.common.Constants.APPLICATION_PROTOCOL;
+import static com.sopt.push.common.Constants.JSON;
+
 import com.sopt.push.client.SnsClientProvider;
 import com.sopt.push.common.ExternalException;
 import com.sopt.push.config.EnvConfig;
@@ -17,9 +20,6 @@ import software.amazon.awssdk.services.sns.model.PublishResponse;
 import software.amazon.awssdk.services.sns.model.SubscribeRequest;
 import software.amazon.awssdk.services.sns.model.SubscribeResponse;
 import software.amazon.awssdk.services.sns.model.UnsubscribeRequest;
-
-import static com.sopt.push.common.Constants.APPLICATION_PROTOCOL;
-import static com.sopt.push.common.Constants.JSON;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -76,8 +76,7 @@ public class SnsService {
       builder.customUserData(userId);
     }
 
-    CreatePlatformEndpointResponse response =
-        snsClient.createPlatformEndpoint(builder.build());
+    CreatePlatformEndpointResponse response = snsClient.createPlatformEndpoint(builder.build());
     boolean hasError =
         response.sdkHttpResponse() == null || !response.sdkHttpResponse().isSuccessful();
 

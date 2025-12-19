@@ -30,9 +30,10 @@ public class DeviceTokenRepository {
   }
 
   public Optional<DeviceTokenEntity> findByPk(String pk) {
-    var queryResult = deviceTokenTable.query(
-        software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional.keyEqualTo(
-            Key.builder().partitionValue(pk).build()));
+    var queryResult =
+        deviceTokenTable.query(
+            software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional.keyEqualTo(
+                Key.builder().partitionValue(pk).build()));
     return queryResult.items().stream().findFirst();
   }
 }

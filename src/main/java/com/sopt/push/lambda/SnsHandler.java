@@ -22,7 +22,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 
@@ -54,7 +53,8 @@ public class SnsHandler implements RequestHandler<SNSEvent, Void> {
 
   @Override
   public Void handleRequest(SNSEvent event, Context context) {
-    boolean invalidEvent = event == null || event.getRecords() == null || event.getRecords().isEmpty();
+    boolean invalidEvent =
+        event == null || event.getRecords() == null || event.getRecords().isEmpty();
     if (invalidEvent) {
       log.warn("SNS event is null or has no records");
       return null;
@@ -84,7 +84,7 @@ public class SnsHandler implements RequestHandler<SNSEvent, Void> {
   }
 
   private void processFailureRecords(
-          List<SNSEvent.SNSRecord> records, Map<String, DeviceTokenEntity> tokenToEntity) {
+      List<SNSEvent.SNSRecord> records, Map<String, DeviceTokenEntity> tokenToEntity) {
     for (SNSEvent.SNSRecord record : records) {
       String token = extractTokenFromRecord(record);
       boolean invalidToken = token == null || token.isBlank();
@@ -150,7 +150,8 @@ public class SnsHandler implements RequestHandler<SNSEvent, Void> {
 
   private void createFailureHistory(String userId, String messageId) {
     ZonedDateTime now = ZonedDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
-    String yearMonth = String.format(Constants.YEAR_MONTH_FORMAT, now.getYear(), now.getMonthValue());
+    String yearMonth =
+        String.format(Constants.YEAR_MONTH_FORMAT, now.getYear(), now.getMonthValue());
     String timestamp = DateTimeFormatter.ISO_INSTANT.format(now.toInstant());
     String transactionId = UUID.randomUUID().toString();
     HistoryEntity history = new HistoryEntity();
