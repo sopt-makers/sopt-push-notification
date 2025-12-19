@@ -20,4 +20,4 @@ public record CreateHistoryDto(
     String id,
     Set<String> messageIds,
     String errorCode,
-    String errorMessag) {}
+    String errorMessage) {}

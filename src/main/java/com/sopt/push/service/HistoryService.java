@@ -48,7 +48,7 @@ public class HistoryService {
     history.setUserIds(createHistoryDto.userIds());
     history.setMessageIds(createHistoryDto.messageIds());
     history.setErrorCode(createHistoryDto.errorCode());
-    history.setErrorMessage(createHistoryDto.errorMessag());
+    history.setErrorMessage(createHistoryDto.errorMessage());
     history.setId(createHistoryDto.id());
 
     historyRepository.save(history);
