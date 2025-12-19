@@ -18,11 +18,12 @@ import software.amazon.awssdk.services.sns.model.SubscribeRequest;
 import software.amazon.awssdk.services.sns.model.SubscribeResponse;
 import software.amazon.awssdk.services.sns.model.UnsubscribeRequest;
 
+import static com.sopt.push.common.Constants.JSON;
+
 @Slf4j
 @RequiredArgsConstructor
 public class SnsService {
 
-  private static final String MESSAGE_STRUCTURE_JSON = "json";
   private static final String APPLICATION_PROTOCOL = "application";
 
   private final EnvConfig envConfig;
@@ -107,7 +108,7 @@ public class SnsService {
           PublishRequest.builder()
               .topicArn(topicArn)
               .message(messageJson)
-              .messageStructure(MESSAGE_STRUCTURE_JSON)
+              .messageStructure(JSON)
               .build();
       PublishResponse response = snsClient.publish(request);
       boolean hasError =
@@ -137,7 +138,7 @@ public class SnsService {
           PublishRequest.builder()
               .targetArn(endpointArn)
               .message(messageJson)
-              .messageStructure(MESSAGE_STRUCTURE_JSON)
+              .messageStructure(JSON)
               .build();
       PublishResponse response = snsClient.publish(request);
       boolean hasError =
