@@ -15,7 +15,7 @@ import software.amazon.awssdk.services.sns.SnsClient;
 
 public class AppFactory {
 
-  private static AppFactory instance;
+  private static final AppFactory INSTANCE = new AppFactory();
 
   private final SendPushFacade sendPushFacade;
   private final WebHookService webHookService;
@@ -50,11 +50,8 @@ public class AppFactory {
             invalidEndpointCleaner);
   }
 
-  public static synchronized AppFactory getInstance() {
-    if (instance == null) {
-      instance = new AppFactory();
-    }
-    return instance;
+  public static AppFactory getInstance() {
+    return INSTANCE;
   }
 
   public SendPushFacade sendPushFacade() {
