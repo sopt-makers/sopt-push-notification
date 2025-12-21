@@ -36,6 +36,7 @@ public class Constants {
   public static final String WEB_LINK = "webLink";
   public static final String DEEP_LINK = "deepLink";
   public static final String DATA = "data";
+  public static final String TOKEN = "Token";
 
   public static final String DEFAULT_MESSAGE = "";
 }
