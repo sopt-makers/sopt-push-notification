@@ -72,6 +72,9 @@ public class WebHookService {
 
     } catch (IOException | InterruptedException e) {
       log.error("{} webhook failed", systemName, e);
+      if (e instanceof InterruptedException) {
+        Thread.currentThread().interrupt();
+      }
       throw new ExternalException(systemName + " webhook failed", e);
     }
   }
