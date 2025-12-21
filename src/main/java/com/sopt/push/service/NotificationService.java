@@ -3,8 +3,8 @@ package com.sopt.push.service;
 import static com.sopt.push.common.Constants.JSON;
 import static com.sopt.push.util.ValidationUtil.validate;
 
+import com.sopt.push.common.ExternalException;
 import com.sopt.push.common.InvalidEndpointException;
-import com.sopt.push.common.PushFailException;
 import com.sopt.push.config.EnvConfig;
 import com.sopt.push.config.ValidatorConfig;
 import com.sopt.push.dto.MessageFactoryDto;
@@ -66,9 +66,9 @@ public class NotificationService {
       throw new InvalidEndpointException(endpointArn, ex);
 
     } catch (SnsException ex) {
-      throw new PushFailException("SNS publish failed: " + ex.getMessage(), ex);
+      throw new ExternalException("SNS publish failed: " + ex.getMessage(), ex);
     } catch (Exception ex) {
-      throw new PushFailException("Unknown error while sending push: " + ex.getMessage(), ex);
+      throw new ExternalException("Unknown error while sending push: " + ex.getMessage(), ex);
     }
   }
 
@@ -101,9 +101,9 @@ public class NotificationService {
     } catch (EndpointDisabledException | InvalidParameterException ex) {
       throw new InvalidEndpointException(allTopicArn, ex);
     } catch (SnsException ex) {
-      throw new PushFailException("SNS publish failed: " + ex.getMessage(), ex);
+      throw new ExternalException("SNS publish failed: " + ex.getMessage(), ex);
     } catch (Exception ex) {
-      throw new PushFailException("Unknown error while sending push: " + ex.getMessage(), ex);
+      throw new ExternalException("Unknown error while sending push: " + ex.getMessage(), ex);
     }
   }
 

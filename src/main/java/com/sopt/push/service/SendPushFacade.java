@@ -1,7 +1,7 @@
 package com.sopt.push.service;
 
+import com.sopt.push.common.ExternalException;
 import com.sopt.push.common.InvalidEndpointException;
-import com.sopt.push.common.PushFailException;
 import com.sopt.push.dto.CreateHistoryDto;
 import com.sopt.push.dto.PushContext;
 import com.sopt.push.dto.PushSuccessMessageDto;
@@ -127,7 +127,7 @@ public class SendPushFacade {
     } catch (InvalidEndpointException ex) {
       cleaner.clean(userTokenInfoDto);
 
-    } catch (PushFailException ex) {
+    } catch (ExternalException ex) {
       log.error("Push failed for user={} err={}", userTokenInfoDto.userId(), ex.getMessage());
     }
     return null;
@@ -149,7 +149,7 @@ public class SendPushFacade {
     } catch (Exception e) {
       String errorMessage = String.format("Send Push All error: %s", e.getMessage());
       log.error(errorMessage, e);
-      throw new PushFailException(errorMessage, e);
+      throw new ExternalException(errorMessage, e);
     }
 
     try {
