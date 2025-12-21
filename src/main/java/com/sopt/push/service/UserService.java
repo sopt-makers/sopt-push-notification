@@ -3,10 +3,13 @@ package com.sopt.push.service;
 import static com.sopt.push.common.Constants.TOKEN_PREFIX;
 import static com.sopt.push.common.Constants.USER_PREFIX;
 
+import com.sopt.push.domain.DeviceTokenEntity;
 import com.sopt.push.domain.UserEntity;
 import com.sopt.push.dto.UserTokenInfoDto;
 import com.sopt.push.enums.Platform;
+import com.sopt.push.repository.DeviceTokenRepository;
 import com.sopt.push.repository.UserRepository;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,9 +17,11 @@ import java.util.Set;
 public class UserService {
 
   private final UserRepository userRepository;
+  private final DeviceTokenRepository deviceTokenRepository;
 
-  public UserService(UserRepository userRepository) {
+  public UserService(UserRepository userRepository, DeviceTokenRepository deviceTokenRepository) {
     this.userRepository = userRepository;
+    this.deviceTokenRepository = deviceTokenRepository;
   }
 
   public Set<UserTokenInfoDto> findTokenByUserIds(Set<String> userIds) {
@@ -31,27 +36,65 @@ public class UserService {
     return allUserTokens;
   }
 
+    private UserTokenInfoDto mapUserEntityToInfoDto(UserEntity userEntity) {
+        String userId =
+                userEntity.getPk().startsWith(USER_PREFIX)
+                        ? userEntity.getPk().substring(USER_PREFIX.length())
+                        : userEntity.getPk();
+        String deviceToken =
+                userEntity.getSk().startsWith(TOKEN_PREFIX)
+                        ? userEntity.getSk().substring(TOKEN_PREFIX.length())
+                        : userEntity.getSk();
+
+        return new UserTokenInfoDto(
+                userId,
+                deviceToken,
+                userEntity.getEndpointArn(),
+                Platform.fromValue(userEntity.getPlatform()),
+                userEntity.getSubscriptionArn());
+    }
+
   public void deleteUser(String userId, String deviceToken) {
     String userPk = USER_PREFIX + userId;
     String tokenSk = TOKEN_PREFIX + deviceToken;
     userRepository.delete(userPk, tokenSk);
   }
 
-  private UserTokenInfoDto mapUserEntityToInfoDto(UserEntity userEntity) {
-    String userId =
-        userEntity.getPk().startsWith(USER_PREFIX)
-            ? userEntity.getPk().substring(USER_PREFIX.length())
-            : userEntity.getPk();
+  public List<DeviceTokenEntity> findUserByTokenIds(List<String> deviceTokens) {
+    List<DeviceTokenEntity> result = new ArrayList<>();
+    for (String deviceToken : deviceTokens) {
+      deviceTokenRepository
+          .findByDeviceToken(deviceToken)
+          .ifPresent(result::add);
+    }
+    return result;
+  }
+
+  public DeviceTokenEntity findDeviceTokenEntityByPk(String pk) {
+    if (pk == null || !pk.startsWith(TOKEN_PREFIX)) {
+      return null;
+    }
+    String deviceToken = pk.substring(TOKEN_PREFIX.length());
+    return deviceTokenRepository
+        .findByDeviceToken(deviceToken)
+        .orElse(null);
+  }
+
+  public UserTokenInfoDto mapDeviceTokenEntityToInfoDto(DeviceTokenEntity deviceTokenEntity) {
     String deviceToken =
-        userEntity.getSk().startsWith(TOKEN_PREFIX)
-            ? userEntity.getSk().substring(TOKEN_PREFIX.length())
-            : userEntity.getSk();
+        deviceTokenEntity.getPk().startsWith(TOKEN_PREFIX)
+            ? deviceTokenEntity.getPk().substring(TOKEN_PREFIX.length())
+            : deviceTokenEntity.getPk();
+    String userId =
+        deviceTokenEntity.getSk().startsWith(USER_PREFIX)
+            ? deviceTokenEntity.getSk().substring(USER_PREFIX.length())
+            : deviceTokenEntity.getSk();
 
     return new UserTokenInfoDto(
         userId,
         deviceToken,
-        userEntity.getEndpointArn(),
-        Platform.fromValue(userEntity.getPlatform()),
-        userEntity.getSubscriptionArn());
+        deviceTokenEntity.getEndpointArn(),
+        Platform.fromValue(deviceTokenEntity.getPlatform()),
+        deviceTokenEntity.getSubscriptionArn());
   }
 }
