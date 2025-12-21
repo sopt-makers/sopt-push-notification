@@ -4,6 +4,7 @@ import static com.sopt.push.common.Constants.FORMATTER;
 import static com.sopt.push.common.Constants.HEADER_CONTENT_TYPE;
 import static com.sopt.push.common.Constants.HTTP_METHOD_PATCH;
 import static com.sopt.push.common.Constants.HTTP_METHOD_POST;
+import static com.sopt.push.common.Constants.HTTP_REQUEST_TIMEOUT_SECONDS;
 import static com.sopt.push.common.Constants.MEDIA_TYPE_APPLICATION_JSON;
 import static com.sopt.push.common.Constants.SYSTEM_NAME_APP_SERVER;
 import static com.sopt.push.common.Constants.SYSTEM_NAME_OPERATION_SERVER;
@@ -22,6 +23,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import lombok.extern.slf4j.Slf4j;
@@ -99,6 +101,7 @@ public class WebHookService {
         .uri(URI.create(url))
         .header(HEADER_CONTENT_TYPE, MEDIA_TYPE_APPLICATION_JSON)
         .method(method, HttpRequest.BodyPublishers.ofString(body))
+        .timeout(Duration.ofSeconds(HTTP_REQUEST_TIMEOUT_SECONDS))
         .build();
   }
 

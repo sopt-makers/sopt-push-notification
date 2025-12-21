@@ -49,4 +49,7 @@ public class Constants {
   public static final String SYSTEM_NAME_APP_SERVER = "APP SERVER";
   public static final String SYSTEM_NAME_OPERATION_SERVER = "OPERATION SERVER";
   public static final String TIME_ZONE_KST = "Asia/Seoul";
+
+  public static final int HTTP_CLIENT_CONNECT_TIMEOUT_SECONDS = 10;
+  public static final int HTTP_REQUEST_TIMEOUT_SECONDS = 5;
 }
