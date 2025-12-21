@@ -42,7 +42,7 @@ public class AppFactory {
     InvalidEndpointCleaner invalidEndpointCleaner =
         new InvalidEndpointCleaner(userService, deviceTokenService, notificationService);
 
-    this.webHookService = new WebHookService();
+    this.webHookService = new WebHookService(httpClient, envConfig);
     this.sendPushFacade =
         new SendPushFacade(
             notificationService,
