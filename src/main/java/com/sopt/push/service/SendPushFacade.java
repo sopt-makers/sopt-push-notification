@@ -101,7 +101,7 @@ public class SendPushFacade {
             notificationStatus.getValue(),
             Actions.SEND.getValue(),
             null,
-            "",
+            null,
             pushContext.category(),
             userIds,
             messageId,
