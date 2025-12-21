@@ -6,9 +6,9 @@ import com.sopt.push.common.BusinessException;
 import com.sopt.push.common.ErrorMessage;
 
 public enum NotificationStatus {
-  START("start"),
   FAIL("fail"),
-  SUCCESS("success");
+  SUCCESS("success"),
+  PARTIAL_SUCCESS("partial_success");
 
   private final String value;
 
@@ -29,9 +29,9 @@ public enum NotificationStatus {
     }
 
     return switch (value.trim()) {
-      case "start" -> START;
       case "fail" -> FAIL;
       case "success" -> SUCCESS;
+      case "partial_success" -> PARTIAL_SUCCESS;
       default ->
           throw new BusinessException(
               ErrorMessage.INVALID_REQUEST, "Unknown NotificationStatus: " + value);

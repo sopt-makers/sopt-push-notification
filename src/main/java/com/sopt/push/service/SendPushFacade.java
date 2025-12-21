@@ -64,19 +64,30 @@ public class SendPushFacade {
       }
     }
 
-    PushSuccessMessageDto pushSuccessMessageDto =
-        new PushSuccessMessageDto(
-            messageId,
-            pushContext.title(),
-            pushContext.content(),
-            pushContext.category(),
-            pushContext.service(),
-            WebHookType.SEND,
-            pushContext.deepLink(),
-            pushContext.webLink(),
-            userIds);
+    NotificationStatus notificationStatus;
 
-    webHookService.pushSuccessWebHook(pushSuccessMessageDto);
+    if (snsMessageIds.isEmpty()) {
+      notificationStatus = NotificationStatus.FAIL;
+    } else if (snsMessageIds.size() < users.size()) {
+      notificationStatus = NotificationStatus.PARTIAL_SUCCESS;
+    } else {
+      notificationStatus = NotificationStatus.SUCCESS;
+    }
+
+    if (notificationStatus != NotificationStatus.FAIL) {
+      PushSuccessMessageDto pushSuccessMessageDto =
+          new PushSuccessMessageDto(
+              messageId,
+              pushContext.title(),
+              pushContext.content(),
+              pushContext.category(),
+              pushContext.service(),
+              WebHookType.SEND,
+              pushContext.deepLink(),
+              pushContext.webLink(),
+              userIds);
+      webHookService.pushSuccessWebHook(pushSuccessMessageDto);
+    }
 
     CreateHistoryDto createHistoryDto =
         new CreateHistoryDto(
@@ -87,7 +98,7 @@ public class SendPushFacade {
             pushContext.deepLink(),
             NotificationType.PUSH.getValue(),
             pushContext.service().getValue(),
-            NotificationStatus.SUCCESS.getValue(),
+            notificationStatus.getValue(),
             Actions.SEND.getValue(),
             null,
             "",
