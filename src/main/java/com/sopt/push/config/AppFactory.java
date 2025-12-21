@@ -10,6 +10,7 @@ import com.sopt.push.service.NotificationService;
 import com.sopt.push.service.SendPushFacade;
 import com.sopt.push.service.UserService;
 import com.sopt.push.service.WebHookService;
+import java.net.http.HttpClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.services.sns.SnsClient;
 
@@ -27,6 +28,8 @@ public class AppFactory {
     DynamoDbEnhancedClient dynamoClient = awsConfig.dynamoClient();
     SnsClient snsClient = awsConfig.snsClient();
     String tableName = awsConfig.tableName();
+
+    HttpClient httpClient = HttpClient.newHttpClient();
 
     UserRepository userRepository = new UserRepository(dynamoClient, tableName);
     HistoryRepository historyRepository = new HistoryRepository(dynamoClient, tableName);
