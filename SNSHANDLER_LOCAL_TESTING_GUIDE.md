@@ -97,14 +97,13 @@ sam local invoke SnsHandlerFunction \
     
   },
   "SnsHandlerFunction": {
-    "DYNAMODB_TABLE": "notification-dev",
-    "PLATFORM_APPLICATION_iOS": "arn:aws:sns:ap-northeast-2:379013966998:app/APNS/Makers-test-iOS",
-    "PLATFORM_APPLICATION_ANDROID": "arn:aws:sns:ap-northeast-2:379013966998:app/GCM/Makers-Android-test",
-    "ALL_TOPIC_ARN": "arn:aws:sns:ap-northeast-2:379013966998:SOPT-NOTIFICATION-ALL-DEV",
+    "DYNAMODB_TABLE": "your-dynamodb-table-name",
+    "PLATFORM_APPLICATION_iOS": "arn:aws:sns:...",
+    "PLATFORM_APPLICATION_ANDROID": "arn:aws:sns:...",
+    "ALL_TOPIC_ARN": "arn:aws:sns:...",
     "STAGE": "dev",
-    "MAKERS_APP_SERVER_URL": "https://app.dev.sopt.org/api/v2/notification",
-    "MAKERS_OPERATION_SERVER_URL": "https://operation.api.dev.sopt.org/api/v1/alarms",
-    "AWS_REGION": "ap-northeast-2"
+    "MAKERS_APP_SERVER_URL": "https://...",
+    "MAKERS_OPERATION_SERVER_URL": "https://..."
   }
 }
 ```
