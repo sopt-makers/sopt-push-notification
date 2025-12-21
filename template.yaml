@@ -154,6 +154,14 @@ Resources:
                     - SEND
                     - SEND_ALL
 
+  SnsHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "sopt-push-notification-lambda-sns-${Stage}"
+      Handler: com.sopt.push.lambda.SnsHandler::handleRequest
+      CodeUri: build/libs/app.jar
+      Role: !GetAtt PushLambdaRole.Arn
+
 Outputs:
   ApiUrl:
     Description: API Gateway Root URL for this Stage
