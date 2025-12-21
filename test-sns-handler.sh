@@ -42,6 +42,7 @@ echo "🧪 SnsHandler 테스트 실행 중..."
 sam local invoke SnsHandlerFunction \
   --event "$EVENT_FILE" \
   --env-vars params-dev.json \
+  --profile sopt-platform \
   --debug
 
 echo "✅ 테스트 완료!"
