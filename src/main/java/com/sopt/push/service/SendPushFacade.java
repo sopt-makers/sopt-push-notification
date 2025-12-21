@@ -153,7 +153,7 @@ public class SendPushFacade {
     }
 
     try {
-      PushSuccessMessageDto webHookDto =
+      PushSuccessMessageDto pushSuccessMessageDto =
           new PushSuccessMessageDto(
               messageId,
               pushContext.title(),
@@ -163,7 +163,7 @@ public class SendPushFacade {
               pushContext.deepLink(),
               pushContext.webLink(),
               Set.of(User.ALL.getValue()));
-      webHookService.pushSuccessWebHook(webHookDto);
+      webHookService.pushSuccessWebHook(pushSuccessMessageDto);
     } catch (Exception e) {
       log.warn("Failed to send webhook for successful push. messageId: {}", messageId, e);
     }
