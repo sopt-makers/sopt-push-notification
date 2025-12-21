@@ -42,7 +42,8 @@ public class AppFactory {
     this.deviceTokenService = new DeviceTokenService(tokenRepository);
     this.notificationService = new NotificationService(snsClient, envConfig);
     this.invalidEndpointCleaner =
-        new InvalidEndpointCleaner(this.userService, this.deviceTokenService, this.notificationService);
+        new InvalidEndpointCleaner(
+            this.userService, this.deviceTokenService, this.notificationService);
 
     this.webHookService = new WebHookService();
     this.sendPushFacade =

@@ -56,7 +56,8 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
 
   @Override
   public String handleRequest(SNSEvent event, Context context) {
-    boolean invalidEvent = event == null || event.getRecords() == null || event.getRecords().isEmpty();
+    boolean invalidEvent =
+        event == null || event.getRecords() == null || event.getRecords().isEmpty();
     if (invalidEvent) {
       log.warn("SNS event is null or has no records");
       return "No records found";
@@ -66,9 +67,10 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
 
     try {
       Map<SNSEvent.SNSRecord, String> recordTokenMap = extractRecordTokens(event.getRecords());
-      List<String> deviceTokens = recordTokenMap.values().stream()
-          .filter(token -> token != null && !token.isBlank())
-          .toList();
+      List<String> deviceTokens =
+          recordTokenMap.values().stream()
+              .filter(token -> token != null && !token.isBlank())
+              .toList();
 
       List<DeviceTokenEntity> deviceTokenEntities = userService.findUserByTokenIds(deviceTokens);
 
@@ -77,9 +79,7 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
               .map(userService::mapDeviceTokenEntityToInfoDto)
               .collect(
                   Collectors.toMap(
-                      UserTokenInfoDto::deviceToken,
-                      Function.identity(),
-                      (a, b) -> a));
+                      UserTokenInfoDto::deviceToken, Function.identity(), (a, b) -> a));
 
       for (Map.Entry<SNSEvent.SNSRecord, String> entry : recordTokenMap.entrySet()) {
         try {
@@ -124,7 +124,10 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
     SNSEvent.SNS sns = record.getSNS();
     String messageId = sns != null ? sns.getMessageId() : null;
 
-    log.debug("Processing invalid push endpoint for userId={}, messageId={}", userTokenInfoDto.userId(), messageId);
+    log.debug(
+        "Processing invalid push endpoint for userId={}, messageId={}",
+        userTokenInfoDto.userId(),
+        messageId);
     handleInvalidPushEndpoint(userTokenInfoDto, messageId);
   }
 
@@ -150,7 +153,7 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
       if (invalidMessage) {
         return null;
       }
-      
+
       JsonNode root = objectMapper.readTree(message);
       JsonNode tokenNode = root.path(TOKEN);
       boolean missingOrBlankToken = tokenNode.isMissingNode() || tokenNode.asText().isBlank();
@@ -211,5 +214,4 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
         null // errorMessage
         );
   }
-
 }

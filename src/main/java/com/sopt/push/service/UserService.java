@@ -36,23 +36,23 @@ public class UserService {
     return allUserTokens;
   }
 
-    private UserTokenInfoDto mapUserEntityToInfoDto(UserEntity userEntity) {
-        String userId =
-                userEntity.getPk().startsWith(USER_PREFIX)
-                        ? userEntity.getPk().substring(USER_PREFIX.length())
-                        : userEntity.getPk();
-        String deviceToken =
-                userEntity.getSk().startsWith(TOKEN_PREFIX)
-                        ? userEntity.getSk().substring(TOKEN_PREFIX.length())
-                        : userEntity.getSk();
+  private UserTokenInfoDto mapUserEntityToInfoDto(UserEntity userEntity) {
+    String userId =
+        userEntity.getPk().startsWith(USER_PREFIX)
+            ? userEntity.getPk().substring(USER_PREFIX.length())
+            : userEntity.getPk();
+    String deviceToken =
+        userEntity.getSk().startsWith(TOKEN_PREFIX)
+            ? userEntity.getSk().substring(TOKEN_PREFIX.length())
+            : userEntity.getSk();
 
-        return new UserTokenInfoDto(
-                userId,
-                deviceToken,
-                userEntity.getEndpointArn(),
-                Platform.fromValue(userEntity.getPlatform()),
-                userEntity.getSubscriptionArn());
-    }
+    return new UserTokenInfoDto(
+        userId,
+        deviceToken,
+        userEntity.getEndpointArn(),
+        Platform.fromValue(userEntity.getPlatform()),
+        userEntity.getSubscriptionArn());
+  }
 
   public void deleteUser(String userId, String deviceToken) {
     String userPk = USER_PREFIX + userId;
@@ -63,9 +63,7 @@ public class UserService {
   public List<DeviceTokenEntity> findUserByTokenIds(List<String> deviceTokens) {
     List<DeviceTokenEntity> result = new ArrayList<>();
     for (String deviceToken : deviceTokens) {
-      deviceTokenRepository
-          .findByDeviceToken(deviceToken)
-          .ifPresent(result::add);
+      deviceTokenRepository.findByDeviceToken(deviceToken).ifPresent(result::add);
     }
     return result;
   }
@@ -75,9 +73,7 @@ public class UserService {
       return null;
     }
     String deviceToken = pk.substring(TOKEN_PREFIX.length());
-    return deviceTokenRepository
-        .findByDeviceToken(deviceToken)
-        .orElse(null);
+    return deviceTokenRepository.findByDeviceToken(deviceToken).orElse(null);
   }
 
   public UserTokenInfoDto mapDeviceTokenEntityToInfoDto(DeviceTokenEntity deviceTokenEntity) {
