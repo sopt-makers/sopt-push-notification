@@ -28,7 +28,7 @@ aws dynamodb query \
 "Message": "{...,\"EndpointArn\":\"실제-엔드포인트-ARN\",...}"
 ```
 
-**수정 방법:**
+**수정 방법:**./gradlew :spotlessApply
 - DynamoDB의 `DeviceTokenEntity`에서 `endpointArn` 필드 값 사용
 - 또는 `UserEntity`에서 `endpointArn` 필드 값 사용
 
