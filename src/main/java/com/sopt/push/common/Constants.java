@@ -1,5 +1,6 @@
 package com.sopt.push.common;
 
+import java.time.format.DateTimeFormatter;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -37,5 +38,15 @@ public class Constants {
   public static final String DEEP_LINK = "deepLink";
   public static final String DATA = "data";
 
-  public static final String DEFAULT_MESSAGE = "";
+  public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+  public static final String HEADER_CONTENT_TYPE = "Content-Type";
+  public static final String MEDIA_TYPE_APPLICATION_JSON = "application/json";
+
+  public static final String HTTP_METHOD_PATCH = "PATCH";
+  public static final String HTTP_METHOD_POST = "POST";
+  public static final String URL_PATH_FORMAT_ID = "%s/%s";
+
+  public static final String SYSTEM_NAME_APP_SERVER = "APP SERVER";
+  public static final String SYSTEM_NAME_OPERATION_SERVER = "OPERATION SERVER";
+  public static final String TIME_ZONE_KST = "Asia/Seoul";
 }
