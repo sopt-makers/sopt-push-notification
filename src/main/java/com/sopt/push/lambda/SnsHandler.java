@@ -18,7 +18,6 @@ import com.sopt.push.service.HistoryService;
 import com.sopt.push.service.InvalidEndpointCleaner;
 import com.sopt.push.service.UserService;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,17 +40,6 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
     this.historyService = factory.historyService();
     this.invalidEndpointCleaner = factory.invalidEndpointCleaner();
     this.objectMapper = ObjectMapperConfig.getObjectMapper();
-  }
-
-  public SnsHandler(
-      UserService userService,
-      HistoryService historyService,
-      InvalidEndpointCleaner invalidEndpointCleaner,
-      ObjectMapper objectMapper) {
-    this.userService = userService;
-    this.historyService = historyService;
-    this.invalidEndpointCleaner = invalidEndpointCleaner;
-    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -117,14 +105,14 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
 
     UserTokenInfoDto userTokenInfoDto = tokenMap.get(token);
     if (userTokenInfoDto == null) {
-      log.debug("No UserTokenInfoDto found for token: {}", token);
+      log.info("No UserTokenInfoDto found for token: {}", token);
       return;
     }
 
     SNSEvent.SNS sns = record.getSNS();
     String messageId = sns != null ? sns.getMessageId() : null;
 
-    log.debug(
+    log.info(
         "Processing invalid push endpoint for userId={}, messageId={}",
         userTokenInfoDto.userId(),
         messageId);
@@ -170,27 +158,14 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
   }
 
   private void createFailLog(String userId, String messageId) {
-    Set<String> userIds = buildUserIds(userId);
-    Set<String> messageIds = buildMessageIds(messageId);
+    boolean hasValidUserId = userId != null && !userId.isBlank();
+    Set<String> userIds = hasValidUserId ? Set.of(userId) : null;
+
+    boolean hasValidMessageId = messageId != null && !messageId.isBlank();
+    Set<String> messageIds = hasValidMessageId ? Set.of(messageId) : null;
 
     CreateHistoryDto createHistoryDto = createFailureHistoryDto(userIds, messageIds);
     historyService.createLog(createHistoryDto);
-  }
-
-  private Set<String> buildUserIds(String userId) {
-    Set<String> userIds = new HashSet<>();
-    if (userId != null && !userId.isBlank()) {
-      userIds.add(userId);
-    }
-    return userIds.isEmpty() ? null : userIds;
-  }
-
-  private Set<String> buildMessageIds(String messageId) {
-    Set<String> messageIds = new HashSet<>();
-    if (messageId != null && !messageId.isBlank()) {
-      messageIds.add(messageId);
-    }
-    return messageIds.isEmpty() ? null : messageIds;
   }
 
   private CreateHistoryDto createFailureHistoryDto(Set<String> userIds, Set<String> messageIds) {
