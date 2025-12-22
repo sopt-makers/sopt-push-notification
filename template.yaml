@@ -164,7 +164,7 @@ Resources:
     Properties:
       FunctionName: !Sub "sopt-push-notification-lambda-sns-${Stage}"
       Handler: com.sopt.push.lambda.SnsHandler::handleRequest
-      CodeUri: build/libs/app.jar
+      CodeUri: .
       Role: !GetAtt PushLambdaRole.Arn
       Events:
         PushFailureEvent:
