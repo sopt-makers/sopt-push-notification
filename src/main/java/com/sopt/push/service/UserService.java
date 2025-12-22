@@ -9,20 +9,18 @@ import com.sopt.push.dto.UserTokenInfoDto;
 import com.sopt.push.enums.Platform;
 import com.sopt.push.repository.DeviceTokenRepository;
 import com.sopt.push.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@RequiredArgsConstructor
 public class UserService {
 
   private final UserRepository userRepository;
   private final DeviceTokenRepository deviceTokenRepository;
-
-  public UserService(UserRepository userRepository, DeviceTokenRepository deviceTokenRepository) {
-    this.userRepository = userRepository;
-    this.deviceTokenRepository = deviceTokenRepository;
-  }
 
   public Set<UserTokenInfoDto> findTokenByUserIds(Set<String> userIds) {
     Set<UserTokenInfoDto> allUserTokens = new HashSet<>();
@@ -68,15 +66,7 @@ public class UserService {
     return result;
   }
 
-  public DeviceTokenEntity findDeviceTokenEntityByPk(String pk) {
-    if (pk == null || !pk.startsWith(TOKEN_PREFIX)) {
-      return null;
-    }
-    String deviceToken = pk.substring(TOKEN_PREFIX.length());
-    return deviceTokenRepository.findByDeviceToken(deviceToken).orElse(null);
-  }
-
-  public UserTokenInfoDto mapDeviceTokenEntityToInfoDto(DeviceTokenEntity deviceTokenEntity) {
+    public UserTokenInfoDto mapDeviceTokenEntityToInfoDto(DeviceTokenEntity deviceTokenEntity) {
     String deviceToken =
         deviceTokenEntity.getPk().startsWith(TOKEN_PREFIX)
             ? deviceTokenEntity.getPk().substring(TOKEN_PREFIX.length())
