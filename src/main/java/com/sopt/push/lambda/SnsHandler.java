@@ -85,10 +85,10 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
 
     } catch (RuntimeException ex) {
       log.error("SNS handler failed with runtime exception", ex);
-      throw ex;
+      return "SNS handler processed with errors (logged)";
     } catch (Exception ex) {
       log.error("SNS handler failed with unexpected exception", ex);
-      throw new RuntimeException("SNS handler processing failed", ex);
+      return "SNS handler processed with errors (logged)";
     }
   }
 
