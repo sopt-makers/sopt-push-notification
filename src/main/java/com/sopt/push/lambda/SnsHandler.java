@@ -14,6 +14,7 @@ import com.sopt.push.dto.CreateHistoryDto;
 import com.sopt.push.dto.UserTokenInfoDto;
 import com.sopt.push.enums.NotificationStatus;
 import com.sopt.push.enums.NotificationType;
+import com.sopt.push.service.DeviceTokenService;
 import com.sopt.push.service.HistoryService;
 import com.sopt.push.service.InvalidEndpointCleaner;
 import com.sopt.push.service.UserService;
@@ -30,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SnsHandler implements RequestHandler<SNSEvent, String> {
 
   private final UserService userService;
+  private final DeviceTokenService deviceTokenService;
   private final HistoryService historyService;
   private final InvalidEndpointCleaner invalidEndpointCleaner;
   private final ObjectMapper objectMapper;
@@ -37,6 +39,7 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
   public SnsHandler() {
     AppFactory factory = AppFactory.getInstance();
     this.userService = factory.userService();
+    this.deviceTokenService = factory.deviceTokenService();
     this.historyService = factory.historyService();
     this.invalidEndpointCleaner = factory.invalidEndpointCleaner();
     this.objectMapper = ObjectMapperConfig.getObjectMapper();
@@ -60,11 +63,11 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
               .filter(token -> token != null && !token.isBlank())
               .toList();
 
-      List<DeviceTokenEntity> deviceTokenEntities = userService.findUserByTokenIds(deviceTokens);
+      List<DeviceTokenEntity> deviceTokenEntities = deviceTokenService.findUserByTokenIds(deviceTokens);
 
       Map<String, UserTokenInfoDto> tokenMap =
           deviceTokenEntities.stream()
-              .map(userService::mapDeviceTokenEntityToInfoDto)
+              .map(deviceTokenService::mapDeviceTokenEntityToInfoDto)
               .collect(
                   Collectors.toMap(
                       UserTokenInfoDto::deviceToken, Function.identity(), (a, b) -> a));

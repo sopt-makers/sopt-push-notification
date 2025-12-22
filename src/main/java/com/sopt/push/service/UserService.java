@@ -20,7 +20,6 @@ import java.util.Set;
 public class UserService {
 
   private final UserRepository userRepository;
-  private final DeviceTokenRepository deviceTokenRepository;
 
   public Set<UserTokenInfoDto> findTokenByUserIds(Set<String> userIds) {
     Set<UserTokenInfoDto> allUserTokens = new HashSet<>();
@@ -56,31 +55,5 @@ public class UserService {
     String userPk = USER_PREFIX + userId;
     String tokenSk = TOKEN_PREFIX + deviceToken;
     userRepository.delete(userPk, tokenSk);
-  }
-
-  public List<DeviceTokenEntity> findUserByTokenIds(List<String> deviceTokens) {
-    List<DeviceTokenEntity> result = new ArrayList<>();
-    for (String deviceToken : deviceTokens) {
-      deviceTokenRepository.findByDeviceToken(deviceToken).ifPresent(result::add);
-    }
-    return result;
-  }
-
-    public UserTokenInfoDto mapDeviceTokenEntityToInfoDto(DeviceTokenEntity deviceTokenEntity) {
-    String deviceToken =
-        deviceTokenEntity.getPk().startsWith(TOKEN_PREFIX)
-            ? deviceTokenEntity.getPk().substring(TOKEN_PREFIX.length())
-            : deviceTokenEntity.getPk();
-    String userId =
-        deviceTokenEntity.getSk().startsWith(USER_PREFIX)
-            ? deviceTokenEntity.getSk().substring(USER_PREFIX.length())
-            : deviceTokenEntity.getSk();
-
-    return new UserTokenInfoDto(
-        userId,
-        deviceToken,
-        deviceTokenEntity.getEndpointArn(),
-        Platform.fromValue(deviceTokenEntity.getPlatform()),
-        deviceTokenEntity.getSubscriptionArn());
   }
 }
