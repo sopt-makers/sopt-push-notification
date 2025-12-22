@@ -27,8 +27,6 @@ aws dynamodb query \
 ```json
 "Message": "{...,\"EndpointArn\":\"실제-엔드포인트-ARN\",...}"
 ```
-
-**수정 방법:**./gradlew :spotlessApply
 - DynamoDB의 `DeviceTokenEntity`에서 `endpointArn` 필드 값 사용
 - 또는 `UserEntity`에서 `endpointArn` 필드 값 사용
 
@@ -103,11 +101,11 @@ aws dynamodb query \
     {
       "EventSource": "aws:sns",
       "EventVersion": "1.0",
-      "EventSubscriptionArn": "arn:aws:sns:ap-northeast-2:379013966998:SOPT-PUSH-FAILURES-DEV:실제-구독-ID",
+      "EventSubscriptionArn": "arn:aws:sns:ap-northeast-2:12345678912:SOPT-PUSH-FAILURES-DEV:실제-구독-ID",
       "Sns": {
         "Type": "Notification",
         "MessageId": "실제-UUID-생성",
-        "TopicArn": "arn:aws:sns:ap-northeast-2:379013966998:SOPT-PUSH-FAILURES-DEV",
+        "TopicArn": "arn:aws:sns:ap-northeast-2:12345678912:SOPT-PUSH-FAILURES-DEV",
         "Subject": "Amazon SNS Notification",
         "Message": "{\"Token\":\"실제-디바이스-토큰\",\"EndpointArn\":\"실제-엔드포인트-ARN\",\"MessageId\":\"실제-UUID\"}",
         "Timestamp": "2024-12-19T10:30:00.000Z",
@@ -120,29 +118,6 @@ aws dynamodb query \
     }
   ]
 }
-```
-
-## 빠른 수정 스크립트
-
-### 디바이스 토큰 조회 (AWS CLI)
-```bash
-# DynamoDB에서 디바이스 토큰 조회
-aws dynamodb scan \
-  --table-name notification-dev \
-  --filter-expression "begins_with(pk, :prefix)" \
-  --expression-attribute-values '{":prefix":{"S":"d#"}}' \
-  --limit 1 \
-  --query 'Items[0].pk.S' \
-  --output text | sed 's/^d#//'
-```
-
-### UUID 생성
-```bash
-# macOS/Linux
-uuidgen
-
-# 또는 Python 사용
-python3 -c "import uuid; print(uuid.uuid4())"
 ```
 
 ## 테스트 시나리오별 권장 값
