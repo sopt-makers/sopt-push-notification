@@ -121,6 +121,12 @@ aws sns publish \
   --message '{"Token":"test-device-token-12345","EndpointArn":"arn:aws:sns:ap-northeast-2:123456789012:endpoint/APNS/test-app/test-endpoint-123"}'
 ```
 
+### test-sns-handler.sh 실행파일을 통한 테스트
+```bash
+cd sopt-push-notification
+./test-sns-handler.sh
+```
+
 ## 6. 디버깅 팁
 
 ### 로그 확인
