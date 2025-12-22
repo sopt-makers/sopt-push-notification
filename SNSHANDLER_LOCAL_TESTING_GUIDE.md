@@ -38,35 +38,11 @@ cd sopt-push-notification
 
 빌드가 완료되면 `build/libs/app.jar` 파일이 생성됩니다.
 
-## 2. template.yaml에 SnsHandler 함수 추가
+## 2. SAM 빌드
 
-`template.yaml` 파일에 다음 함수를 추가합니다:
-
-```yaml
-SnsHandlerFunction:
-  Type: AWS::Serverless::Function
-  Properties:
-    FunctionName: !Sub "sopt-push-notification-lambda-sns-${Stage}"
-    Handler: com.sopt.push.lambda.SnsHandler::handleRequest
-    CodeUri: build/libs/app.jar
-    Role: !GetAtt PushLambdaRole.Arn
-    Events:
-      SnsEvent:
-        Type: SNS
-        Properties:
-          Topic: !Ref PushFailuresTopic
-```
-
-또는 SNS 이벤트 없이 직접 invoke할 수 있도록 이벤트 없이 정의할 수도 있습니다:
-
-```yaml
-SnsHandlerFunction:
-  Type: AWS::Serverless::Function
-  Properties:
-    FunctionName: !Sub "sopt-push-notification-lambda-sns-${Stage}"
-    Handler: com.sopt.push.lambda.SnsHandler::handleRequest
-    CodeUri: build/libs/app.jar
-    Role: !GetAtt PushLambdaRole.Arn
+```bash
+cd sopt-push-notification # 이미 프로젝트 경로라면 생략 가능
+sam build
 ```
 
 ## 3. 로컬 테스트 방법
@@ -93,9 +69,6 @@ sam local invoke SnsHandlerFunction \
 
 ```json
 {
-  "EventBridgeHandlerFunction": {
-    
-  },
   "SnsHandlerFunction": {
     "DYNAMODB_TABLE": "your-dynamodb-table-name",
     "PLATFORM_APPLICATION_iOS": "arn:aws:sns:...",
@@ -107,8 +80,6 @@ sam local invoke SnsHandlerFunction \
   }
 }
 ```
-
-`EventBridgeHandlerFunction`과 동일한 환경 변수를 사용하거나, 필요에 따라 다르게 설정할 수 있습니다.
 
 ### 방법 3: DynamoDB Local 사용 (선택사항)
 
