@@ -20,6 +20,10 @@ Parameters:
   AllTopicArn:
     Type: String
 
+  PushFailuresTopicArn:
+    Type: String
+    Description: SNS Topic ARN for push notification failures
+
   MakersAppServerUrl:
     Type: String
 
@@ -105,6 +109,7 @@ Resources:
                   - !Ref PlatformAppIOS
                   - !Ref PlatformAppAndroid
                   - !Ref AllTopicArn
+                  - !Ref PushFailuresTopicArn
 
         - PolicyName: LambdaBasicLogging
           PolicyDocument:
@@ -161,6 +166,11 @@ Resources:
       Handler: com.sopt.push.lambda.SnsHandler::handleRequest
       CodeUri: build/libs/app.jar
       Role: !GetAtt PushLambdaRole.Arn
+      Events:
+        PushFailureEvent:
+          Type: SNS
+          Properties:
+            Topic: !Ref PushFailuresTopicArn
 
 Outputs:
   ApiUrl:
