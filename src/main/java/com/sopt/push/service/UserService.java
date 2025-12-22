@@ -10,14 +10,12 @@ import com.sopt.push.repository.UserRepository;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class UserService {
 
   private final UserRepository userRepository;
-
-  public UserService(UserRepository userRepository) {
-    this.userRepository = userRepository;
-  }
 
   public Set<UserTokenInfoDto> findTokenByUserIds(Set<String> userIds) {
     Set<UserTokenInfoDto> allUserTokens = new HashSet<>();
@@ -29,12 +27,6 @@ public class UserService {
       userEntities.stream().map(this::mapUserEntityToInfoDto).forEach(allUserTokens::add);
     }
     return allUserTokens;
-  }
-
-  public void deleteUser(String userId, String deviceToken) {
-    String userPk = USER_PREFIX + userId;
-    String tokenSk = TOKEN_PREFIX + deviceToken;
-    userRepository.delete(userPk, tokenSk);
   }
 
   private UserTokenInfoDto mapUserEntityToInfoDto(UserEntity userEntity) {
@@ -53,5 +45,11 @@ public class UserService {
         userEntity.getEndpointArn(),
         Platform.fromValue(userEntity.getPlatform()),
         userEntity.getSubscriptionArn());
+  }
+
+  public void deleteUser(String userId, String deviceToken) {
+    String userPk = USER_PREFIX + userId;
+    String tokenSk = TOKEN_PREFIX + deviceToken;
+    userRepository.delete(userPk, tokenSk);
   }
 }

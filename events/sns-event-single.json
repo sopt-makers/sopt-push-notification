@@ -1,0 +1,23 @@
+{
+  "Records": [
+    {
+      "EventSource": "aws:sns",
+      "EventVersion": "1.0",
+      "EventSubscriptionArn": "arn:aws:sns:ap-northeast-2:123456789012:push-failures:12345678-1234-1234-1234-123456789012",
+      "Sns": {
+        "Type": "Notification",
+        "MessageId": "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
+        "TopicArn": "arn:aws:sns:ap-northeast-2:123456789012:push-failures",
+        "Subject": "Amazon SNS Notification",
+        "Message": "{\"Token\":\"test-device-token-12345\",\"MessageId\":\"95df01b4-ee98-5cb9-9903-4c221d41eb5e\"}",
+        "Timestamp": "2024-01-15T12:00:00.000Z",
+        "SignatureVersion": "1",
+        "Signature": "EXAMPLE",
+        "SigningCertUrl": "EXAMPLE",
+        "UnsubscribeUrl": "EXAMPLE",
+        "MessageAttributes": {}
+      }
+    }
+  ]
+}
+

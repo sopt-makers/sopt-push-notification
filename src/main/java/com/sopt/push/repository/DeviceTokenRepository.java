@@ -1,11 +1,14 @@
 package com.sopt.push.repository;
 
+import static com.sopt.push.common.Constants.TOKEN_PREFIX;
+
 import com.sopt.push.domain.DeviceTokenEntity;
 import java.util.Optional;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 
 public class DeviceTokenRepository {
 
@@ -27,5 +30,12 @@ public class DeviceTokenRepository {
   public Optional<DeviceTokenEntity> findByPkAndSk(String pk, String sk) {
     Key key = Key.builder().partitionValue(pk).sortValue(sk).build();
     return Optional.ofNullable(deviceTokenTable.getItem(key));
+  }
+
+  public Optional<DeviceTokenEntity> findByDeviceToken(String deviceToken) {
+    String pk = TOKEN_PREFIX + deviceToken;
+    QueryConditional queryConditional =
+        QueryConditional.keyEqualTo(Key.builder().partitionValue(pk).build());
+    return deviceTokenTable.query(queryConditional).items().stream().findFirst();
   }
 }

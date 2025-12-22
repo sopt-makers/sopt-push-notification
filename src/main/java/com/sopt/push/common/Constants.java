@@ -37,6 +37,7 @@ public class Constants {
   public static final String WEB_LINK = "webLink";
   public static final String DEEP_LINK = "deepLink";
   public static final String DATA = "data";
+  public static final String TOKEN = "Token";
 
   public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
   public static final String HEADER_CONTENT_TYPE = "Content-Type";

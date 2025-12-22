@@ -23,6 +23,11 @@ public class AppFactory {
 
   private final SendPushFacade sendPushFacade;
   private final WebHookService webHookService;
+  private final UserService userService;
+  private final HistoryService historyService;
+  private final DeviceTokenService deviceTokenService;
+  private final NotificationService notificationService;
+  private final InvalidEndpointCleaner invalidEndpointCleaner;
 
   private AppFactory() {
 
@@ -41,21 +46,22 @@ public class AppFactory {
     HistoryRepository historyRepository = new HistoryRepository(dynamoClient, tableName);
     DeviceTokenRepository tokenRepository = new DeviceTokenRepository(dynamoClient, tableName);
 
-    UserService userService = new UserService(userRepository);
-    HistoryService historyService = new HistoryService(historyRepository);
-    DeviceTokenService deviceTokenService = new DeviceTokenService(tokenRepository);
-    NotificationService notificationService = new NotificationService(snsClient, envConfig);
-    InvalidEndpointCleaner invalidEndpointCleaner =
-        new InvalidEndpointCleaner(userService, deviceTokenService, notificationService);
+    this.userService = new UserService(userRepository);
+    this.historyService = new HistoryService(historyRepository);
+    this.deviceTokenService = new DeviceTokenService(tokenRepository);
+    this.notificationService = new NotificationService(snsClient, envConfig);
+    this.invalidEndpointCleaner =
+        new InvalidEndpointCleaner(
+            this.userService, this.deviceTokenService, this.notificationService);
 
     this.webHookService = new WebHookService(httpClient, envConfig);
     this.sendPushFacade =
         new SendPushFacade(
-            notificationService,
-            webHookService,
-            historyService,
-            userService,
-            deviceTokenService,
+            this.notificationService,
+            this.webHookService,
+            this.historyService,
+            this.userService,
+            this.deviceTokenService,
             invalidEndpointCleaner);
   }
 
@@ -69,5 +75,25 @@ public class AppFactory {
 
   public WebHookService webHookService() {
     return webHookService;
+  }
+
+  public UserService userService() {
+    return userService;
+  }
+
+  public HistoryService historyService() {
+    return historyService;
+  }
+
+  public DeviceTokenService deviceTokenService() {
+    return deviceTokenService;
+  }
+
+  public NotificationService notificationService() {
+    return notificationService;
+  }
+
+  public InvalidEndpointCleaner invalidEndpointCleaner() {
+    return invalidEndpointCleaner;
   }
 }
