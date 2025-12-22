@@ -1,7 +1,7 @@
 package com.sopt.push.service;
 
+import com.sopt.push.common.ExternalException;
 import com.sopt.push.common.InvalidEndpointException;
-import com.sopt.push.common.PushFailException;
 import com.sopt.push.dto.CreateHistoryDto;
 import com.sopt.push.dto.PushContext;
 import com.sopt.push.dto.PushSuccessMessageDto;
@@ -81,7 +81,6 @@ public class SendPushFacade {
               pushContext.title(),
               pushContext.content(),
               pushContext.category(),
-              pushContext.service(),
               WebHookType.SEND,
               pushContext.deepLink(),
               pushContext.webLink(),
@@ -128,7 +127,7 @@ public class SendPushFacade {
     } catch (InvalidEndpointException ex) {
       cleaner.clean(userTokenInfoDto);
 
-    } catch (PushFailException ex) {
+    } catch (ExternalException ex) {
       log.error("Push failed for user={} err={}", userTokenInfoDto.userId(), ex.getMessage());
     }
     return null;
@@ -150,22 +149,21 @@ public class SendPushFacade {
     } catch (Exception e) {
       String errorMessage = String.format("Send Push All error: %s", e.getMessage());
       log.error(errorMessage, e);
-      throw new PushFailException(errorMessage, e);
+      throw new ExternalException(errorMessage, e);
     }
 
     try {
-      PushSuccessMessageDto webHookDto =
+      PushSuccessMessageDto pushSuccessMessageDto =
           new PushSuccessMessageDto(
               messageId,
               pushContext.title(),
               pushContext.content(),
               pushContext.category(),
-              pushContext.service(),
               WebHookType.SEND_ALL,
               pushContext.deepLink(),
               pushContext.webLink(),
               Set.of(User.ALL.getValue()));
-      webHookService.pushSuccessWebHook(webHookDto);
+      webHookService.pushSuccessWebHook(pushSuccessMessageDto);
     } catch (Exception e) {
       log.warn("Failed to send webhook for successful push. messageId: {}", messageId, e);
     }

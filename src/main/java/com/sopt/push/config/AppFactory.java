@@ -1,5 +1,7 @@
 package com.sopt.push.config;
 
+import static com.sopt.push.common.Constants.HTTP_CLIENT_CONNECT_TIMEOUT_SECONDS;
+
 import com.sopt.push.repository.DeviceTokenRepository;
 import com.sopt.push.repository.HistoryRepository;
 import com.sopt.push.repository.UserRepository;
@@ -10,6 +12,8 @@ import com.sopt.push.service.NotificationService;
 import com.sopt.push.service.SendPushFacade;
 import com.sopt.push.service.UserService;
 import com.sopt.push.service.WebHookService;
+import java.net.http.HttpClient;
+import java.time.Duration;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.services.sns.SnsClient;
 
@@ -28,6 +32,11 @@ public class AppFactory {
     SnsClient snsClient = awsConfig.snsClient();
     String tableName = awsConfig.tableName();
 
+    HttpClient httpClient =
+        HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(HTTP_CLIENT_CONNECT_TIMEOUT_SECONDS))
+            .build();
+
     UserRepository userRepository = new UserRepository(dynamoClient, tableName);
     HistoryRepository historyRepository = new HistoryRepository(dynamoClient, tableName);
     DeviceTokenRepository tokenRepository = new DeviceTokenRepository(dynamoClient, tableName);
@@ -39,7 +48,7 @@ public class AppFactory {
     InvalidEndpointCleaner invalidEndpointCleaner =
         new InvalidEndpointCleaner(userService, deviceTokenService, notificationService);
 
-    this.webHookService = new WebHookService();
+    this.webHookService = new WebHookService(httpClient, envConfig);
     this.sendPushFacade =
         new SendPushFacade(
             notificationService,
