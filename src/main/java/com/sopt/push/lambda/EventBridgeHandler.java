@@ -25,11 +25,12 @@ public class EventBridgeHandler implements RequestHandler<Map<String, Object>, S
   private final ObjectMapper mapper;
 
   public EventBridgeHandler() {
-    AppFactory factory = AppFactory.getInstance();
+    this(AppFactory.getInstance());
+  }
 
+  EventBridgeHandler(AppFactory factory) {
     this.sendPushFacade = factory.sendPushFacade();
     this.webHookService = factory.webHookService();
-
     this.mapper = ObjectMapperConfig.getObjectMapper();
   }
 
