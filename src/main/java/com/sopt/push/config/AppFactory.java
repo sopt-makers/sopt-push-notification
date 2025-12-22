@@ -37,7 +37,7 @@ public class AppFactory {
     HistoryRepository historyRepository = new HistoryRepository(dynamoClient, tableName);
     DeviceTokenRepository tokenRepository = new DeviceTokenRepository(dynamoClient, tableName);
 
-    this.userService = new UserService(userRepository, tokenRepository);
+    this.userService = new UserService(userRepository);
     this.historyService = new HistoryService(historyRepository);
     this.deviceTokenService = new DeviceTokenService(tokenRepository);
     this.notificationService = new NotificationService(snsClient, envConfig);

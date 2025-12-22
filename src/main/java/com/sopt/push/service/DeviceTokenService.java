@@ -48,29 +48,29 @@ public class DeviceTokenService {
     deviceTokenRepository.delete(tokenPk, userSk);
   }
 
-    public List<DeviceTokenEntity> findUserByTokenIds(List<String> deviceTokens) {
-        List<DeviceTokenEntity> result = new ArrayList<>();
-        for (String deviceToken : deviceTokens) {
-            deviceTokenRepository.findByDeviceToken(deviceToken).ifPresent(result::add);
-        }
-        return result;
+  public List<DeviceTokenEntity> findUserByTokenIds(List<String> deviceTokens) {
+    List<DeviceTokenEntity> result = new ArrayList<>();
+    for (String deviceToken : deviceTokens) {
+      deviceTokenRepository.findByDeviceToken(deviceToken).ifPresent(result::add);
     }
+    return result;
+  }
 
-    public UserTokenInfoDto mapDeviceTokenEntityToInfoDto(DeviceTokenEntity deviceTokenEntity) {
-        String deviceToken =
-                deviceTokenEntity.getPk().startsWith(TOKEN_PREFIX)
-                        ? deviceTokenEntity.getPk().substring(TOKEN_PREFIX.length())
-                        : deviceTokenEntity.getPk();
-        String userId =
-                deviceTokenEntity.getSk().startsWith(USER_PREFIX)
-                        ? deviceTokenEntity.getSk().substring(USER_PREFIX.length())
-                        : deviceTokenEntity.getSk();
+  public UserTokenInfoDto mapDeviceTokenEntityToInfoDto(DeviceTokenEntity deviceTokenEntity) {
+    String deviceToken =
+        deviceTokenEntity.getPk().startsWith(TOKEN_PREFIX)
+            ? deviceTokenEntity.getPk().substring(TOKEN_PREFIX.length())
+            : deviceTokenEntity.getPk();
+    String userId =
+        deviceTokenEntity.getSk().startsWith(USER_PREFIX)
+            ? deviceTokenEntity.getSk().substring(USER_PREFIX.length())
+            : deviceTokenEntity.getSk();
 
-        return new UserTokenInfoDto(
-                userId,
-                deviceToken,
-                deviceTokenEntity.getEndpointArn(),
-                Platform.fromValue(deviceTokenEntity.getPlatform()),
-                deviceTokenEntity.getSubscriptionArn());
-    }
+    return new UserTokenInfoDto(
+        userId,
+        deviceToken,
+        deviceTokenEntity.getEndpointArn(),
+        Platform.fromValue(deviceTokenEntity.getPlatform()),
+        deviceTokenEntity.getSubscriptionArn());
+  }
 }

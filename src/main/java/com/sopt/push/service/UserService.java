@@ -3,18 +3,14 @@ package com.sopt.push.service;
 import static com.sopt.push.common.Constants.TOKEN_PREFIX;
 import static com.sopt.push.common.Constants.USER_PREFIX;
 
-import com.sopt.push.domain.DeviceTokenEntity;
 import com.sopt.push.domain.UserEntity;
 import com.sopt.push.dto.UserTokenInfoDto;
 import com.sopt.push.enums.Platform;
-import com.sopt.push.repository.DeviceTokenRepository;
 import com.sopt.push.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class UserService {

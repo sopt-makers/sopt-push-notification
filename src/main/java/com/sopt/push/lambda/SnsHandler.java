@@ -63,7 +63,8 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
               .filter(token -> token != null && !token.isBlank())
               .toList();
 
-      List<DeviceTokenEntity> deviceTokenEntities = deviceTokenService.findUserByTokenIds(deviceTokens);
+      List<DeviceTokenEntity> deviceTokenEntities =
+          deviceTokenService.findUserByTokenIds(deviceTokens);
 
       Map<String, UserTokenInfoDto> tokenMap =
           deviceTokenEntities.stream()
