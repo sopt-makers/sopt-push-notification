@@ -1,5 +1,7 @@
 package com.sopt.push.repository;
 
+import static com.sopt.push.common.Constants.TOKEN_PREFIX;
+
 import com.sopt.push.domain.DeviceTokenEntity;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +35,14 @@ public class DeviceTokenRepository {
 
   public List<DeviceTokenEntity> queryByPk(String pk) {
     QueryConditional queryConditional =
-        QueryConditional.keyEqualTo(Key.builder().partitionValue(pk).build());
+            QueryConditional.keyEqualTo(Key.builder().partitionValue(pk).build());
     return deviceTokenTable.query(queryConditional).items().stream().toList();
+  }
+
+  public Optional<DeviceTokenEntity> findByDeviceToken(String deviceToken) {
+    String pk = TOKEN_PREFIX + deviceToken;
+    QueryConditional queryConditional =
+        QueryConditional.keyEqualTo(Key.builder().partitionValue(pk).build());
+    return deviceTokenTable.query(queryConditional).items().stream().findFirst();
   }
 }

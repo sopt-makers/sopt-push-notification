@@ -10,10 +10,12 @@ import com.sopt.push.common.ErrorMessage;
 import com.sopt.push.config.SnsFactory;
 import com.sopt.push.domain.DeviceTokenEntity;
 import com.sopt.push.domain.UserEntity;
+import com.sopt.push.dto.UserTokenInfoDto;
 import com.sopt.push.enums.Platform;
 import com.sopt.push.repository.DeviceTokenRepository;
 import com.sopt.push.repository.UserRepository;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DeviceTokenService {
@@ -143,5 +145,31 @@ public class DeviceTokenService {
       return pk.substring(TOKEN_PREFIX.length());
     }
     return pk;
+  }
+
+  public List<DeviceTokenEntity> findUserByTokenIds(List<String> deviceTokens) {
+    List<DeviceTokenEntity> result = new ArrayList<>();
+    for (String deviceToken : deviceTokens) {
+      deviceTokenRepository.findByDeviceToken(deviceToken).ifPresent(result::add);
+    }
+    return result;
+  }
+
+  public UserTokenInfoDto mapDeviceTokenEntityToInfoDto(DeviceTokenEntity deviceTokenEntity) {
+    String deviceToken =
+        deviceTokenEntity.getPk().startsWith(TOKEN_PREFIX)
+            ? deviceTokenEntity.getPk().substring(TOKEN_PREFIX.length())
+            : deviceTokenEntity.getPk();
+    String userId =
+        deviceTokenEntity.getSk().startsWith(USER_PREFIX)
+            ? deviceTokenEntity.getSk().substring(USER_PREFIX.length())
+            : deviceTokenEntity.getSk();
+
+    return new UserTokenInfoDto(
+        userId,
+        deviceToken,
+        deviceTokenEntity.getEndpointArn(),
+        Platform.fromValue(deviceTokenEntity.getPlatform()),
+        deviceTokenEntity.getSubscriptionArn());
   }
 }
