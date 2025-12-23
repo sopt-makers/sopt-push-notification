@@ -131,7 +131,7 @@ Resources:
     Properties:
       FunctionName: !Sub "sopt-push-notification-lambda-${Stage}"
       Handler: com.sopt.push.lambda.ApiHandler::handleRequest
-      CodeUri: .
+      CodeUri: build/libs/app.jar
       Role: !GetAtt PushLambdaRole.Arn
       Events:
         Root:
@@ -146,7 +146,7 @@ Resources:
     Properties:
       FunctionName: !Sub "sopt-push-notification-lambda-eventbridge-${Stage}"
       Handler: com.sopt.push.lambda.EventBridgeHandler::handleRequest
-      CodeUri: .
+      CodeUri: build/libs/app.jar
       Role: !GetAtt PushLambdaRole.Arn
       Events:
         PushEvent:
@@ -164,7 +164,7 @@ Resources:
     Properties:
       FunctionName: !Sub "sopt-push-notification-lambda-sns-${Stage}"
       Handler: com.sopt.push.lambda.SnsHandler::handleRequest
-      CodeUri: .
+      CodeUri: build/libs/app.jar
       Role: !GetAtt PushLambdaRole.Arn
       Events:
         PushFailureEvent:
