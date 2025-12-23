@@ -32,7 +32,7 @@ aws dynamodb query \
 
 **예시:**
 ```json
-"EndpointArn": "arn:aws:sns:ap-northeast-2:379013966998:endpoint/APNS/Makers-test-iOS/12345678-1234-1234-1234-123456789012"
+"EndpointArn": "arn:aws:sns:ap-northeast-2:123456789012:endpoint/APNS/Makers-test-iOS/12345678-1234-1234-1234-123456789012"
 ```
 
 ### 🟡 선택적 수정 항목 (로컬 테스트에서는 예시 값으로도 가능)
