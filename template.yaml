@@ -125,9 +125,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "sopt-push-notification-lambda-${Stage}"
-      Handler: com.sopt.push.lambda.ApiHandler::handleRequest
+      Handler: com.sopt.push.lambda.ApiGatewayHandler::handleRequest
       CodeUri: build/libs/app.jar
-      Role: !GetAtt PushLambdaRole.Arn
+      Role: .
       Events:
         Root:
           Type: Api
@@ -142,7 +142,7 @@ Resources:
       FunctionName: !Sub "sopt-push-notification-lambda-eventbridge-${Stage}"
       Handler: com.sopt.push.lambda.EventBridgeHandler::handleRequest
       CodeUri: build/libs/app.jar
-      Role: !GetAtt PushLambdaRole.Arn
+      Role: .
       Events:
         PushEvent:
           Type: EventBridgeRule
