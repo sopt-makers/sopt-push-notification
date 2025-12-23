@@ -19,6 +19,11 @@ public class AppFactory {
 
   private final SendPushFacade sendPushFacade;
   private final WebHookService webHookService;
+  private final UserService userService;
+  private final DeviceTokenService deviceTokenService;
+  private final NotificationService notificationService;
+  private final InvalidEndpointCleaner invalidEndpointCleaner;
+  private final HistoryService historyService;
 
   private AppFactory() {
 
@@ -32,10 +37,11 @@ public class AppFactory {
     HistoryRepository historyRepository = new HistoryRepository(dynamoClient, tableName);
     DeviceTokenRepository tokenRepository = new DeviceTokenRepository(dynamoClient, tableName);
 
-    UserService userService = new UserService(userRepository);
     HistoryService historyService = new HistoryService(historyRepository);
-    DeviceTokenService deviceTokenService = new DeviceTokenService(tokenRepository);
     NotificationService notificationService = new NotificationService(snsClient, envConfig);
+    SnsFactory snsFactory = new SnsFactory(snsClient, envConfig);
+    DeviceTokenService deviceTokenService = new DeviceTokenService(tokenRepository, userRepository, snsFactory);
+    UserService userService = new UserService(userRepository);
     InvalidEndpointCleaner invalidEndpointCleaner =
         new InvalidEndpointCleaner(userService, deviceTokenService, notificationService);
 
@@ -48,6 +54,11 @@ public class AppFactory {
             userService,
             deviceTokenService,
             invalidEndpointCleaner);
+    this.userService = userService;
+    this.deviceTokenService = deviceTokenService;
+    this.notificationService = notificationService;
+    this.invalidEndpointCleaner = invalidEndpointCleaner;
+    this.historyService = historyService;
   }
 
   public static AppFactory getInstance() {
@@ -61,4 +72,25 @@ public class AppFactory {
   public WebHookService webHookService() {
     return webHookService;
   }
+
+  public DeviceTokenService deviceTokenService() {
+    return deviceTokenService;
+  }
+
+  public UserService userService() {
+    return userService;
+  }
+
+  public NotificationService notificationService() {
+    return notificationService;
+  }
+
+  public InvalidEndpointCleaner invalidEndpointCleaner() {
+    return invalidEndpointCleaner;
+  }
+
+  public HistoryService historyService() {
+    return historyService;
+  }
+
 }
