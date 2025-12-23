@@ -17,7 +17,9 @@ import com.sopt.push.enums.Actions;
 import com.sopt.push.service.SendPushFacade;
 import com.sopt.push.service.WebHookService;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class EventBridgeHandler implements RequestHandler<Map<String, Object>, String> {
 
   private final SendPushFacade sendPushFacade;
@@ -25,11 +27,12 @@ public class EventBridgeHandler implements RequestHandler<Map<String, Object>, S
   private final ObjectMapper mapper;
 
   public EventBridgeHandler() {
-    AppFactory factory = AppFactory.getInstance();
+    this(AppFactory.getInstance());
+  }
 
+  EventBridgeHandler(AppFactory factory) {
     this.sendPushFacade = factory.sendPushFacade();
     this.webHookService = factory.webHookService();
-
     this.mapper = ObjectMapperConfig.getObjectMapper();
   }
 
@@ -48,7 +51,7 @@ public class EventBridgeHandler implements RequestHandler<Map<String, Object>, S
       return "EventBridge processed";
 
     } catch (Exception ex) {
-      context.getLogger().log("EventBridge error: " + ex.getMessage());
+      log.error("EventBridge error: {}", ex.getMessage());
       return "EventBridge failed";
     }
   }
