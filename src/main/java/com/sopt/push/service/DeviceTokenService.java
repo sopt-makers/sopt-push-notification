@@ -79,7 +79,6 @@ public class DeviceTokenService {
       if (!changedUserPayload(existingUserId, actualUserId)) {
         return;
       }
-
     }
 
     var endpoint = snsFactory.registerEndPoint(deviceToken, platform, userId);
@@ -101,7 +100,11 @@ public class DeviceTokenService {
   }
 
   private void saveUserEntity(
-      String userId, String deviceToken, String platform, String endpointArn, String subscriptionArn) {
+      String userId,
+      String deviceToken,
+      String platform,
+      String endpointArn,
+      String subscriptionArn) {
     String userPk = USER_PREFIX + userId;
     String tokenSk = TOKEN_PREFIX + deviceToken;
 

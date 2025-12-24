@@ -10,4 +10,3 @@ public record SendPushDto(
     Category category,
     String deepLink,
     String webLink) {}
-

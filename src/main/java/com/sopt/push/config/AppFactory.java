@@ -21,13 +21,13 @@ public class AppFactory {
 
   private static final AppFactory INSTANCE = new AppFactory();
 
-    private final SendPushFacade sendPushFacade;
-    private final WebHookService webHookService;
-    private final UserService userService;
-    private final HistoryService historyService;
-    private final DeviceTokenService deviceTokenService;
-    private final NotificationService notificationService;
-    private final InvalidEndpointCleaner invalidEndpointCleaner;
+  private final SendPushFacade sendPushFacade;
+  private final WebHookService webHookService;
+  private final UserService userService;
+  private final HistoryService historyService;
+  private final DeviceTokenService deviceTokenService;
+  private final NotificationService notificationService;
+  private final InvalidEndpointCleaner invalidEndpointCleaner;
 
   private AppFactory() {
 
@@ -49,7 +49,8 @@ public class AppFactory {
     HistoryService historyService = new HistoryService(historyRepository);
     NotificationService notificationService = new NotificationService(snsClient, envConfig);
     SnsFactory snsFactory = new SnsFactory(snsClient, envConfig);
-    DeviceTokenService deviceTokenService = new DeviceTokenService(tokenRepository, userRepository, snsFactory);
+    DeviceTokenService deviceTokenService =
+        new DeviceTokenService(tokenRepository, userRepository, snsFactory);
     UserService userService = new UserService(userRepository);
     InvalidEndpointCleaner invalidEndpointCleaner =
         new InvalidEndpointCleaner(userService, deviceTokenService, notificationService);
@@ -76,31 +77,31 @@ public class AppFactory {
     return INSTANCE;
   }
 
-    public SendPushFacade sendPushFacade() {
-        return sendPushFacade;
-    }
+  public SendPushFacade sendPushFacade() {
+    return sendPushFacade;
+  }
 
-    public WebHookService webHookService() {
-        return webHookService;
-    }
+  public WebHookService webHookService() {
+    return webHookService;
+  }
 
-    public UserService userService() {
-        return userService;
-    }
+  public UserService userService() {
+    return userService;
+  }
 
-    public HistoryService historyService() {
-        return historyService;
-    }
+  public HistoryService historyService() {
+    return historyService;
+  }
 
-    public DeviceTokenService deviceTokenService() {
-        return deviceTokenService;
-    }
+  public DeviceTokenService deviceTokenService() {
+    return deviceTokenService;
+  }
 
-    public NotificationService notificationService() {
-        return notificationService;
-    }
+  public NotificationService notificationService() {
+    return notificationService;
+  }
 
-    public InvalidEndpointCleaner invalidEndpointCleaner() {
-        return invalidEndpointCleaner;
-    }
+  public InvalidEndpointCleaner invalidEndpointCleaner() {
+    return invalidEndpointCleaner;
+  }
 }

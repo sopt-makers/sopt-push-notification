@@ -35,7 +35,7 @@ public class DeviceTokenRepository {
 
   public List<DeviceTokenEntity> queryByPk(String pk) {
     QueryConditional queryConditional =
-            QueryConditional.keyEqualTo(Key.builder().partitionValue(pk).build());
+        QueryConditional.keyEqualTo(Key.builder().partitionValue(pk).build());
     return deviceTokenTable.query(queryConditional).items().stream().toList();
   }
 

@@ -22,4 +22,3 @@ public class DeviceTokenException extends RuntimeException {
     this.errorMessage = errorMessage;
   }
 }
-

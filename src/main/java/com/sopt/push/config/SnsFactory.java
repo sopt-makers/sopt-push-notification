@@ -2,17 +2,13 @@ package com.sopt.push.config;
 
 import com.sopt.push.common.DeviceTokenException;
 import com.sopt.push.common.ErrorMessage;
-import com.sopt.push.config.EnvConfig;
 import com.sopt.push.enums.Platform;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.CreatePlatformEndpointRequest;
 import software.amazon.awssdk.services.sns.model.CreatePlatformEndpointResponse;
-import software.amazon.awssdk.services.sns.model.DeleteEndpointRequest;
-import software.amazon.awssdk.services.sns.model.SnsException;
 import software.amazon.awssdk.services.sns.model.SubscribeRequest;
 import software.amazon.awssdk.services.sns.model.SubscribeResponse;
-import software.amazon.awssdk.services.sns.model.UnsubscribeRequest;
 
 @Slf4j
 public class SnsFactory {
@@ -66,4 +62,3 @@ public class SnsFactory {
     return value;
   }
 }
-
