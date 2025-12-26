@@ -1,9 +1,13 @@
 package com.sopt.push.lambda;
 
-import static com.sopt.push.common.Constants.TOKEN_PREFIX;
+import static com.sopt.push.common.Constants.HEADER_ACTION;
+import static com.sopt.push.common.Constants.HEADER_PLATFORM;
+import static com.sopt.push.common.Constants.HEADER_SERVICE;
+import static com.sopt.push.common.Constants.HEADER_TRANSACTION_ID;
 import static com.sopt.push.common.Constants.USER_PREFIX;
 import static com.sopt.push.common.StatusCode.BAD_REQUEST;
 import static com.sopt.push.common.StatusCode.INTERNAL_SERVER_ERROR;
+import static com.sopt.push.enums.Platform.fromValue;
 import static com.sopt.push.util.ValidationUtil.validate;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -28,12 +32,16 @@ import com.sopt.push.service.DeviceTokenService;
 import com.sopt.push.service.HistoryService;
 import com.sopt.push.service.InvalidEndpointCleaner;
 import com.sopt.push.service.SendPushFacade;
+import com.sopt.push.service.TokenRegisterFacade;
 import com.sopt.push.util.ResponseUtil;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ApiGatewayHandler
     implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
@@ -41,6 +49,7 @@ public class ApiGatewayHandler
   private final SendPushFacade sendPushFacade;
   private final InvalidEndpointCleaner invalidEndpointCleaner;
   private final HistoryService historyService;
+  private final TokenRegisterFacade tokenRegisterFacade;
   private final ObjectMapper mapper;
 
   public ApiGatewayHandler() {
@@ -49,6 +58,7 @@ public class ApiGatewayHandler
     this.sendPushFacade = factory.sendPushFacade();
     this.invalidEndpointCleaner = factory.invalidEndpointCleaner();
     this.historyService = factory.historyService();
+    this.tokenRegisterFacade = factory.tokenRegisterFacade();
     this.mapper = ObjectMapperConfig.getObjectMapper();
   }
 
@@ -73,12 +83,12 @@ public class ApiGatewayHandler
       return convertToApiGatewayResponse(responseMap);
 
     } catch (BusinessException ex) {
-      context.getLogger().log("ApiGateway error: " + ex.getMessage());
+      log.error("ApiGateway error: {}", ex.getMessage());
       Map<String, Object> responseMap = ResponseUtil.errorResponse(BAD_REQUEST, ex.getMessage());
       return convertToApiGatewayResponse(responseMap);
 
     } catch (Exception ex) {
-      context.getLogger().log("ApiGateway error: " + ex.getMessage());
+      log.error("ApiGateway error: {}", ex.getMessage(), ex);
       Map<String, Object> responseMap =
           ResponseUtil.errorResponse(
               INTERNAL_SERVER_ERROR, ErrorMessage.INTERNAL_SERVER_ERROR.getMessage());
@@ -88,48 +98,42 @@ public class ApiGatewayHandler
 
   private ApiGatewayRequestDto extractRequest(APIGatewayProxyRequestEvent event) {
     Map<String, String> headers = event.getHeaders();
+    Map<String, Object> body = parseRequestBody(event);
+    boolean isInvalidHeader = headers == null || headers.get(HEADER_ACTION) == null;
 
-    if (headers == null || headers.get("action") == null) {
+    if (isInvalidHeader) {
       throw new BusinessException(ErrorMessage.INVALID_REQUEST, "Headers missing or invalid.");
     }
 
-    Map<String, Object> body = parseBody(event);
-
     try {
-      String actionStr = headers.get("action");
-      String platformStr = headers.get("platform");
-      String transactionId = headers.get("transactionId");
-      String serviceStr = headers.get("service");
-
+      String actionStr = headers.get(HEADER_ACTION);
+      String platformStr = headers.get(HEADER_PLATFORM);
+      String transactionId = headers.get(HEADER_TRANSACTION_ID);
+      String serviceStr = headers.get(HEADER_SERVICE);
       Actions action = Actions.fromValue(actionStr);
-      Platform platform = null;
+      Platform platform = fromValue(platformStr);
+
       if (action == Actions.REGISTER || action == Actions.CANCEL) {
-        if (platformStr == null || platformStr.isBlank()) {
-          throw new BusinessException(
-              ErrorMessage.INVALID_REQUEST, "Platform is required for REGISTER and CANCEL actions");
-        }
-        platform = Platform.fromValue(platformStr);
-      } else if (platformStr != null && !platformStr.isBlank()) {
-        platform = Platform.fromValue(platformStr);
+        checkPlatform(platformStr);
       }
 
       RegisterHeaderDto header =
           new RegisterHeaderDto(transactionId, Services.fromValue(serviceStr), platform, action);
 
       return new ApiGatewayRequestDto(header, body);
-    } catch (IllegalArgumentException e) {
+    } catch (Exception e) {
+      log.error("Failed to extract request: {}", e.getMessage(), e);
       throw new BusinessException(ErrorMessage.INVALID_REQUEST, e.getMessage());
     }
   }
 
   private void handleRegister(ApiGatewayRequestDto request) {
-    RegisterUserDto body = mapper.convertValue(request.body(), RegisterUserDto.class);
+    RequestRegisterUserDto body = mapper.convertValue(request.body(), RequestRegisterUserDto.class);
     String transactionId = request.header().transactionId();
     Services service = request.header().service();
     Platform platform = request.header().platform();
     String deviceToken = body.deviceToken();
     Set<String> userIds = body.userIds();
-
     String userId = (userIds != null && !userIds.isEmpty()) ? userIds.iterator().next() : null;
     RequestRegisterUserDto finalDto =
         new RequestRegisterUserDto(transactionId, service, platform, deviceToken, userIds);
@@ -137,30 +141,35 @@ public class ApiGatewayHandler
     validate(finalDto);
 
     try {
-      deviceTokenService.registerToken(deviceToken, platform, userId);
-      createRegisterLog(
-          transactionId, userIds, deviceToken, platform, service, NotificationStatus.SUCCESS);
+      tokenRegisterFacade.register(deviceToken, platform, userId);
+      createHistoryLog(
+          transactionId,
+          userIds,
+          deviceToken,
+          platform,
+          service,
+          NotificationStatus.SUCCESS,
+          Actions.REGISTER);
     } catch (Exception e) {
-      throw new DeviceTokenException(ErrorMessage.REGISTER_USER_ERROR, e.getMessage(), e);
+      log.error("Failed to register token: {}", e.getMessage(), e);
     }
   }
 
   private void handleCancel(ApiGatewayRequestDto request) {
-    DeleteTokenDto body = mapper.convertValue(request.body(), DeleteTokenDto.class);
+    RequestDeleteTokenDto body = mapper.convertValue(request.body(), RequestDeleteTokenDto.class);
     String transactionId = request.header().transactionId();
     Services service = request.header().service();
     Platform platform = request.header().platform();
     String deviceToken = body.deviceToken();
     Set<String> userIds = body.userIds();
-    Set<String> logUserIds = Set.of("NULL");
-
     RequestDeleteTokenDto finalDto =
         new RequestDeleteTokenDto(transactionId, service, platform, deviceToken, userIds);
 
     validate(finalDto);
 
     try {
-      String userId = (userIds != null && !userIds.isEmpty()) ? userIds.iterator().next() : null;
+      boolean isInvalidUserId = userIds != null && !userIds.isEmpty();
+      String userId = isInvalidUserId ? userIds.iterator().next() : null;
       if (userId == null) {
         throw new DeviceTokenException(ErrorMessage.USER_ID_REQUIRED);
       }
@@ -178,25 +187,27 @@ public class ApiGatewayHandler
         throw new DeviceTokenException(ErrorMessage.ARN_UNDEFINED);
       }
 
-      String actualUserId = extractUserIdFromSk(tokenEntity.getSk());
-      String actualDeviceToken = extractDeviceTokenFromPk(tokenEntity.getPk());
-      Platform tokenPlatform = Platform.fromValue(tokenEntity.getPlatform());
-
+      Platform tokenPlatform = fromValue(tokenEntity.getPlatform());
       UserTokenInfoDto userTokenInfo =
-          new UserTokenInfoDto(
-              actualUserId, actualDeviceToken, endpointArn, tokenPlatform, subscriptionArn);
+          new UserTokenInfoDto(userId, deviceToken, endpointArn, tokenPlatform, subscriptionArn);
 
       invalidEndpointCleaner.clean(userTokenInfo);
-      createCancelLog(
-          transactionId, logUserIds, deviceToken, platform, service, NotificationStatus.SUCCESS);
+      createHistoryLog(
+          transactionId,
+          Set.of(userId),
+          deviceToken,
+          platform,
+          service,
+          NotificationStatus.SUCCESS,
+          Actions.CANCEL);
     } catch (Exception e) {
-      throw new DeviceTokenException(ErrorMessage.DELETE_TOKEN_ERROR, e.getMessage(), e);
+      log.error("Failed to cancel token: {}", e.getMessage(), e);
     }
   }
 
   private void handleSend(ApiGatewayRequestDto request) {
-    SendPushDto body = mapper.convertValue(request.body(), SendPushDto.class);
-
+    RequestSendPushMessageDto body =
+        mapper.convertValue(request.body(), RequestSendPushMessageDto.class);
     RequestSendPushMessageDto finalDto =
         new RequestSendPushMessageDto(
             request.header().transactionId(),
@@ -213,8 +224,8 @@ public class ApiGatewayHandler
   }
 
   private void handleSendAll(ApiGatewayRequestDto request) {
-    SendAllPushDto body = mapper.convertValue(request.body(), SendAllPushDto.class);
-
+    RequestSendAllPushMessageDto body =
+        mapper.convertValue(request.body(), RequestSendAllPushMessageDto.class);
     RequestSendAllPushMessageDto finalDto =
         new RequestSendAllPushMessageDto(
             request.header().transactionId(),
@@ -229,7 +240,15 @@ public class ApiGatewayHandler
     sendPushFacade.sendPushAll(finalDto);
   }
 
-  private Map<String, Object> parseBody(APIGatewayProxyRequestEvent event) {
+  private void checkPlatform(String platformStr) {
+    boolean isValidPlatform = platformStr == null || platformStr.isBlank();
+    if (isValidPlatform) {
+      throw new BusinessException(
+          ErrorMessage.INVALID_REQUEST, "Platform is required for REGISTER and CANCEL actions");
+    }
+  }
+
+  private Map<String, Object> parseRequestBody(APIGatewayProxyRequestEvent event) {
     if (event.getBody() == null) {
       throw new BusinessException(ErrorMessage.INVALID_REQUEST, "Request body is missing.");
     }
@@ -257,27 +276,14 @@ public class ApiGatewayHandler
     return response;
   }
 
-  private String extractUserIdFromSk(String sk) {
-    if (sk.startsWith(USER_PREFIX)) {
-      return sk.substring(USER_PREFIX.length());
-    }
-    return sk;
-  }
-
-  private String extractDeviceTokenFromPk(String pk) {
-    if (pk.startsWith(TOKEN_PREFIX)) {
-      return pk.substring(TOKEN_PREFIX.length());
-    }
-    return pk;
-  }
-
-  private void createRegisterLog(
+  private void createHistoryLog(
       String transactionId,
       Set<String> userIds,
       String deviceToken,
       Platform platform,
       Services service,
-      NotificationStatus status) {
+      NotificationStatus status,
+      Actions action) {
     CreateHistoryDto createHistoryDto =
         new CreateHistoryDto(
             transactionId,
@@ -288,38 +294,7 @@ public class ApiGatewayHandler
             NotificationType.PUSH.getValue(),
             service.getValue(),
             status.getValue(),
-            Actions.REGISTER.getValue(),
-            platform != null ? platform.getValue() : null,
-            deviceToken,
-            null,
-            userIds != null
-                ? userIds.stream().map(u -> USER_PREFIX + u).collect(Collectors.toSet())
-                : Collections.emptySet(),
-            null,
-            null,
-            null,
-            null);
-    historyService.createLog(createHistoryDto);
-  }
-
-  private void createCancelLog(
-      String transactionId,
-      Set<String> userIds,
-      String deviceToken,
-      Platform platform,
-      Services service,
-      NotificationStatus status) {
-    CreateHistoryDto createHistoryDto =
-        new CreateHistoryDto(
-            transactionId,
-            null,
-            null,
-            null,
-            null,
-            NotificationType.PUSH.getValue(),
-            service.getValue(),
-            status.getValue(),
-            Actions.CANCEL.getValue(),
+            action.getValue(),
             platform != null ? platform.getValue() : null,
             deviceToken,
             null,

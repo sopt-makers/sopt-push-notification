@@ -22,7 +22,7 @@ public class InvalidEndpointCleaner {
   public void clean(UserTokenInfoDto token) {
 
     userService.deleteUser(token.userId(), token.deviceToken());
-    tokenService.deleteToken(token.deviceToken(), token.userId());
+    tokenService.deleteToken(token.userId(), token.deviceToken());
 
     try {
       notificationService.deleteEndpoint(token.endpointArn());

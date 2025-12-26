@@ -1,12 +1,14 @@
 package com.sopt.push.service;
 
 import static com.sopt.push.common.Constants.TOKEN_PREFIX;
+import static com.sopt.push.common.Constants.USER_ENTITY;
 import static com.sopt.push.common.Constants.USER_PREFIX;
 
 import com.sopt.push.domain.UserEntity;
 import com.sopt.push.dto.UserTokenInfoDto;
 import com.sopt.push.enums.Platform;
 import com.sopt.push.repository.UserRepository;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,5 +53,26 @@ public class UserService {
     String userPk = USER_PREFIX + userId;
     String tokenSk = TOKEN_PREFIX + deviceToken;
     userRepository.delete(userPk, tokenSk);
+  }
+
+  public void registerUser(
+      String userId,
+      String deviceToken,
+      String platform,
+      String endpointArn,
+      String subscriptionArn) {
+    String userPk = USER_PREFIX + userId;
+    String tokenSk = TOKEN_PREFIX + deviceToken;
+
+    UserEntity userEntity = new UserEntity();
+    userEntity.setPk(userPk);
+    userEntity.setSk(tokenSk);
+    userEntity.setEntity(USER_ENTITY);
+    userEntity.setPlatform(platform);
+    userEntity.setEndpointArn(endpointArn);
+    userEntity.setSubscriptionArn(subscriptionArn);
+    userEntity.setCreatedAt(Instant.now().toString());
+
+    userRepository.save(userEntity);
   }
 }
