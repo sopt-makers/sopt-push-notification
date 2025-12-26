@@ -43,6 +43,11 @@ public class Constants {
   public static final String HEADER_CONTENT_TYPE = "Content-Type";
   public static final String MEDIA_TYPE_APPLICATION_JSON = "application/json";
 
+  public static final String HEADER_ACTION = "action";
+  public static final String HEADER_PLATFORM = "platform";
+  public static final String HEADER_TRANSACTION_ID = "transactionId";
+  public static final String HEADER_SERVICE = "service";
+
   public static final String HTTP_METHOD_PATCH = "PATCH";
   public static final String HTTP_METHOD_POST = "POST";
   public static final String URL_PATH_FORMAT_ID = "%s/%s";
