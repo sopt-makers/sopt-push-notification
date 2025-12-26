@@ -40,7 +40,7 @@ public class TokenRegisterFacade {
 
     // 1. SNS 엔드포인트 생성
     CreatePlatformEndpointResponse endpoint =
-        notificationService.registerEndpoint(deviceToken, platform, userId);
+        notificationService.registerEndpoint(deviceToken, platform, actualUserId);
 
     String endpointArn = endpoint.endpointArn();
     if (endpointArn == null || endpointArn.isBlank()) {
