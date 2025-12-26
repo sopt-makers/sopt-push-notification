@@ -10,6 +10,7 @@ import com.sopt.push.service.HistoryService;
 import com.sopt.push.service.InvalidEndpointCleaner;
 import com.sopt.push.service.NotificationService;
 import com.sopt.push.service.SendPushFacade;
+import com.sopt.push.service.TokenRegisterFacade;
 import com.sopt.push.service.UserService;
 import com.sopt.push.service.WebHookService;
 import java.net.http.HttpClient;
@@ -22,6 +23,7 @@ public class AppFactory {
   private static final AppFactory INSTANCE = new AppFactory();
 
   private final SendPushFacade sendPushFacade;
+  private final TokenRegisterFacade tokenRegisterFacade;
   private final WebHookService webHookService;
   private final UserService userService;
   private final HistoryService historyService;
@@ -46,17 +48,9 @@ public class AppFactory {
     HistoryRepository historyRepository = new HistoryRepository(dynamoClient, tableName);
     DeviceTokenRepository tokenRepository = new DeviceTokenRepository(dynamoClient, tableName);
 
-    HistoryService historyService = new HistoryService(historyRepository);
-    NotificationService notificationService = new NotificationService(snsClient, envConfig);
-    SnsFactory snsFactory = new SnsFactory(snsClient, envConfig);
-    DeviceTokenService deviceTokenService =
-        new DeviceTokenService(tokenRepository, userRepository, snsFactory);
-    UserService userService = new UserService(userRepository);
-    InvalidEndpointCleaner invalidEndpointCleaner =
-        new InvalidEndpointCleaner(userService, deviceTokenService, notificationService);
     this.userService = new UserService(userRepository);
     this.historyService = new HistoryService(historyRepository);
-    this.deviceTokenService = new DeviceTokenService(tokenRepository, userRepository, snsFactory);
+    this.deviceTokenService = new DeviceTokenService(tokenRepository, userRepository);
     this.notificationService = new NotificationService(snsClient, envConfig);
     this.invalidEndpointCleaner =
         new InvalidEndpointCleaner(
@@ -71,6 +65,9 @@ public class AppFactory {
             this.userService,
             this.deviceTokenService,
             invalidEndpointCleaner);
+    this.tokenRegisterFacade =
+        new TokenRegisterFacade(
+            this.deviceTokenService, this.userService, this.notificationService, tokenRepository);
   }
 
   public static AppFactory getInstance() {
@@ -97,11 +94,11 @@ public class AppFactory {
     return deviceTokenService;
   }
 
-  public NotificationService notificationService() {
-    return notificationService;
-  }
-
   public InvalidEndpointCleaner invalidEndpointCleaner() {
     return invalidEndpointCleaner;
+  }
+
+  public TokenRegisterFacade tokenRegisterFacade() {
+    return tokenRegisterFacade;
   }
 }
