@@ -132,7 +132,7 @@ Resources:
       FunctionName: !Sub "sopt-push-notification-lambda-${Stage}"
       Handler: com.sopt.push.lambda.ApiGatewayHandler::handleRequest
       CodeUri: build/libs/app.jar
-      Role: .
+      Role: !GetAtt PushLambdaRole.Arn
       Events:
         Root:
           Type: Api
@@ -147,7 +147,7 @@ Resources:
       FunctionName: !Sub "sopt-push-notification-lambda-eventbridge-${Stage}"
       Handler: com.sopt.push.lambda.EventBridgeHandler::handleRequest
       CodeUri: build/libs/app.jar
-      Role: .
+      Role: !GetAtt PushLambdaRole.Arn
       Events:
         PushEvent:
           Type: EventBridgeRule
