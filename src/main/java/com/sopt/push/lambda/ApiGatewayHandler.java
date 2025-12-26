@@ -151,6 +151,7 @@ public class ApiGatewayHandler
           Actions.REGISTER);
     } catch (Exception e) {
       log.error("Failed to register token: {}", e.getMessage(), e);
+      throw new DeviceTokenException(ErrorMessage.REGISTER_USER_ERROR, e.getMessage(), e);
     }
   }
 
@@ -201,6 +202,7 @@ public class ApiGatewayHandler
           Actions.CANCEL);
     } catch (Exception e) {
       log.error("Failed to cancel token: {}", e.getMessage(), e);
+      throw new DeviceTokenException(ErrorMessage.DELETE_TOKEN_ERROR, e.getMessage(), e);
     }
   }
 
