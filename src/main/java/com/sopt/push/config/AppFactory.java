@@ -50,7 +50,7 @@ public class AppFactory {
 
     this.userService = new UserService(userRepository);
     this.historyService = new HistoryService(historyRepository);
-    this.deviceTokenService = new DeviceTokenService(tokenRepository, userRepository);
+    this.deviceTokenService = new DeviceTokenService(tokenRepository);
     this.notificationService = new NotificationService(snsClient, envConfig);
     this.invalidEndpointCleaner =
         new InvalidEndpointCleaner(
