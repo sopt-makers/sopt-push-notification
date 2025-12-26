@@ -8,7 +8,6 @@ import com.sopt.push.domain.DeviceTokenEntity;
 import com.sopt.push.dto.UserTokenInfoDto;
 import com.sopt.push.enums.Platform;
 import com.sopt.push.repository.DeviceTokenRepository;
-import com.sopt.push.repository.UserRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 public class DeviceTokenService {
 
   private final DeviceTokenRepository deviceTokenRepository;
-  private final UserRepository userRepository;
 
   public void createToken(
       String userId,
@@ -46,7 +44,6 @@ public class DeviceTokenService {
     String userSk = USER_PREFIX + userId;
 
     deviceTokenRepository.delete(tokenPk, userSk);
-    deleteUser(userId, deviceToken);
   }
 
   public DeviceTokenEntity findTokenByDeviceTokenAndUserId(String deviceToken, String userId) {
@@ -62,12 +59,6 @@ public class DeviceTokenService {
       String endpointArn,
       String subscriptionArn) {
     createToken(userId, deviceToken, platform, endpointArn, subscriptionArn);
-  }
-
-  public void deleteUser(String userId, String deviceToken) {
-    String userPk = USER_PREFIX + userId;
-    String tokenSk = TOKEN_PREFIX + deviceToken;
-    userRepository.delete(userPk, tokenSk);
   }
 
   public List<DeviceTokenEntity> findUserByTokenIds(List<String> deviceTokens) {
