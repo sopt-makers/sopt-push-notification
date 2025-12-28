@@ -1,7 +1,8 @@
 package com.sopt.push.service;
 
 import static com.sopt.push.common.Constants.JSON;
-import static com.sopt.push.util.ValidationUtil.validate;
+import static com.sopt.push.common.Constants.SNS_PROTOCOL_APPLICATION;
+import static com.sopt.push.util.ValidationUtil.validateDto;
 
 import com.sopt.push.common.ExternalException;
 import com.sopt.push.common.InvalidEndpointException;
@@ -31,13 +32,15 @@ public class NotificationService {
   private final SnsClient snsClient;
   private final Validator validator;
   private final String allTopicArn;
-  private final EnvConfig envConfig;
+  private final String iosArn;
+  private final String androidArn;
 
   public NotificationService(SnsClient snsClient, EnvConfig envConfig) {
     this.snsClient = snsClient;
     this.validator = ValidatorConfig.getValidator();
     this.allTopicArn = envConfig.getAllTopicArn();
-    this.envConfig = envConfig;
+    this.iosArn = envConfig.getPlatformApplicationIosArn();
+    this.androidArn = envConfig.getPlatformApplicationAndroidArn();
   }
 
   public String platformPush(
@@ -54,7 +57,7 @@ public class NotificationService {
           new MessageFactoryDto(
               platform.getTopic(), messageId, title, content, category, deepLink, webLink);
 
-      validate(dto);
+      validateDto(dto);
 
       String messageJson = MessageCreator.create(dto);
 
@@ -90,7 +93,7 @@ public class NotificationService {
           new MessageFactoryDto(
               PushTopic.ALL, messageId, title, content, category, deepLink, webLink);
 
-      validate(messageFactoryDto);
+      validateDto(messageFactoryDto);
 
       String messageJson = MessageCreator.create(messageFactoryDto);
 
@@ -141,7 +144,7 @@ public class NotificationService {
   public SubscribeResponse subscribe(String endpointArn) {
     SubscribeRequest request =
         SubscribeRequest.builder()
-            .protocol("application")
+            .protocol(SNS_PROTOCOL_APPLICATION)
             .endpoint(endpointArn)
             .topicArn(allTopicArn)
             .build();
@@ -150,8 +153,6 @@ public class NotificationService {
   }
 
   private String getPlatformApplicationArn(Platform platform) {
-    return platform == Platform.IOS
-        ? envConfig.getPlatformApplicationIosArn()
-        : envConfig.getPlatformApplicationAndroidArn();
+    return platform == Platform.IOS ? iosArn : androidArn;
   }
 }

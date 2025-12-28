@@ -58,4 +58,5 @@ public class Constants {
 
   public static final int HTTP_CLIENT_CONNECT_TIMEOUT_SECONDS = 10;
   public static final int HTTP_REQUEST_TIMEOUT_SECONDS = 5;
+  public static final String SNS_PROTOCOL_APPLICATION = "application";
 }
