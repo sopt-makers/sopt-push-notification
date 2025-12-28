@@ -3,7 +3,6 @@ package com.sopt.push.repository;
 import static com.sopt.push.common.Constants.TOKEN_PREFIX;
 
 import com.sopt.push.domain.DeviceTokenEntity;
-import java.util.List;
 import java.util.Optional;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
