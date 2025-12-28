@@ -5,10 +5,9 @@ import static com.sopt.push.common.Constants.HEADER_PLATFORM;
 import static com.sopt.push.common.Constants.HEADER_SERVICE;
 import static com.sopt.push.common.Constants.HEADER_TRANSACTION_ID;
 import static com.sopt.push.common.Constants.USER_PREFIX;
-import static com.sopt.push.common.StatusCode.BAD_REQUEST;
 import static com.sopt.push.common.StatusCode.INTERNAL_SERVER_ERROR;
 import static com.sopt.push.enums.Platform.fromValue;
-import static com.sopt.push.util.ValidationUtil.validate;
+import static com.sopt.push.util.ValidationUtil.validateDto;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -22,17 +21,23 @@ import com.sopt.push.common.SuccessMessage;
 import com.sopt.push.config.AppFactory;
 import com.sopt.push.config.ObjectMapperConfig;
 import com.sopt.push.domain.DeviceTokenEntity;
-import com.sopt.push.dto.*;
+import com.sopt.push.dto.ApiGatewayRequestDto;
+import com.sopt.push.dto.CreateHistoryDto;
+import com.sopt.push.dto.RegisterHeaderDto;
+import com.sopt.push.dto.RequestDeleteTokenDto;
+import com.sopt.push.dto.RequestRegisterUserDto;
+import com.sopt.push.dto.RequestSendAllPushMessageDto;
+import com.sopt.push.dto.RequestSendPushMessageDto;
+import com.sopt.push.dto.UserTokenInfoDto;
 import com.sopt.push.enums.Actions;
 import com.sopt.push.enums.NotificationStatus;
 import com.sopt.push.enums.NotificationType;
 import com.sopt.push.enums.Platform;
 import com.sopt.push.enums.Services;
 import com.sopt.push.service.DeviceTokenService;
+import com.sopt.push.service.EndpointFacade;
 import com.sopt.push.service.HistoryService;
-import com.sopt.push.service.InvalidEndpointCleaner;
 import com.sopt.push.service.SendPushFacade;
-import com.sopt.push.service.TokenRegisterFacade;
 import com.sopt.push.util.ResponseUtil;
 import java.util.Collections;
 import java.util.Map;
@@ -46,18 +51,16 @@ public class ApiGatewayHandler
 
   private final DeviceTokenService deviceTokenService;
   private final SendPushFacade sendPushFacade;
-  private final InvalidEndpointCleaner invalidEndpointCleaner;
+  private final EndpointFacade endpointFacade;
   private final HistoryService historyService;
-  private final TokenRegisterFacade tokenRegisterFacade;
   private final ObjectMapper mapper;
 
   public ApiGatewayHandler() {
     AppFactory factory = AppFactory.getInstance();
     this.deviceTokenService = factory.deviceTokenService();
     this.sendPushFacade = factory.sendPushFacade();
-    this.invalidEndpointCleaner = factory.invalidEndpointCleaner();
+    this.endpointFacade = factory.endpointFacade();
     this.historyService = factory.historyService();
-    this.tokenRegisterFacade = factory.tokenRegisterFacade();
     this.mapper = ObjectMapperConfig.getObjectMapper();
   }
 
@@ -79,19 +82,20 @@ public class ApiGatewayHandler
 
       SuccessMessage successMessage = getSuccessMessage(action);
       Map<String, Object> responseMap = ResponseUtil.successResponse(successMessage);
-      return convertToApiGatewayResponse(responseMap);
+      return ResponseUtil.convertToApiGatewayResponse(responseMap);
 
     } catch (BusinessException ex) {
       log.error("ApiGateway error: {}", ex.getMessage());
-      Map<String, Object> responseMap = ResponseUtil.errorResponse(BAD_REQUEST, ex.getMessage());
-      return convertToApiGatewayResponse(responseMap);
+      int statusCode = ex.getErrorMessage().getHttpStatus();
+      Map<String, Object> responseMap = ResponseUtil.errorResponse(statusCode, ex.getMessage());
+      return ResponseUtil.convertToApiGatewayResponse(responseMap);
 
     } catch (Exception ex) {
       log.error("ApiGateway error: {}", ex.getMessage(), ex);
       Map<String, Object> responseMap =
           ResponseUtil.errorResponse(
               INTERNAL_SERVER_ERROR, ErrorMessage.INTERNAL_SERVER_ERROR.getMessage());
-      return convertToApiGatewayResponse(responseMap);
+      return ResponseUtil.convertToApiGatewayResponse(responseMap);
     }
   }
 
@@ -110,12 +114,7 @@ public class ApiGatewayHandler
       String transactionId = headers.get(HEADER_TRANSACTION_ID);
       String serviceStr = headers.get(HEADER_SERVICE);
       Actions action = Actions.fromValue(actionStr);
-      Platform platform = fromValue(platformStr);
-
-      if (action == Actions.REGISTER || action == Actions.CANCEL) {
-        checkPlatform(platformStr);
-      }
-
+      Platform platform = Platform.fromValue(platformStr);
       RegisterHeaderDto header =
           new RegisterHeaderDto(transactionId, Services.fromValue(serviceStr), platform, action);
 
@@ -137,10 +136,10 @@ public class ApiGatewayHandler
     RequestRegisterUserDto finalDto =
         new RequestRegisterUserDto(transactionId, service, platform, deviceToken, userIds);
 
-    validate(finalDto);
+    validateDto(finalDto);
 
     try {
-      tokenRegisterFacade.register(deviceToken, platform, userId);
+      endpointFacade.register(deviceToken, platform, userId);
       createHistoryLog(
           transactionId,
           userIds,
@@ -162,36 +161,24 @@ public class ApiGatewayHandler
     Platform platform = request.header().platform();
     String deviceToken = body.deviceToken();
     Set<String> userIds = body.userIds();
-    RequestDeleteTokenDto finalDto =
+    RequestDeleteTokenDto requestDto =
         new RequestDeleteTokenDto(transactionId, service, platform, deviceToken, userIds);
 
-    validate(finalDto);
+    validateDto(requestDto);
 
     try {
       boolean isInvalidUserId = userIds != null && !userIds.isEmpty();
       String userId = isInvalidUserId ? userIds.iterator().next() : null;
-      if (userId == null) {
-        throw new DeviceTokenException(ErrorMessage.USER_ID_REQUIRED);
-      }
-
       DeviceTokenEntity tokenEntity =
           deviceTokenService.findTokenByDeviceTokenAndUserId(deviceToken, userId);
-      if (tokenEntity == null) {
-        throw new DeviceTokenException(ErrorMessage.TOKEN_NOT_FOUND);
-      }
 
       String endpointArn = tokenEntity.getEndpointArn();
       String subscriptionArn = tokenEntity.getSubscriptionArn();
-
-      if (endpointArn == null || subscriptionArn == null) {
-        throw new DeviceTokenException(ErrorMessage.ARN_UNDEFINED);
-      }
-
       Platform tokenPlatform = fromValue(tokenEntity.getPlatform());
       UserTokenInfoDto userTokenInfo =
           new UserTokenInfoDto(userId, deviceToken, endpointArn, tokenPlatform, subscriptionArn);
 
-      invalidEndpointCleaner.clean(userTokenInfo);
+      endpointFacade.clean(userTokenInfo);
       createHistoryLog(
           transactionId,
           Set.of(userId),
@@ -209,7 +196,7 @@ public class ApiGatewayHandler
   private void handleSend(ApiGatewayRequestDto request) {
     RequestSendPushMessageDto body =
         mapper.convertValue(request.body(), RequestSendPushMessageDto.class);
-    RequestSendPushMessageDto finalDto =
+    RequestSendPushMessageDto sendPushMessageDto =
         new RequestSendPushMessageDto(
             request.header().transactionId(),
             request.header().service(),
@@ -220,14 +207,14 @@ public class ApiGatewayHandler
             body.deepLink(),
             body.webLink());
 
-    validate(finalDto);
-    sendPushFacade.sendPush(finalDto);
+    validateDto(sendPushMessageDto);
+    sendPushFacade.sendPush(sendPushMessageDto);
   }
 
   private void handleSendAll(ApiGatewayRequestDto request) {
     RequestSendAllPushMessageDto body =
         mapper.convertValue(request.body(), RequestSendAllPushMessageDto.class);
-    RequestSendAllPushMessageDto finalDto =
+    RequestSendAllPushMessageDto sendAllPushMessageDto =
         new RequestSendAllPushMessageDto(
             request.header().transactionId(),
             request.header().service(),
@@ -237,16 +224,8 @@ public class ApiGatewayHandler
             body.deepLink(),
             body.webLink());
 
-    validate(finalDto);
-    sendPushFacade.sendPushAll(finalDto);
-  }
-
-  private void checkPlatform(String platformStr) {
-    boolean isValidPlatform = platformStr == null || platformStr.isBlank();
-    if (isValidPlatform) {
-      throw new BusinessException(
-          ErrorMessage.INVALID_REQUEST, "Platform is required for REGISTER and CANCEL actions");
-    }
+    validateDto(sendAllPushMessageDto);
+    sendPushFacade.sendPushAll(sendAllPushMessageDto);
   }
 
   private Map<String, Object> parseRequestBody(APIGatewayProxyRequestEvent event) {
@@ -267,14 +246,6 @@ public class ApiGatewayHandler
       case CANCEL -> SuccessMessage.TOKEN_CANCEL_SUCCESS;
       case SEND, SEND_ALL -> SuccessMessage.SEND_SUCCESS;
     };
-  }
-
-  private APIGatewayProxyResponseEvent convertToApiGatewayResponse(
-      Map<String, Object> responseMap) {
-    APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
-    response.setStatusCode((Integer) responseMap.get("statusCode"));
-    response.setBody((String) responseMap.get("body"));
-    return response;
   }
 
   private void createHistoryLog(
