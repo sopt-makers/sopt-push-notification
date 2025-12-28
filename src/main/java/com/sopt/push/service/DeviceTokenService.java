@@ -43,7 +43,6 @@ public class DeviceTokenService {
   public void deleteToken(String userId, String deviceToken) {
     String tokenPk = TOKEN_PREFIX + deviceToken;
     String userSk = USER_PREFIX + userId;
-
     deviceTokenRepository.delete(tokenPk, userSk);
   }
 
@@ -51,15 +50,6 @@ public class DeviceTokenService {
     String tokenPk = TOKEN_PREFIX + deviceToken;
     String userSk = USER_PREFIX + userId;
     return deviceTokenRepository.findByPkAndSk(tokenPk, userSk).orElse(null);
-  }
-
-  public void registerToken(
-      String userId,
-      String deviceToken,
-      String platform,
-      String endpointArn,
-      String subscriptionArn) {
-    createToken(userId, deviceToken, platform, endpointArn, subscriptionArn);
   }
 
   public List<DeviceTokenEntity> findUserByTokenIds(List<String> deviceTokens) {

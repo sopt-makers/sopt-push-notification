@@ -28,8 +28,9 @@ public class EndpointFacade {
     String endpointArn = createSnsEndpoint(deviceToken, platform, inputUserId);
     String subscriptionArn = subscribeToSnsTopic(endpointArn);
 
-    deviceTokenService.registerToken(
-        inputUserId, deviceToken, platform.getValue(), endpointArn, subscriptionArn);
+    deviceTokenService.createToken(
+            inputUserId, deviceToken, platform.getValue(), endpointArn, subscriptionArn);
+
     userService.registerUser(
         inputUserId, deviceToken, platform.getValue(), endpointArn, subscriptionArn);
   }
