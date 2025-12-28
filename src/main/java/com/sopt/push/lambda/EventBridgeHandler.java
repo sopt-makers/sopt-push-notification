@@ -1,7 +1,7 @@
 package com.sopt.push.lambda;
 
 import static com.sopt.push.common.Constants.DETAIL;
-import static com.sopt.push.util.ValidationUtil.validate;
+import static com.sopt.push.util.ValidationUtil.validateDto;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -80,7 +80,7 @@ public class EventBridgeHandler implements RequestHandler<Map<String, Object>, S
             body.deepLink(),
             body.webLink());
 
-    validate(finalDto);
+    validateDto(finalDto);
     sendPushFacade.sendPush(finalDto);
 
     webHookService.scheduleSuccessWebHook(detail.header().alarmId());
@@ -101,7 +101,7 @@ public class EventBridgeHandler implements RequestHandler<Map<String, Object>, S
             body.deepLink(),
             body.webLink());
 
-    validate(finalDto);
+    validateDto(finalDto);
     sendPushFacade.sendPushAll(finalDto);
 
     webHookService.scheduleSuccessWebHook(detail.header().alarmId());
