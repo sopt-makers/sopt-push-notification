@@ -33,12 +33,6 @@ public class DeviceTokenRepository {
     return Optional.ofNullable(deviceTokenTable.getItem(key));
   }
 
-  public List<DeviceTokenEntity> findAllByDeviceToken(String pk) {
-    QueryConditional queryConditional =
-        QueryConditional.keyEqualTo(Key.builder().partitionValue(pk).build());
-    return deviceTokenTable.query(queryConditional).items().stream().toList();
-  }
-
   public Optional<DeviceTokenEntity> findByDeviceToken(String deviceToken) {
     String pk = TOKEN_PREFIX + deviceToken;
     QueryConditional queryConditional =
