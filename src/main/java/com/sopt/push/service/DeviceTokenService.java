@@ -11,6 +11,7 @@ import com.sopt.push.repository.DeviceTokenRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -67,6 +68,10 @@ public class DeviceTokenService {
       deviceTokenRepository.findByDeviceToken(deviceToken).ifPresent(result::add);
     }
     return result;
+  }
+
+  public Optional<DeviceTokenEntity> findByDeviceToken(String deviceToken) {
+    return deviceTokenRepository.findByDeviceToken(deviceToken);
   }
 
   public UserTokenInfoDto mapDeviceTokenEntityToInfoDto(DeviceTokenEntity deviceTokenEntity) {
