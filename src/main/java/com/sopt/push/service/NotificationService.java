@@ -53,13 +53,13 @@ public class NotificationService {
       String messageId,
       Platform platform) {
     try {
-      MessageFactoryDto dto =
+      MessageFactoryDto messageFactoryDto =
           new MessageFactoryDto(
               platform.getTopic(), messageId, title, content, category, deepLink, webLink);
 
-      validateDto(dto);
+      validateDto(messageFactoryDto);
 
-      String messageJson = MessageCreator.create(dto);
+      String messageJson = MessageCreator.create(messageFactoryDto);
 
       PublishRequest publishRequest =
           PublishRequest.builder()
