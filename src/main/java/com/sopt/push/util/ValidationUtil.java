@@ -14,7 +14,7 @@ public final class ValidationUtil {
 
   private static final Validator VALIDATOR = ValidatorConfig.getValidator();
 
-  public static <T> void validate(T dto) {
+  public static <T> void validateDto(T dto) {
     Set<ConstraintViolation<T>> violations = VALIDATOR.validate(dto);
     boolean isNotEmpty = !violations.isEmpty();
     if (isNotEmpty) {

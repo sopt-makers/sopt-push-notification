@@ -11,14 +11,13 @@ import com.sopt.push.repository.DeviceTokenRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class DeviceTokenService {
 
   private final DeviceTokenRepository deviceTokenRepository;
-
-  public DeviceTokenService(DeviceTokenRepository deviceTokenRepository) {
-    this.deviceTokenRepository = deviceTokenRepository;
-  }
 
   public void createToken(
       String userId,
@@ -44,8 +43,13 @@ public class DeviceTokenService {
   public void deleteToken(String userId, String deviceToken) {
     String tokenPk = TOKEN_PREFIX + deviceToken;
     String userSk = USER_PREFIX + userId;
-
     deviceTokenRepository.delete(tokenPk, userSk);
+  }
+
+  public DeviceTokenEntity findTokenByDeviceTokenAndUserId(String deviceToken, String userId) {
+    String tokenPk = TOKEN_PREFIX + deviceToken;
+    String userSk = USER_PREFIX + userId;
+    return deviceTokenRepository.findByPkAndSk(tokenPk, userSk).orElse(null);
   }
 
   public List<DeviceTokenEntity> findUserByTokenIds(List<String> deviceTokens) {
@@ -54,6 +58,10 @@ public class DeviceTokenService {
       deviceTokenRepository.findByDeviceToken(deviceToken).ifPresent(result::add);
     }
     return result;
+  }
+
+  public Optional<DeviceTokenEntity> findByDeviceToken(String deviceToken) {
+    return deviceTokenRepository.findByDeviceToken(deviceToken);
   }
 
   public UserTokenInfoDto mapDeviceTokenEntityToInfoDto(DeviceTokenEntity deviceTokenEntity) {

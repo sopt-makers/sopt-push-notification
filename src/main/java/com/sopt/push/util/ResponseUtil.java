@@ -2,6 +2,7 @@ package com.sopt.push.util;
 
 import static com.sopt.push.common.StatusCode.INTERNAL_SERVER_ERROR;
 
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sopt.push.common.SuccessMessage;
@@ -37,5 +38,13 @@ public class ResponseUtil {
     } catch (Exception e) {
       return Map.of(KEY_STATUS_CODE, INTERNAL_SERVER_ERROR, KEY_BODY, ERROR_MESSAGE_FATAL);
     }
+  }
+
+  public static APIGatewayProxyResponseEvent convertToApiGatewayResponse(
+      Map<String, Object> responseMap) {
+    APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
+    response.setStatusCode((Integer) responseMap.get(KEY_STATUS_CODE));
+    response.setBody((String) responseMap.get(KEY_BODY));
+    return response;
   }
 }

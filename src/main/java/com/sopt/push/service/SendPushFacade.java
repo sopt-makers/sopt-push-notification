@@ -26,7 +26,7 @@ public class SendPushFacade {
   private final HistoryService historyService;
   private final UserService userService;
   private final DeviceTokenService deviceTokenService;
-  private final InvalidEndpointCleaner cleaner;
+  private final EndpointFacade endpointFacade;
 
   public SendPushFacade(
       NotificationService notificationService,
@@ -34,13 +34,13 @@ public class SendPushFacade {
       HistoryService historyService,
       UserService userService,
       DeviceTokenService deviceTokenService,
-      InvalidEndpointCleaner invalidEndpointCleaner) {
+      EndpointFacade endpointFacade) {
     this.notificationService = notificationService;
     this.webHookService = webHookService;
     this.historyService = historyService;
     this.userService = userService;
     this.deviceTokenService = deviceTokenService;
-    this.cleaner = invalidEndpointCleaner;
+    this.endpointFacade = endpointFacade;
   }
 
   public void sendPush(RequestSendPushMessageDto dto) {
@@ -125,7 +125,7 @@ public class SendPushFacade {
           userTokenInfoDto.platform());
 
     } catch (InvalidEndpointException ex) {
-      cleaner.clean(userTokenInfoDto);
+      endpointFacade.clean(userTokenInfoDto);
 
     } catch (ExternalException ex) {
       log.error("Push failed for user={} err={}", userTokenInfoDto.userId(), ex.getMessage());

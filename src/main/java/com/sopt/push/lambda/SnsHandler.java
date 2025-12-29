@@ -15,8 +15,8 @@ import com.sopt.push.dto.UserTokenInfoDto;
 import com.sopt.push.enums.NotificationStatus;
 import com.sopt.push.enums.NotificationType;
 import com.sopt.push.service.DeviceTokenService;
+import com.sopt.push.service.EndpointFacade;
 import com.sopt.push.service.HistoryService;
-import com.sopt.push.service.InvalidEndpointCleaner;
 import com.sopt.push.service.UserService;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +33,7 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
   private final UserService userService;
   private final DeviceTokenService deviceTokenService;
   private final HistoryService historyService;
-  private final InvalidEndpointCleaner invalidEndpointCleaner;
+  private final EndpointFacade endpointFacade;
   private final ObjectMapper objectMapper;
 
   public SnsHandler() {
@@ -41,7 +41,7 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
     this.userService = factory.userService();
     this.deviceTokenService = factory.deviceTokenService();
     this.historyService = factory.historyService();
-    this.invalidEndpointCleaner = factory.invalidEndpointCleaner();
+    this.endpointFacade = factory.endpointFacade();
     this.objectMapper = ObjectMapperConfig.getObjectMapper();
   }
 
@@ -127,7 +127,7 @@ public class SnsHandler implements RequestHandler<SNSEvent, String> {
     createFailLog(userTokenInfoDto.userId(), messageId);
 
     try {
-      invalidEndpointCleaner.clean(userTokenInfoDto);
+      endpointFacade.clean(userTokenInfoDto);
     } catch (Exception e) {
       log.error("Failed to clean invalid endpoint for userId={}", userTokenInfoDto.userId(), e);
     }

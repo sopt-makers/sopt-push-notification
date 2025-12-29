@@ -130,7 +130,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "sopt-push-notification-lambda-${Stage}"
-      Handler: com.sopt.push.lambda.ApiHandler::handleRequest
+      Handler: com.sopt.push.lambda.ApiGatewayHandler::handleRequest
       CodeUri: build/libs/app.jar
       Role: !GetAtt PushLambdaRole.Arn
       Events:
