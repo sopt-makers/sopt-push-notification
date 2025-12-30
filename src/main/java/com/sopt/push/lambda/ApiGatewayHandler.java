@@ -23,8 +23,8 @@ import com.sopt.push.config.ObjectMapperConfig;
 import com.sopt.push.domain.DeviceTokenEntity;
 import com.sopt.push.dto.ApiGatewayRequestDto;
 import com.sopt.push.dto.CreateHistoryDto;
-import com.sopt.push.dto.RegisterHeaderDto;
 import com.sopt.push.dto.RequestDeleteTokenDto;
+import com.sopt.push.dto.RequestHeaderDto;
 import com.sopt.push.dto.RequestRegisterUserDto;
 import com.sopt.push.dto.RequestSendAllPushMessageDto;
 import com.sopt.push.dto.RequestSendPushMessageDto;
@@ -114,9 +114,14 @@ public class ApiGatewayHandler
       String transactionId = headers.get(HEADER_TRANSACTION_ID);
       String serviceStr = headers.get(HEADER_SERVICE);
       Actions action = Actions.fromValue(actionStr);
-      Platform platform = Platform.fromValue(platformStr);
-      RegisterHeaderDto header =
-          new RegisterHeaderDto(transactionId, Services.fromValue(serviceStr), platform, action);
+      Platform platform = null;
+
+      if (action == Actions.REGISTER || action == Actions.CANCEL) {
+        platform = Platform.fromValue(platformStr);
+      }
+
+      RequestHeaderDto header =
+          new RequestHeaderDto(transactionId, Services.fromValue(serviceStr), platform, action);
 
       return new ApiGatewayRequestDto(header, body);
     } catch (Exception e) {
