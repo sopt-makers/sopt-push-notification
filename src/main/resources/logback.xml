@@ -1,0 +1,16 @@
+<configuration>
+    <logger name="software.amazon.awssdk" level="INFO"/>
+    <logger name="software.amazon.awssdk.request" level="INFO"/>
+    <logger name="software.amazon.awssdk.http" level="INFO"/>
+    <logger name="software.amazon.awssdk.core" level="INFO"/>
+
+    <logger name="com.sopt.push" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger - %msg%n</pattern>
+            </encoder>
+        </appender>
+    </root>
+</configuration>
