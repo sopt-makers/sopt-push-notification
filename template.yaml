@@ -1,0 +1,178 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: SOPT Push Notification - SAM Deployment (Stage-aware)
+
+Parameters:
+  Stage:
+    Type: String
+    Description: Deployment stage
+
+  DynamoTableName:
+    Type: String
+
+  PlatformAppIOS:
+    Type: String
+
+  PlatformAppAndroid:
+    Type: String
+
+  AllTopicArn:
+    Type: String
+
+  PushFailuresTopicArn:
+    Type: String
+    Description: SNS Topic ARN for push notification failures
+
+  MakersAppServerUrl:
+    Type: String
+
+  MakersOperationServerUrl:
+    Type: String
+
+Globals:
+  Function:
+    Runtime: java21
+    Timeout: 60
+    MemorySize: 1024
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        STAGE: !Ref Stage
+        DYNAMODB_TABLE: !Ref DynamoTableName
+        PLATFORM_APPLICATION_iOS: !Ref PlatformAppIOS
+        PLATFORM_APPLICATION_ANDROID: !Ref PlatformAppAndroid
+        ALL_TOPIC_ARN: !Ref AllTopicArn
+        MAKERS_APP_SERVER_URL: !Ref MakersAppServerUrl
+        MAKERS_OPERATION_SERVER_URL: !Ref MakersOperationServerUrl
+
+Resources:
+
+  #######################################################
+  # API Gateway
+  #######################################################
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Stage
+
+  #######################################################
+  # IAM Role
+  #######################################################
+  PushLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "sopt-push-lambda-role-${Stage}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                Resource:
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${DynamoTableName}"
+
+        - PolicyName: SNSAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:ListPlatformApplications
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - sns:Subscribe
+                  - sns:Unsubscribe
+                  - sns:Publish
+                  - sns:DeleteEndpoint
+                  - sns:ListEndpointsByPlatformApplication
+                  - sns:GetTopicAttributes
+                  - sns:CreatePlatformEndpoint
+                  - sns:SetTopicAttributes
+                Resource:
+                  - !Ref PlatformAppIOS
+                  - !Ref PlatformAppAndroid
+                  - !Ref AllTopicArn
+                  - !Ref PushFailuresTopicArn
+
+        - PolicyName: LambdaBasicLogging
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "arn:aws:logs:*:*:*"
+
+  #######################################################
+  # Lambda Functions
+  #######################################################
+
+  ApiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "sopt-push-notification-lambda-${Stage}"
+      Handler: com.sopt.push.lambda.ApiGatewayHandler::handleRequest
+      CodeUri: build/libs/app.jar
+      Role: !GetAtt PushLambdaRole.Arn
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /
+            Method: ANY
+
+  EventBridgeHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "sopt-push-notification-lambda-eventbridge-${Stage}"
+      Handler: com.sopt.push.lambda.EventBridgeHandler::handleRequest
+      CodeUri: build/libs/app.jar
+      Role: !GetAtt PushLambdaRole.Arn
+      Events:
+        PushEvent:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              detail:
+                header:
+                  action:
+                    - SEND
+                    - SEND_ALL
+
+  SnsHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "sopt-push-notification-lambda-sns-${Stage}"
+      Handler: com.sopt.push.lambda.SnsHandler::handleRequest
+      CodeUri: build/libs/app.jar
+      Role: !GetAtt PushLambdaRole.Arn
+      Events:
+        PushFailureEvent:
+          Type: SNS
+          Properties:
+            Topic: !Ref PushFailuresTopicArn
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway Root URL for this Stage
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
