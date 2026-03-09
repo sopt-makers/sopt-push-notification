@@ -1,0 +1,12 @@
+{
+  "httpMethod": "POST",
+  "path": "/",
+  "headers": {
+    "Content-Type": "application/json",
+    "action": "register",
+    "platform": "iOS",
+    "transactionId": "test-txn-register-123",
+    "service": "app"
+  },
+  "body": "{\"deviceToken\":\"test-device-token-12345\",\"userIds\":[\"966\"]}"
+}

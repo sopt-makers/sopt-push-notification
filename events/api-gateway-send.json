@@ -1,0 +1,11 @@
+{
+  "httpMethod": "POST",
+  "path": "/",
+  "headers": {
+    "Content-Type": "application/json",
+    "action": "send",
+    "transactionId": "test-txn-send-123",
+    "service": "app"
+  },
+  "body": "{\"userIds\":[\"966\"],\"title\":\"테스트 푸시 알림\",\"content\":\"이것은 테스트 메시지입니다.\",\"category\":\"NOTICE\",\"deepLink\":\"\",\"webLink\":\"makers-link\"}"
+}

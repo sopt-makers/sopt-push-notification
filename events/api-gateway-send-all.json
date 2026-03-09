@@ -1,0 +1,11 @@
+{
+  "httpMethod": "POST",
+  "path": "/",
+  "headers": {
+    "Content-Type": "application/json",
+    "action": "sendAll",
+    "transactionId": "test-txn-send-all-123",
+    "service": "app"
+  },
+  "body": "{\"title\":\"전체 공지\",\"content\":\"모든 사용자에게 전송되는 공지입니다.\",\"category\":\"NOTICE\",\"deepLink\":\"\",\"webLink\":\"makers-link\"}"
+}
