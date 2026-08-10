@@ -1,0 +1,20 @@
+{
+  "Records": [
+    {
+      "messageId": "11111111-2222-3333-4444-555555555555",
+      "receiptHandle": "example-receipt-handle",
+      "body": "{\"Type\":\"Notification\",\"MessageId\":\"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\",\"TopicArn\":\"arn:aws:sns:ap-northeast-2:123456789012:push-failures\",\"Message\":\"{\\\"Token\\\":\\\"actual-device-token\\\",\\\"EndpointArn\\\":\\\"arn:aws:sns:ap-northeast-2:123456789012:endpoint/APNS/test-app/test-endpoint\\\",\\\"MessageId\\\":\\\"알림 서버 실패 추적 개발 테스트용 알림입니다 ㅎ ㅎ\\\"}\",\"Timestamp\":\"2026-08-10T00:00:00.000Z\"}",
+      "attributes": {
+        "ApproximateReceiveCount": "1",
+        "SentTimestamp": "1786320000000",
+        "SenderId": "AIDAEXAMPLE",
+        "ApproximateFirstReceiveTimestamp": "1786320000001"
+      },
+      "messageAttributes": {},
+      "md5OfBody": "example-md5",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:ap-northeast-2:123456789012:sopt-push-failure-queue-dev",
+      "awsRegion": "ap-northeast-2"
+    }
+  ]
+}

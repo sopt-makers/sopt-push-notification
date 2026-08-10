@@ -30,6 +30,12 @@ Parameters:
   MakersOperationServerUrl:
     Type: String
 
+  SlackFailureWebhookUrl:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: Slack incoming webhook URL for push failure alerts
+
 Globals:
   Function:
     Runtime: java21
@@ -46,6 +52,7 @@ Globals:
         ALL_TOPIC_ARN: !Ref AllTopicArn
         MAKERS_APP_SERVER_URL: !Ref MakersAppServerUrl
         MAKERS_OPERATION_SERVER_URL: !Ref MakersOperationServerUrl
+        SLACK_FAILURE_WEBHOOK_URL: !Ref SlackFailureWebhookUrl
 
 Resources:
 
@@ -122,6 +129,65 @@ Resources:
                   - logs:PutLogEvents
                 Resource: "arn:aws:logs:*:*:*"
 
+        - PolicyName: SQSAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                  - sqs:ChangeMessageVisibility
+                Resource:
+                  - !GetAtt PushFailureQueue.Arn
+
+  #######################################################
+  # Push Failure Queue
+  #######################################################
+
+  PushFailureDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "sopt-push-failure-dlq-${Stage}"
+      MessageRetentionPeriod: 1209600
+
+  PushFailureQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "sopt-push-failure-queue-${Stage}"
+      VisibilityTimeout: 360
+      MessageRetentionPeriod: 1209600
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt PushFailureDeadLetterQueue.Arn
+        maxReceiveCount: 5
+
+  PushFailureQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref PushFailureQueue
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action:
+              - sqs:SendMessage
+            Resource: !GetAtt PushFailureQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref PushFailuresTopicArn
+
+  PushFailureSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref PushFailuresTopicArn
+      Protocol: sqs
+      Endpoint: !GetAtt PushFailureQueue.Arn
+      RawMessageDelivery: false
+
   #######################################################
   # Lambda Functions
   #######################################################
@@ -162,15 +228,18 @@ Resources:
   SnsHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "sopt-push-notification-lambda-sns-${Stage}"
-      Handler: com.sopt.push.lambda.SnsHandler::handleRequest
+      FunctionName: !Sub "sopt-push-notification-lambda-sqs-${Stage}"
+      Handler: com.sopt.push.lambda.SqsHandler::handleRequest
       CodeUri: build/libs/app.jar
       Role: !GetAtt PushLambdaRole.Arn
       Events:
         PushFailureEvent:
-          Type: SNS
+          Type: SQS
           Properties:
-            Topic: !Ref PushFailuresTopicArn
+            Queue: !GetAtt PushFailureQueue.Arn
+            BatchSize: 10
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
 
 Outputs:
   ApiUrl:

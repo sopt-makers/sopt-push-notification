@@ -10,6 +10,7 @@ import com.sopt.push.service.EndpointFacade;
 import com.sopt.push.service.HistoryService;
 import com.sopt.push.service.NotificationService;
 import com.sopt.push.service.SendPushFacade;
+import com.sopt.push.service.SlackAlertService;
 import com.sopt.push.service.UserService;
 import com.sopt.push.service.WebHookService;
 import java.net.http.HttpClient;
@@ -28,6 +29,7 @@ public class AppFactory {
   private final HistoryService historyService;
   private final DeviceTokenService deviceTokenService;
   private final NotificationService notificationService;
+  private final SlackAlertService slackAlertService;
 
   private AppFactory() {
 
@@ -50,6 +52,7 @@ public class AppFactory {
     this.historyService = new HistoryService(historyRepository);
     this.deviceTokenService = new DeviceTokenService(tokenRepository);
     this.notificationService = new NotificationService(snsClient, envConfig);
+    this.slackAlertService = new SlackAlertService(httpClient, envConfig);
     this.endpointFacade =
         new EndpointFacade(this.deviceTokenService, this.userService, this.notificationService);
 
@@ -90,5 +93,9 @@ public class AppFactory {
 
   public EndpointFacade endpointFacade() {
     return endpointFacade;
+  }
+
+  public SlackAlertService slackAlertService() {
+    return slackAlertService;
   }
 }
