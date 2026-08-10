@@ -156,7 +156,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Sub "sopt-push-failure-queue-${Stage}"
-      VisibilityTimeout: 120
+      VisibilityTimeout: 360
       MessageRetentionPeriod: 1209600
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt PushFailureDeadLetterQueue.Arn
