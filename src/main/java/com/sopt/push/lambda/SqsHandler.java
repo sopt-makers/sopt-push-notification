@@ -146,7 +146,22 @@ public class SqsHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
     return node == null || node.isMissingNode() || node.asText().isBlank() ? null : node.asText();
   }
 
-  private record FailureMessage(String token, String messageId) {
+  private static final class FailureMessage {
 
+    private final String token;
+    private final String messageId;
+
+    private FailureMessage(String token, String messageId) {
+      this.token = token;
+      this.messageId = messageId;
+    }
+
+    private String token() {
+      return token;
+    }
+
+    private String messageId() {
+      return messageId;
+    }
   }
 }
