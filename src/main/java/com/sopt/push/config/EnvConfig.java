@@ -11,6 +11,7 @@ public final class EnvConfig {
   private static final String MAKERS_OPERATION_SERVER_URL = "MAKERS_OPERATION_SERVER_URL";
   private static final String PLATFORM_APPLICATION_IOS_ENV = "PLATFORM_APPLICATION_iOS";
   private static final String PLATFORM_APPLICATION_ANDROID_ENV = "PLATFORM_APPLICATION_ANDROID";
+  private static final String SLACK_FAILURE_WEBHOOK_URL_ENV = "SLACK_FAILURE_WEBHOOK_URL";
 
   private final String dynamoDbTableName;
   private final String allTopicArn;
@@ -18,6 +19,7 @@ public final class EnvConfig {
   private final String makersOperationServerUrl;
   private final String platformApplicationIosArn;
   private final String platformApplicationAndroidArn;
+  private final String slackFailureWebhookUrl;
 
   public EnvConfig() {
     this.dynamoDbTableName = getRequiredEnv(DYNAMODB_TABLE_ENV_VAR);
@@ -26,6 +28,7 @@ public final class EnvConfig {
     this.makersOperationServerUrl = getRequiredEnv(MAKERS_OPERATION_SERVER_URL);
     this.platformApplicationIosArn = getRequiredEnv(PLATFORM_APPLICATION_IOS_ENV);
     this.platformApplicationAndroidArn = getRequiredEnv(PLATFORM_APPLICATION_ANDROID_ENV);
+    this.slackFailureWebhookUrl = getOptionalEnv(SLACK_FAILURE_WEBHOOK_URL_ENV);
   }
 
   private static String getRequiredEnv(String key) {
@@ -34,5 +37,10 @@ public final class EnvConfig {
       throw new IllegalStateException("Required environment variable '" + key + "' is not set.");
     }
     return value;
+  }
+
+  private static String getOptionalEnv(String key) {
+    String value = System.getenv(key);
+    return value == null || value.isBlank() ? null : value;
   }
 }
