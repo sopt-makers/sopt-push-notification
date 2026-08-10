@@ -19,6 +19,8 @@ import com.sopt.push.service.DeviceTokenService;
 import com.sopt.push.service.EndpointFacade;
 import com.sopt.push.service.HistoryService;
 import com.sopt.push.service.SlackAlertService;
+import com.sopt.push.service.SlackAlertService.ProcessingFailureAlert;
+import com.sopt.push.service.SlackAlertService.PushFailureAlert;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -49,6 +51,8 @@ public class SqsHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
   @Override
   public SQSBatchResponse handleRequest(SQSEvent event, Context context) {
     List<SQSBatchResponse.BatchItemFailure> failures = new ArrayList<>();
+    List<PushFailureAlert> pushFailureAlerts = new ArrayList<>();
+    List<ProcessingFailureAlert> processingFailureAlerts = new ArrayList<>();
 
     if (event == null || event.getRecords() == null || event.getRecords().isEmpty()) {
       log.warn("SQS event is null or has no records");
@@ -59,32 +63,43 @@ public class SqsHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
 
     for (SQSEvent.SQSMessage record : event.getRecords()) {
       try {
-        processRecord(record);
+        ProcessingResult result = processRecord(record);
+        if (result.pushFailureAlert() != null) {
+          pushFailureAlerts.add(result.pushFailureAlert());
+        }
+        if (result.processingFailureAlert() != null) {
+          processingFailureAlerts.add(result.processingFailureAlert());
+        }
       } catch (Exception ex) {
         log.error("Failed to process SQS record. messageId={}", record.getMessageId(), ex);
-        slackAlertService.notifyProcessingFailure(record.getMessageId(), ex.getMessage());
+        processingFailureAlerts.add(
+            SlackAlertService.processingFailureAlert(record.getMessageId(), ex.getMessage()));
         failures.add(new SQSBatchResponse.BatchItemFailure(record.getMessageId()));
       }
     }
 
+    slackAlertService.notifyPushFailures(pushFailureAlerts);
+    slackAlertService.notifyProcessingFailures(processingFailureAlerts);
+
     return new SQSBatchResponse(failures);
   }
 
-  private void processRecord(SQSEvent.SQSMessage record) throws Exception {
+  private ProcessingResult processRecord(SQSEvent.SQSMessage record) throws Exception {
     FailureMessage failureMessage = extractFailureMessage(record);
     String token = failureMessage.token();
 
     if (token == null || token.isBlank()) {
-      slackAlertService.notifyProcessingFailure(record.getMessageId(), "Missing device token");
       log.warn("Push failure message has no token. sqsMessageId={}", record.getMessageId());
-      return;
+      return ProcessingResult.processingFailure(
+          SlackAlertService.processingFailureAlert(record.getMessageId(), "Missing device token"));
     }
 
     DeviceTokenEntity tokenEntity = deviceTokenService.findByDeviceToken(token).orElse(null);
     if (tokenEntity == null) {
       log.info("No token entity found for failed token. sqsMessageId={}", record.getMessageId());
-      slackAlertService.notifyPushFailure(null, token, failureMessage.messageId());
-      return;
+      createFailLog(null, failureMessage.messageId());
+      return ProcessingResult.pushFailure(
+          SlackAlertService.pushFailureAlert(null, token, failureMessage.messageId()));
     }
 
     UserTokenInfoDto userTokenInfoDto =
@@ -94,10 +109,11 @@ public class SqsHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
         userTokenInfoDto.userId(),
         failureMessage.messageId());
 
-    createFailLog(userTokenInfoDto.userId(), failureMessage.messageId());
     endpointFacade.clean(userTokenInfoDto);
-    slackAlertService.notifyPushFailure(
-        userTokenInfoDto.userId(), userTokenInfoDto.deviceToken(), failureMessage.messageId());
+    createFailLog(userTokenInfoDto.userId(), failureMessage.messageId());
+    return ProcessingResult.pushFailure(
+        SlackAlertService.pushFailureAlert(
+            userTokenInfoDto.userId(), userTokenInfoDto.deviceToken(), failureMessage.messageId()));
   }
 
   private FailureMessage extractFailureMessage(SQSEvent.SQSMessage record) throws Exception {
@@ -162,6 +178,34 @@ public class SqsHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
 
     private String messageId() {
       return messageId;
+    }
+  }
+
+  private static final class ProcessingResult {
+
+    private final PushFailureAlert pushFailureAlert;
+    private final ProcessingFailureAlert processingFailureAlert;
+
+    private ProcessingResult(
+        PushFailureAlert pushFailureAlert, ProcessingFailureAlert processingFailureAlert) {
+      this.pushFailureAlert = pushFailureAlert;
+      this.processingFailureAlert = processingFailureAlert;
+    }
+
+    private static ProcessingResult pushFailure(PushFailureAlert alert) {
+      return new ProcessingResult(alert, null);
+    }
+
+    private static ProcessingResult processingFailure(ProcessingFailureAlert alert) {
+      return new ProcessingResult(null, alert);
+    }
+
+    private PushFailureAlert pushFailureAlert() {
+      return pushFailureAlert;
+    }
+
+    private ProcessingFailureAlert processingFailureAlert() {
+      return processingFailureAlert;
     }
   }
 }
