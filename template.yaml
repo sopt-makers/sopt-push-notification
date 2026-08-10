@@ -233,7 +233,7 @@ Resources:
       CodeUri: build/libs/app.jar
       Role: !GetAtt PushLambdaRole.Arn
       Events:
-        PushFailureEvent:
+        PushFailureQueueEvent:
           Type: SQS
           Properties:
             Queue: !GetAtt PushFailureQueue.Arn
